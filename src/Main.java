@@ -11,18 +11,24 @@ public class Main {
 	}
 
 	private ArrayList<String> board;
+	private char[][] path;
 	
 	public Main() {
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		board = new ArrayList<String>();
+		int matrixSize = 0;
+		String line = "";
 
 		try {
-			while(in.ready()) {
-				board.add(in.readLine());
+			while((line = in.readLine()) != null) {
+				board.add(line);
+				matrixSize = Math.max(matrixSize, line.length());
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		matrixSize = Math.max(matrixSize, board.size());
+		path = new char[matrixSize][matrixSize];
 		System.out.println(findPath());
 	}
 
