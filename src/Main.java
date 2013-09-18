@@ -42,7 +42,7 @@ public class Main {
 	}
 	
 	private boolean freeSpace(int x, int y) {
-		return board[x][y] != ' ' && board[x][y] != '.';
+		return board[x][y] != ' ' && board[x][y] != '.' && board[x][y] != '@';
 	}
 	
 	private boolean isStuck(int x, int y) {
