@@ -8,12 +8,19 @@ import java.util.List;
 
 public class Main {
 	private static final Boolean TEST = true;
+	private static final char SPACE = ' ';
+	private static final char WALL = '#';
+	private static final char GOAL = '.';
+	private static final char PLAYER = '@';
+	private static final char PLAYER_ON_GOAL = '+';
+	private static final char BOX = '$';
+	private static final char BOX_ON_GOAL = '*';
+	
+	private char[][] board;
 	
 	public static void main(String[] args) {
 		new Main();
 	}
-
-	private char[][] board;
 
 	public Main() {
 		BufferedReader in = getBufferedReader();
@@ -33,7 +40,7 @@ public class Main {
 	}
 
 	private boolean freeSpace(int x, int y) {
-		return board[x][y] != ' ' && board[x][y] != '.' && board[x][y] != '@';
+		return board[x][y] != SPACE && board[x][y] != GOAL && board[x][y] != PLAYER;
 	}
 
 	private boolean isStuck(int x, int y) {
