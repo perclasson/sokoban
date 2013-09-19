@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 public class Main {
-	private static final Boolean TEST = true;
+	private static final boolean TEST = true;
 	private static final char SPACE = ' ';
 	private static final char WALL = '#';
 	private static final char GOAL = '.';

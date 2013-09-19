@@ -21,5 +21,8 @@ public class GameState {
 		return previousState;
 	}
 
-	
+	@Override
+	public int hashCode() {
+		return board.hashCode();
+	}
 }
