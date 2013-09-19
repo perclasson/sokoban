@@ -18,5 +18,6 @@ public class RenderFrame extends JFrame{
 	
 	public void renderBoard(char[][] board) {
 		panel.setBoard(board);
+		panel.repaint();
 	}
 }
