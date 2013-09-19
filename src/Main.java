@@ -4,7 +4,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Main {
 	private static final Boolean TEST = true;
@@ -17,12 +19,14 @@ public class Main {
 	private static final char BOX_ON_GOAL = '*';
 	
 	private char[][] board;
+	private Set<GameState> visited;
 	
 	public static void main(String[] args) {
 		new Main();
 	}
 
 	public Main() {
+		visited = new HashSet<GameState>();
 		BufferedReader in = getBufferedReader();
 		List<String> tmpBoard = readBoard(in);
 
@@ -31,12 +35,36 @@ public class Main {
 		for (int i = 0; i < tmpBoard.size(); i++) {
 			board[i] = tmpBoard.get(i).toCharArray();
 		}
-
+		
 		System.out.println(findPath());
 	}
 
 	private String findPath() {
+		GameState root = new GameState(board, ' ', null);
+		GameState goal = naiveSearch(root);
+		return recreatePath(goal);
+	}	
+	
+	
+	private String recreatePath(GameState goal) {
 		return null;
+	}
+
+	private GameState naiveSearch(GameState current) {
+		if(visited.contains(current)) {
+			return null;
+		} else if(isCompleted(current)) {
+			return current;
+		} 
+		
+		
+		return null;
+	}
+	
+	
+	private boolean isCompleted(GameState current) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	private boolean freeSpace(int x, int y) {
