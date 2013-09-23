@@ -1,5 +1,5 @@
 
-public class GameState {
+public class GameState implements Cloneable {
 	private char[][] board;
 	private char directionTo;
 	private GameState previousState;
@@ -44,5 +44,14 @@ public class GameState {
 
 	public void setX(int x) {
 		this.x = x;
+	}
+	
+	@Override
+	public Object clone(){  
+	    try{  
+	        return super.clone();  
+	    }catch(Exception e){ 
+	        return null; 
+	    }
 	}
 }

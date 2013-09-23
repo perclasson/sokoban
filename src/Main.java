@@ -89,16 +89,18 @@ public class Main {
 		} 
 		visited.add(current);
 		List<GameState> possibleStates = new ArrayList<GameState>();
+		GameState tmp = (GameState) current.clone();
 		for(int i = 0 ; i < 4 ; i++) {
+			current = (GameState) tmp.clone();
 			if(isOutOfBounds(current, current.getX()+dx[i], current.getY()+dy[i])){
 				continue;
 			}
-			char tile = board[current.getX()+dx[i]][current.getY()+dy[i]];
+			char tile = board[current.getY()+dy[i]][current.getX()+dx[i]];
 			if(tile != WALL) {
 				if(tile == BOX || tile == BOX_ON_GOAL) {
 					if(freeSpace(current.getBoard(), current.getX()+dx[i]*2, current.getY()+dy[i]*2)) {
 						char direction = getDirection(dx[i], dy[i]);
-						GameState nextState = new GameState(board, direction, current, current.getX()+dx[i], current.getY()+dy[i]);
+						GameState nextState = new GameState(board, direction, current, current.getX(), current.getY());
 						if(!movePlayer(nextState, dx[i], dy[i])) {
 							continue;
 						}
@@ -108,7 +110,7 @@ public class Main {
 					}
 				} else {
 					char direction = getDirection(dx[i], dy[i]);
-					GameState nextState = new GameState(board, direction, current, current.getX()+dx[i], current.getY()+dy[i]);
+					GameState nextState = new GameState(board, direction, current, current.getX(), current.getY());
 					if(!movePlayer(nextState, dx[i], dy[i])) {
 						continue;
 					}
@@ -182,9 +184,9 @@ public class Main {
 		} else if(x == 1) {
 			return 'R';
 		} else if(y == 1) {
-			return 'U';
+			return 'D';
 		} else if(y == -1){
-			return 'D'; 
+			return 'U'; 
 		} else {
 			throw new IllegalArgumentException("Invalid direction"); 
 		}
@@ -193,7 +195,7 @@ public class Main {
 	private boolean isCompleted(GameState gs) {
 		for(int i = 0 ; i < gs.getBoard().length ; i++) {
 			for (int j = 0 ; j < gs.getBoard()[i].length ; j++) {
-				if(gs.getBoard()[i][j] == GOAL) {
+				if(gs.getBoard()[i][j] == GOAL || gs.getBoard()[i][j] == PLAYER_ON_GOAL) {
 					return false;
 				}
 			}
