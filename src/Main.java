@@ -12,13 +12,8 @@ public class Main {
 	}
 
 	private char[][] board;
-	private boolean renderStuff = true;
-	private RenderFrame renderFrame;
 	
 	public Main() {
-		if(renderStuff) {
-			renderFrame = new RenderFrame();
-		}
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		List<String> tmpBoard = new ArrayList<String>();
 		int matrixSize = 0;
