@@ -9,8 +9,6 @@ import java.util.List;
 
 public class AStar {
 
-	// TODO fixa så man kan gå till mål
-	
 	public static String findPath(char[][] board, int startY, int startX,
 			int goalY, int goalX) {
 		Node start = new Node(startY, startX);
@@ -80,22 +78,22 @@ public class AStar {
 		List<Node> neighbours = new LinkedList<Node>();
 		// check above
 		if (node.getY() >= 0
-				&& board[node.getY() - 1][node.getX()] == Main.SPACE ) {
+				&& isValidMove(board[node.getY() - 1][node.getX()])) {
 			neighbours.add(new Node(node.getY() - 1, node.getX()));
 		}
 		// check left
 		if (node.getX() >= 0
-				&& board[node.getY()][node.getX() - 1] == Main.SPACE) {
+				&& isValidMove(board[node.getY()][node.getX() - 1])) {
 			addOrdered(neighbours, new Node(node.getY(), node.getX() - 1));
 		}
 		// check right
 		if (node.getX() < board[node.getY()].length - 1
-				&& board[node.getY()][node.getX() + 1] == Main.SPACE) {
+				&& isValidMove(board[node.getY()][node.getX() + 1])) {
 			addOrdered(neighbours, new Node(node.getY(), node.getX() + 1));
 		}
 		// check below
 		if (node.getY() < board.length - 1
-				&& board[node.getY() + 1][node.getX()] == Main.SPACE) {
+				&& isValidMove(board[node.getY() + 1][node.getX()])) {
 			addOrdered(neighbours, new Node(node.getY() + 1, node.getX()));
 		}
 		return neighbours;
@@ -111,7 +109,24 @@ public class AStar {
 		list.add(node);
 	}
 	
-	////////////// <TEST SUPPORT>  ////////////////////
+	private static boolean isValidMove(char node) {
+		if(node == Main.SPACE || node == Main.GOAL) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+//////////////<TEST SUPPORT>  ////////////////////
+//////////////<TEST SUPPORT>  ////////////////////	
+//////////////<TEST SUPPORT>  ////////////////////
+////////////// <TEST SUPPORT>  ////////////////////
 	
 	public static void main(String[] args) {
 
