@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -66,6 +67,7 @@ public class Main {
 		StringBuilder sb = new StringBuilder();
 		Stack<GameState> stack = new Stack<GameState>();
 		while (goal != null) {
+			//			printState(goal);
 			stack.add(goal);
 			sb.append(goal.getDirectionTo());
 			goal = goal.getPreviousState();
@@ -99,6 +101,7 @@ public class Main {
 		if (isCompleted(current)) {
 			return current;
 		}
+		//		printState(current);
 		visited.add(current);
 		List<GameState> possibleStates = new ArrayList<GameState>();
 		GameState tmp = (GameState) current.clone();
@@ -183,6 +186,7 @@ public class Main {
 		if (y >= state.getBoard().length || y < 0) {
 			return true;
 		}
+
 		if (x >= state.getBoard()[y].length || x < 0) {
 			return true;
 		}
@@ -213,6 +217,49 @@ public class Main {
 		}
 		return true;
 	}
+
+	private ArrayList<GameState> findPossibleMoves(GameState state) {
+		ArrayList<GameState> moves = new ArrayList<GameState>();
+		char[][] board = state.getBoard();
+
+		for(int y = 0; y < board.length; y++) {
+			for(int x = 0; x < board[y].length; x++) {
+				if(board[y][x] == BOX || board[y][x] == BOX_ON_GOAL) {
+					addValidMovesForBox(moves, state, x, y);
+				}
+			}
+		}
+
+		return null;
+	}
+	/**
+	 * Adds all valid moves for box represented by x and y. A valid move does not cause a deadlock and 
+	 * can be performed by the player. 
+	 */
+	private void addValidMovesForBox(ArrayList<GameState> moves, GameState state, int x, int y) {
+		// check above and below
+		char[][] board = state.getBoard();
+		if (isFreeSpace(board[y - 1][x]) && isFreeSpace(board[y + 1][x])) {
+			GameState above = (GameState) state.clone();
+			GameState below = (GameState) state.clone();
+			char[][] aboveBoard = above.getBoard();
+			char[][] belowBoard = below.getBoard();
+			
+			//aboveBoard[y + 1][x] =
+			// TODO kom ihåg att vi måste kolla om det är box on goal eller nån annan skit etc
+			// TODO kolla deadlock eller Astar först?????
+		}
+		// check left and right
+		if (isFreeSpace(board[y][x - 1]) && isFreeSpace(board[y][x + 1])) {
+		}
+		
+	}	
+
+	public static boolean isFreeSpace(char node) {
+		return node == SPACE || node == GOAL || node == PLAYER || node == PLAYER_ON_GOAL;
+		
+	}
+
 
 	private boolean freeSpace(char[][] board, int x, int y) {
 		char tile = board[y][x];
