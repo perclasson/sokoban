@@ -63,7 +63,7 @@ public class Main {
 	private String recreatePath(GameState goal) {
 		StringBuilder sb = new StringBuilder();
 		while (goal != null) {
-			printState(goal);
+//			printState(goal);
 			sb.append(goal.getDirectionTo());
 			goal = goal.getPreviousState();
 		}
@@ -85,12 +85,12 @@ public class Main {
 		} else if (isCompleted(current)) {
 			return current;
 		}
+//		printState(current);
 		visited.add(current);
 		List<GameState> possibleStates = new ArrayList<GameState>();
 		GameState tmp = (GameState) current.clone();
 		for (int i = 0; i < 4; i++) {
 			current = (GameState) tmp.clone();
-			printState(current);
 			if (isOutOfBounds(current, current.getX() + dx[i], current.getY() + dy[i])) {
 				continue;
 			}
