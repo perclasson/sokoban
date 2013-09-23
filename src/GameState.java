@@ -15,6 +15,13 @@ public class GameState implements Cloneable {
 		this.x = x;
 		this.y = y;
 	}
+	
+	public GameState(char[][] board, GameState previousState, int x, int y) {
+		this.board = board;
+		this.previousState = previousState;
+		this.x = x;
+		this.y = y;
+	}
 
 	public char[][] getBoard() {
 		return board;

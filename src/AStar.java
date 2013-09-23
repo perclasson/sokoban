@@ -138,10 +138,11 @@ public class AStar {
 		for (int i = 0; i < tmpBoard.size(); i++) {
 			board[i] = tmpBoard.get(i).toCharArray();
 		}
-
-		System.out.println(findPath(board, Integer.parseInt(args[0]),
+		System.out.println(findPath(board, 1, 1, 2, 6));
+		
+	/*	System.out.println(findPath(board, Integer.parseInt(args[0]),
 				Integer.parseInt(args[1]), Integer.parseInt(args[2]),
-				Integer.parseInt(args[3])));
+				Integer.parseInt(args[3])));*/
 	}
 
 	private static BufferedReader getBufferedReader() {
