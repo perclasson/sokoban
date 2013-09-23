@@ -1,3 +1,4 @@
+import java.util.Arrays;
 
 public class GameState implements Cloneable {
 	private char[][] board;
@@ -5,7 +6,8 @@ public class GameState implements Cloneable {
 	private GameState previousState;
 	private int x;
 	private int y;
-	
+	private int hashCode = -1;
+
 	public GameState(char[][] board, char directionTo, GameState previousState, int x, int y) {
 		this.board = board;
 		this.directionTo = directionTo;
@@ -13,7 +15,7 @@ public class GameState implements Cloneable {
 		this.x = x;
 		this.y = y;
 	}
-	
+
 	public char[][] getBoard() {
 		return board;
 	}
@@ -21,6 +23,7 @@ public class GameState implements Cloneable {
 	public char getDirectionTo() {
 		return directionTo;
 	}
+
 	public GameState getPreviousState() {
 		return previousState;
 	}
@@ -35,7 +38,10 @@ public class GameState implements Cloneable {
 
 	@Override
 	public int hashCode() {
-		return board.hashCode();
+		if (hashCode == -1) {
+			hashCode = Arrays.deepHashCode(board);
+		}
+		return hashCode;
 	}
 
 	public void setY(int y) {
@@ -45,13 +51,28 @@ public class GameState implements Cloneable {
 	public void setX(int x) {
 		this.x = x;
 	}
-	
+
+	private char[][] copyArray(char[][] matrix) {
+		char[][] copy = new char[matrix.length][];
+		for (int i = 0; i < matrix.length; i++) {
+			char[] innerOriginal = matrix[i];
+			copy[i] = new char[innerOriginal.length];
+			System.arraycopy(innerOriginal, 0, copy[i], 0, innerOriginal.length);
+		}
+		return copy;
+	}
+
 	@Override
-	public Object clone(){  
-	    try{  
-	        return super.clone();  
-	    }catch(Exception e){ 
-	        return null; 
-	    }
+	public Object clone() {
+		try {
+			return new GameState(copyArray(board), directionTo, previousState, x, y);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		return ((GameState) o).hashCode() == hashCode();
 	}
 }
