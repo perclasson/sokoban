@@ -10,6 +10,7 @@ import java.util.Set;
 
 public class Main {
 	private static final Boolean TEST = false;
+	private static final Boolean RENDER = false;
 	private static final char SPACE = ' ';
 	private static final char WALL = '#';
 	private static final char GOAL = '.';
@@ -24,6 +25,7 @@ public class Main {
 	
 	private char[][] board;
 	private Set<GameState> visited;
+	private RenderFrame renderer;
 	
 	public static void main(String[] args) {
 		new Main();
@@ -31,6 +33,9 @@ public class Main {
 
 	public Main() {
 		visited = new HashSet<GameState>();
+		if(RENDER) {
+			renderer = new RenderFrame();
+		}
 		BufferedReader in = getBufferedReader();
 		List<String> tmpBoard = readBoard(in);
 
@@ -60,12 +65,22 @@ public class Main {
 	private String recreatePath(GameState goal) {
 		StringBuilder sb = new StringBuilder();
 		while(goal != null) {
+			printState(goal);
 			sb.append(goal.getDirectionTo());
 			goal = goal.getPreviousState();
 		}
 		return sb.reverse().toString();
 	}
 
+	private void printState(GameState gs) {
+		for(int i = 0 ; i < gs.getBoard().length ; i++) {
+			for (int j = 0 ; j < gs.getBoard()[i].length ; j++) {
+				System.out.print(gs.getBoard()[i][j]);
+			}
+			System.out.println();
+		}
+	}
+	
 	private GameState naiveSearch(GameState current) {
 		if(visited.contains(current)) {
 			return null;
@@ -75,21 +90,28 @@ public class Main {
 		visited.add(current);
 		List<GameState> possibleStates = new ArrayList<GameState>();
 		for(int i = 0 ; i < 4 ; i++) {
+			if(isOutOfBounds(current, current.getX()+dx[i], current.getY()+dy[i])){
+				continue;
+			}
 			char tile = board[current.getX()+dx[i]][current.getY()+dy[i]];
 			if(tile != WALL) {
 				if(tile == BOX || tile == BOX_ON_GOAL) {
 					if(freeSpace(current.getBoard(), current.getX()+dx[i]*2, current.getY()+dy[i]*2)) {
 						char direction = getDirection(dx[i], dy[i]);
 						GameState nextState = new GameState(board, direction, current, current.getX()+dx[i], current.getY()+dy[i]);
-						movePlayer(nextState, dx[i], dy[i]);
+						if(!movePlayer(nextState, dx[i], dy[i])) {
+							continue;
+						}
 						if(!isDeadlock(nextState, current.getX()+dx[i]*2, current.getY()+dy[i]*2)) {
 							possibleStates.add(nextState);
-						}
+						} 
 					}
 				} else {
 					char direction = getDirection(dx[i], dy[i]);
 					GameState nextState = new GameState(board, direction, current, current.getX()+dx[i], current.getY()+dy[i]);
-					movePlayer(nextState, dx[i], dy[i]);
+					if(!movePlayer(nextState, dx[i], dy[i])) {
+						continue;
+					}
 					possibleStates.add(nextState);
 				}
 			}
@@ -116,27 +138,42 @@ public class Main {
 		return false;
 	}
 
-	private void movePlayer(GameState state, int dx, int dy) {
+	private boolean movePlayer(GameState state, int dx, int dy) {
 		int x = state.getX();
 		int y = state.getY();
-		char tile = state.getBoard()[x+dx][y+dy];
-		if(tile == BOX){
-			if(state.getBoard()[x+dx*2][y+dy*2] == GOAL) {
-				state.getBoard()[x+dx*2][y+dy*2] = BOX_ON_GOAL;
+		if(isOutOfBounds(state, x+dx, y+dy)) {
+			return false;
+		}
+		if(state.getBoard()[y+dy][x+dx] == BOX && freeSpace(state.getBoard(), x+dx*2, y+dy*2)){
+			if(state.getBoard()[y+dy*2][x+dx*2] == GOAL) {
+				state.getBoard()[y+dy*2][x+dx*2] = BOX_ON_GOAL;
 			} else {
-				state.getBoard()[x+dx*2][y+dy*2] = BOX;
+				state.getBoard()[y+dy*2][x+dx*2] = BOX;
 			}
-		}
-		if(state.getBoard()[x+dx][y+dy] == GOAL) {
-			state.getBoard()[x+dx][y+dy] = PLAYER_ON_GOAL;
+		} 
+		if(state.getBoard()[y+dy][x+dx] == GOAL) {
+			state.getBoard()[y+dy][x+dx] = PLAYER_ON_GOAL;
 		} else {
-			state.getBoard()[x+dx][y+dy] = PLAYER;
+			state.getBoard()[y+dy][x+dx] = PLAYER;
 		}
-		if(state.getBoard()[x][y] == PLAYER_ON_GOAL) {
-			state.getBoard()[x][y] = GOAL;
+		if(state.getBoard()[y][x] == PLAYER_ON_GOAL) {
+			state.getBoard()[y][x] = GOAL;
 		} else {
-			state.getBoard()[x][y] = SPACE;
+			state.getBoard()[y][x] = SPACE;
 		}
+		state.setX(x+dx);
+		state.setY(y+dy);
+		return true;
+	}
+
+	private boolean isOutOfBounds(GameState state, int x, int y) {
+		if (y >= state.getBoard().length || y < 0) {
+			return true;
+		}
+		if (x >= state.getBoard()[y].length || x < 0) {
+			return true;
+		}
+		return false;
 	}
 
 	private char getDirection(int x, int y) {
@@ -145,24 +182,35 @@ public class Main {
 		} else if(x == 1) {
 			return 'R';
 		} else if(y == 1) {
-			return 'D';
+			return 'U';
 		} else if(y == -1){
-			return 'U'; 
+			return 'D'; 
 		} else {
 			throw new IllegalArgumentException("Invalid direction"); 
 		}
 	}
 
-	private boolean isCompleted(GameState current) {
-		// TODO Auto-generated method stub
-		return false;
+	private boolean isCompleted(GameState gs) {
+		for(int i = 0 ; i < gs.getBoard().length ; i++) {
+			for (int j = 0 ; j < gs.getBoard()[i].length ; j++) {
+				if(gs.getBoard()[i][j] == GOAL) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	private boolean freeSpace(char[][] board, int x, int y) {
-		return board[x][y] != SPACE && board[x][y] != GOAL && board[x][y] != PLAYER;
+		char tile = board[y][x];
+		return tile == SPACE || tile == GOAL || tile == PLAYER;
 	}
 
 	private boolean isStuck(char[][] board, int x, int y) {
+		if(board[y][x] == BOX_ON_GOAL)
+			return false;
+		if(board[y][x] != BOX)
+			return false;
 		if ((freeSpace(board, x - 1, y) && freeSpace(board, x + 1, y))
 				|| (freeSpace(board, x, y - 1) && freeSpace(board, x, y + 1))) {
 			return false;
