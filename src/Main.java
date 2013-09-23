@@ -163,7 +163,7 @@ public class Main {
 				state.getBoard()[y + dy * 2][x + dx * 2] = BOX;
 			}
 		}
-		if (state.getBoard()[y + dy][x + dx] == GOAL) {
+		if (state.getBoard()[y + dy][x + dx] == GOAL || state.getBoard()[y + dy][x + dx] == BOX_ON_GOAL) {
 			state.getBoard()[y + dy][x + dx] = PLAYER_ON_GOAL;
 		} else {
 			state.getBoard()[y + dy][x + dx] = PLAYER;
