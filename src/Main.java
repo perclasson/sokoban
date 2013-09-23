@@ -11,7 +11,7 @@ import java.util.Stack;
 
 public class Main {
 	public static final Boolean TEST = false;
-	public static final Boolean RENDER = false;
+	public static final Boolean RENDER = true;
 	public static final char SPACE = ' ';
 	public static final char WALL = '#';
 	public static final char GOAL = '.';
@@ -35,6 +35,7 @@ public class Main {
 		visited = new HashSet<GameState>();
 		if (RENDER) {
 			renderer = new RenderFrame();
+			renderer.pack();
 		}
 		BufferedReader in = getBufferedReader();
 		List<String> tmpBoard = readBoard(in);
