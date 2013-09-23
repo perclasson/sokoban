@@ -33,5 +33,8 @@ public class GameState {
 		return x;
 	}
 
-	
+	@Override
+	public int hashCode() {
+		return board.hashCode();
+	}
 }
