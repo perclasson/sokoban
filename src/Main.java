@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 
 public class Main {
 	public static final Boolean TEST = false;
@@ -62,20 +63,34 @@ public class Main {
 
 	private String recreatePath(GameState goal) {
 		StringBuilder sb = new StringBuilder();
+		Stack<GameState> stack = new Stack<GameState>();
 		while (goal != null) {
-			printState(goal);
+			stack.add(goal);
 			sb.append(goal.getDirectionTo());
 			goal = goal.getPreviousState();
+		}
+		while (!stack.empty()) {
+			printState(stack.pop());
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return sb.reverse().toString();
 	}
 
 	private void printState(GameState gs) {
-		for (int i = 0; i < gs.getBoard().length; i++) {
-			for (int j = 0; j < gs.getBoard()[i].length; j++) {
-				System.out.print(gs.getBoard()[i][j]);
+		if(RENDER) {
+			renderer.renderBoard(gs.getBoard());
+		} else {
+			for (int i = 0; i < gs.getBoard().length; i++) {
+				for (int j = 0; j < gs.getBoard()[i].length; j++) {
+					System.out.print(gs.getBoard()[i][j]);
+				}
+				System.out.println();
 			}
-			System.out.println();
 		}
 	}
 

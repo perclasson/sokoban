@@ -23,7 +23,7 @@ public class RenderPanel extends JPanel{
         setPreferredSize(new Dimension(board.length*30,board[0].length*30));
 
         for(int j = 0; j < board.length; j++) {
-        	for(int i = 0; i < board[0].length; i++) {
+        	for(int i = 0; i < board[i].length; i++) {
         		if(board[i][j] == '#') {
         			g.drawImage(new ImageIcon(getClass().getResource("/images/wall.png")).getImage(), 30*i, 30*j, null);
         		} else if(board[i][j] == '.') {
