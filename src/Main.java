@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 
 public class Main {
 	public static final Boolean TEST = false;
@@ -21,9 +22,9 @@ public class Main {
 	public static final char BOX_ON_GOAL = '*';
 	public static final int[] dx = {-1, 1, 0, 0};
 	public static final int[] dy = {0, 0, -1, 1};
-	public static final int[] bigdx = {-1, -1, -1, 0, 0, 1, 1, 1};
-	public static final int[] bigdy = {-1, 0, 1, -1, 1, -1, 0, 1};
-
+	public static final int[] bigdx = {-1, -1, -1, 0, 0, 1, 1, 1, 0};
+	public static final int[] bigdy = {-1, 0, 1, -1, 1, -1, 0, 1, 0};
+	
 	private Set<GameState> visited;
 	private RenderFrame renderer;
 
@@ -63,27 +64,40 @@ public class Main {
 
 	private String recreatePath(GameState goal) {
 		StringBuilder sb = new StringBuilder();
+		Stack<GameState> stack = new Stack<GameState>();
 		while (goal != null) {
 			//			printState(goal);
+			stack.add(goal);
 			sb.append(goal.getDirectionTo());
 			goal = goal.getPreviousState();
+		}
+		while (!stack.empty()) {
+			printState(stack.pop());
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return sb.reverse().toString();
 	}
 
 	private void printState(GameState gs) {
-		for (int i = 0; i < gs.getBoard().length; i++) {
-			for (int j = 0; j < gs.getBoard()[i].length; j++) {
-				System.out.print(gs.getBoard()[i][j]);
+		if(RENDER) {
+			renderer.renderBoard(gs.getBoard());
+		} else {
+			for (int i = 0; i < gs.getBoard().length; i++) {
+				for (int j = 0; j < gs.getBoard()[i].length; j++) {
+					System.out.print(gs.getBoard()[i][j]);
+				}
+				System.out.println();
 			}
-			System.out.println();
 		}
 	}
 
 	private GameState naiveSearch(GameState current) {
-		if (visited.contains(current)) {
-			return null;
-		} else if (isCompleted(current)) {
+		if (isCompleted(current)) {
 			return current;
 		}
 		//		printState(current);
@@ -100,25 +114,27 @@ public class Main {
 				if (tile == BOX || tile == BOX_ON_GOAL) {
 					if (freeSpace(current.getBoard(), current.getX() + dx[i] * 2, current.getY() + dy[i] * 2)) {
 						char direction = getDirection(dx[i], dy[i]);
-						GameState nextState = new GameState(current.getBoard().clone(), direction, current, current.getX(), current.getY());
+						GameState nextState = new GameState(current.getBoard(), direction, current, current.getX(), current.getY());
 						if (!movePlayer(nextState, dx[i], dy[i])) {
 							continue;
 						}
-						if (!isDeadlock(nextState, current.getX() + dx[i] * 2, current.getY() + dy[i] * 2)) {
+						if (!isDeadlock(nextState, current.getX() + dx[i] * 2, current.getY() + dy[i] * 2) && !visited.contains(nextState)) {
 							possibleStates.add(nextState);
-						}
+						} 
 					}
 				} else {
 					char direction = getDirection(dx[i], dy[i]);
-					GameState nextState = new GameState(current.getBoard().clone(), direction, current, current.getX(), current.getY());
+					GameState nextState = new GameState(current.getBoard(), direction, current, current.getX(), current.getY());
+					
 					if (!movePlayer(nextState, dx[i], dy[i])) {
 						continue;
 					}
-					possibleStates.add(nextState);
+					if(!visited.contains(nextState)) {
+						possibleStates.add(nextState);
+					}
 				}
 			}
 		}
-
 		for (GameState state : possibleStates) {
 			GameState result = naiveSearch(state);
 			if (result != null)
@@ -129,15 +145,12 @@ public class Main {
 	}
 
 	private boolean isDeadlock(GameState state, int bx, int by) {
-		if (isStuck(state.getBoard(), bx, by)) {
-			return true;
-		}
-		for (int i = 0; i < 8; i++) {
-			if (isStuck(state.getBoard(), bx + bigdx[i], by + bigdy[i])) {
-				return true;
+		for (int i = 0; i < 9; i++) {
+			if (!isStuck(state.getBoard(), bx + bigdx[i], by + bigdy[i])) {
+				return false;
 			}
 		}
-		return false;
+		return true;
 	}
 
 	private boolean movePlayer(GameState state, int dx, int dy) {
@@ -146,7 +159,7 @@ public class Main {
 		if (isOutOfBounds(state, x + dx, y + dy)) {
 			return false;
 		}
-		if (state.getBoard()[y + dy][x + dx] == BOX && freeSpace(state.getBoard(), x + dx * 2, y + dy * 2)) {
+		if ((state.getBoard()[y + dy][x + dx] == BOX || state.getBoard()[y + dy][x + dx] == BOX_ON_GOAL) && freeSpace(state.getBoard(), x + dx * 2, y + dy * 2)) {
 			if (state.getBoard()[y + dy * 2][x + dx * 2] == GOAL) {
 				state.getBoard()[y + dy * 2][x + dx * 2] = BOX_ON_GOAL;
 			} else {
@@ -249,15 +262,11 @@ public class Main {
 
 	private boolean freeSpace(char[][] board, int x, int y) {
 		char tile = board[y][x];
-		return tile == SPACE || tile == GOAL || tile == PLAYER;
+		return tile == SPACE || tile == GOAL || tile == PLAYER || tile == PLAYER_ON_GOAL;
 	}
 
 	private boolean isStuck(char[][] board, int x, int y) {
-		if (board[y][x] == BOX_ON_GOAL)
-			return false;
-		if (board[y][x] != BOX)
-			return false;
-		if ((freeSpace(board, x - 1, y) && freeSpace(board, x + 1, y)) || (freeSpace(board, x, y - 1) && freeSpace(board, x, y + 1))) {
+		if ((board[y][x] == BOX || board[y][x] == BOX_ON_GOAL) && ((freeSpace(board, x - 1, y) && freeSpace(board, x + 1, y)) || (freeSpace(board, x, y - 1) && freeSpace(board, x, y + 1)))) {
 			return false;
 		}
 		return true;
