@@ -9,20 +9,20 @@ import java.util.List;
 import java.util.Set;
 
 public class Main {
-	private static final Boolean TEST = false;
-	private static final Boolean RENDER = false;
-	private static final char SPACE = ' ';
-	private static final char WALL = '#';
-	private static final char GOAL = '.';
-	private static final char PLAYER = '@';
-	private static final char PLAYER_ON_GOAL = '+';
-	private static final char BOX = '$';
-	private static final char BOX_ON_GOAL = '*';
-	private static final int[] dx = { -1, 1, 0, 0 };
-	private static final int[] dy = { 0, 0, -1, 1 };
-	private static final int[] bigdx = { -1, -1, -1, 0, 0, 1, 1, 1 };
-	private static final int[] bigdy = { -1, 0, 1, -1, 1, -1, 0, 1 };
-
+	public static final Boolean TEST = false;
+	public static final Boolean RENDER = false;
+	public static final char SPACE = ' ';
+	public static final char WALL = '#';
+	public static final char GOAL = '.';
+	public static final char PLAYER = '@';
+	public static final char PLAYER_ON_GOAL = '+';
+	public static final char BOX = '$';
+	public static final char BOX_ON_GOAL = '*';
+	public static final int[] dx = {-1, 1, 0, 0};
+	public static final int[] dy = {0, 0, -1, 1};
+	public static final int[] bigdx = {-1, -1, -1, 0, 0, 1, 1, 1};
+	public static final int[] bigdy = {-1, 0, 1, -1, 1, -1, 0, 1};
+	
 	private Set<GameState> visited;
 	private RenderFrame renderer;
 
