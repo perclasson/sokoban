@@ -20,19 +20,24 @@ public class RenderPanel extends JPanel{
         super.paintComponent(g);
         if(board == null)
         	return;
-        
+        setPreferredSize(new Dimension(board.length*30,board[0].length*30));
+
         for(int j = 0; j < board.length; j++) {
         	for(int i = 0; i < board[0].length; i++) {
         		if(board[i][j] == '#') {
-        			g.drawImage(new ImageIcon(getClass().getResource("/images/wall.png")).getImage(), 50*i, 50*j, null);
+        			g.drawImage(new ImageIcon(getClass().getResource("/images/wall.png")).getImage(), 30*i, 30*j, null);
         		} else if(board[i][j] == '.') {
-        			g.drawImage(new ImageIcon(getClass().getResource("/images/goal.png")).getImage(), 50*i, 50*j, null);
+        			g.drawImage(new ImageIcon(getClass().getResource("/images/goal.png")).getImage(), 30*i, 30*j, null);
         		} else if(board[i][j] == ' ') {
-        			g.drawImage(new ImageIcon(getClass().getResource("/images/empty.png")).getImage(), 50*i, 50*j, null);
+        			g.drawImage(new ImageIcon(getClass().getResource("/images/empty.png")).getImage(), 30*i, 30*j, null);
         		} else if(board[i][j] == '@') {
-        			g.drawImage(new ImageIcon(getClass().getResource("/images/player.png")).getImage(), 50*i, 50*j, null);
+        			g.drawImage(new ImageIcon(getClass().getResource("/images/player.png")).getImage(), 30*i, 30*j, null);
         		} else if(board[i][j] == '$') {
-        			g.drawImage(new ImageIcon(getClass().getResource("/images/box.png")).getImage(), 50*i, 50*j, null);
+        			g.drawImage(new ImageIcon(getClass().getResource("/images/box.png")).getImage(), 30*i, 30*j, null);
+        		} else if(board[i][j] == '*') {
+        			g.drawImage(new ImageIcon(getClass().getResource("/images/box_on_goal.png")).getImage(), 30*i, 30*j, null);
+        		} else if(board[i][j] == '+') {
+        			g.drawImage(new ImageIcon(getClass().getResource("/images/player_on_goal.png")).getImage(), 30*i, 30*j, null);
         		} 
         	}
         }
