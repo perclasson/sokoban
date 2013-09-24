@@ -83,7 +83,7 @@ public class Main {
 
 		while (current != null) {
 			if (RENDER)
-				stack.add(goal);
+				stack.add(current);
 			String path = current.getPath();
 			if (path != null)
 				sb.append(current.getPath());
@@ -94,7 +94,7 @@ public class Main {
 			while (!stack.empty()) {
 				printState(stack.pop());
 				try {
-					Thread.sleep(300);
+					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
