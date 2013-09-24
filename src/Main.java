@@ -322,11 +322,9 @@ public class Main {
 
 	private void addMove(ArrayList<GameState> moves, GameState state, int fromX, int fromY, int dX, int dY) {
 		char[][] board = state.getBoard();
-
 		GameState newState = (GameState) state.clone();
 
-
-		makePush(board, newState.getBoard(), fromX, fromY, fromX + dX, fromY + dY);
+		makePush(state, newState, fromX, fromY, fromX + dX, fromY + dY);
 
 		if (!isDeadlock(newState, fromX + dX, fromY + dY)) {
 			String path = AStar.findPath(state.getBoard(), state.getX(), state.getY(), fromY - dY, fromX - dX);
@@ -352,7 +350,10 @@ public class Main {
 	 * afterPush. Does NOT check that the player reach the position requred to
 	 * make the push, only determines if box and player is on goal or not.
 	 */
-	private void makePush(char[][] beforePush, char[][] afterPush, int fromX, int fromY, int toX, int toY) {
+	private void makePush(GameState state, GameState newState, int fromX, int fromY, int toX, int toY) {
+		char[][] beforePush = state.getBoard();
+		char[][] afterPush = newState.getBoard();
+		
 		if (beforePush[toY][toX] == GOAL || beforePush[toY][toX] == PLAYER_ON_GOAL) {
 			afterPush[toY][toX] = BOX_ON_GOAL;
 		} else {
@@ -364,6 +365,18 @@ public class Main {
 		} else {
 			afterPush[fromY][fromX] = PLAYER;
 		}
+		
+		// Remove player
+		int playerY = state.getY();
+		int playerX = state.getX();
+		
+		if (beforePush[playerY][playerX] == PLAYER) {
+			afterPush[playerY][playerX] = SPACE;
+		}
+		else if (beforePush[playerY][playerX] == PLAYER_ON_GOAL) {
+			afterPush[playerY][playerX] = GOAL;
+		}
+		
 	}
 
 	public static boolean isFreeSpace(char node) {
