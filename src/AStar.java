@@ -74,7 +74,6 @@ public class AStar {
 			}
 			current = current.getParent();
 		}
-		path.deleteCharAt(path.length() - 1);
 		return path.toString();
 	}
 

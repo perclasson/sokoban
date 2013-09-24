@@ -130,6 +130,15 @@ public class Main {
 		if (RENDER) {
 			renderer.renderBoard(gs.getBoard());
 		}
+		else {
+			for (int i = 0; i < gs.getBoard().length; i++) {
+				for (int j = 0; j < gs.getBoard()[i].length; j++) {
+					System.out.print(gs.getBoard()[i][j]);
+				}
+				System.out.print('\n');
+			}
+			System.out.print('\n');
+		}
 	}
 
 	private GameState lessNaiveSearch(GameState current) {
@@ -141,7 +150,9 @@ public class Main {
 		} else if (isCompleted(current)) {
 			return current;
 		}
-
+		
+		printState(current);
+		
 		visited.add(current);
 		List<GameState> possibleStates = findPossibleMoves(current);
 
@@ -321,13 +332,13 @@ public class Main {
 			String path = AStar.findPath(state.getBoard(), state.getX(), state.getY(), fromY - dY, fromX - dX);
 			if (path != null) {
 				if (dY > 0)
-					path = "D" + path;
+					path = "D " + path;
 				else if (dY < 0)
-					path = "U" + path;
+					path = "U " + path;
 				else if (dX > 0)
-					path = "R" + path;
+					path = "R " + path;
 				else 
-					path = "L" + path;
+					path = "L " + path;
 				newState.setX(fromX);
 				newState.setY(fromY);
 				newState.setPath(path);
