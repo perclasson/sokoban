@@ -9,8 +9,8 @@ import java.util.List;
 
 public class AStar {
 
-	public static String findPath(char[][] board, int startY, int startX,
-			int goalY, int goalX) {
+	public static String findPath(char[][] board, int startX, int startY,
+			int goalX, int goalY) {
 		Node start = new Node(startY, startX);
 		Node goal = new Node(goalY, goalX);
 

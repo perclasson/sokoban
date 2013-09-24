@@ -260,36 +260,38 @@ public class Main {
 
 	/**
 	 * Adds all valid moves for box represented by x and y. A valid move does
-	 * not cause a deadlock and can be performed by the player. <<<<<<< HEAD
-	 * 
-	 * 
-	 * ======= >>>>>>> d812482e4587e41fef1d8f68b471d3551abf1093
+
+	 * not cause a deadlock and can be performed by the player.
 	 */
 	private void addValidMovesForBox(ArrayList<GameState> moves, GameState state, int x, int y) {
-		// check above and below
 		char[][] board = state.getBoard();
-
+		
+		// check above and below
 		if (isFreeSpace(board[y - 1][x]) && isFreeSpace(board[y + 1][x])) {
-
-			addMove(moves, state, x, y, x, y - 1);
-			addMove(moves, state, x, y, x, y + 1);
+			addMove(moves, state, x, y, 0, -1);
+			addMove(moves, state, x, y, 0, +1);
 		}
 		// check left and right
 		if (isFreeSpace(board[y][x - 1]) && isFreeSpace(board[y][x + 1])) {
-			addMove(moves, state, x, y, x - 1, y);
-			addMove(moves, state, x, y, x + 1, y);
+			addMove(moves, state, x, y, -1, 0);
+			addMove(moves, state, x, y, +1, 0);
 		}
 	}
 
-	private void addMove(ArrayList<GameState> moves, GameState state, int x, int y, int x2, int y2) {
+	private void addMove(ArrayList<GameState> moves, GameState state, int fromX, int fromY, int dX, int dY) {
 		char[][] board = state.getBoard();
 
 		GameState newState = (GameState) state.clone();
 
-		makePush(board, newState.getBoard(), x, y, x2, y2);
 
-		if (!isDeadlock(newState, x2, y2)) {
-			moves.add(newState);
+		makePush(board, newState.getBoard(), fromX, fromY, fromX + dX, fromY + dY);
+
+		if (!isDeadlock(newState, fromX + dX, fromY + dY)) {
+			String path = AStar.findPath(state.getBoard(), state.getX(), state.getY(), fromY - dY, fromX - dX);
+			if (path != null) {
+				newState.setPath(path);
+				moves.add(newState);
+			}
 		}
 	}
 

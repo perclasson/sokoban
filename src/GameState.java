@@ -6,7 +6,8 @@ public class GameState implements Cloneable {
 	private int x;
 	private int y;
 	private int hashCode = -1;
-
+	private String path;
+	
 	public GameState(char[][] board, char directionTo, GameState previousState, int x, int y) {
 		this.board = board;
 		this.directionTo = directionTo;
@@ -91,4 +92,13 @@ public class GameState implements Cloneable {
 	public boolean equals(Object o) {
 		return ((GameState) o).hashCode() == hashCode();
 	}
+
+	public void setPath(String path) {
+		this.path = path;
+	}
+	
+	public String getPath() {
+		return path;
+	}
+	
 }
