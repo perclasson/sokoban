@@ -152,8 +152,9 @@ public class Main {
 			return current;
 		}
 
-		visited.add(current);
 		List<GameState> possibleStates = findPossibleMoves(current);
+		current.setPossibleMoves(possibleStates);
+		visited.add(current);
 
 		for (GameState state : possibleStates) {
 			GameState result = lessNaiveSearch(state);
