@@ -96,6 +96,28 @@ public class Main {
 		}
 	}
 
+	private GameState lessNaiveSearch(GameState current) {
+		// We have already visited this state, which means we can not find a
+		// solution
+		// Else if the the the game is completed, we return the current state
+		if (visited.contains(current)) {
+			return null;
+		} else if (isCompleted(current)) {
+			return current;
+		}
+
+		visited.add(current);
+		List<GameState> possibleStates = findPossibleMoves(current);
+
+		for (GameState state : possibleStates) {
+			GameState result = lessNaiveSearch(state);
+			if (result != null)
+				return result;
+		}
+
+		return null;
+	}
+
 	private GameState naiveSearch(GameState current) {
 		if (isCompleted(current)) {
 			return current;
@@ -249,32 +271,39 @@ public class Main {
 	/**
 	 * Adds all valid moves for box represented by x and y. A valid move does
 	 * not cause a deadlock and can be performed by the player.
+<<<<<<< HEAD
 	 * 
 	 * 
+=======
+>>>>>>> d812482e4587e41fef1d8f68b471d3551abf1093
 	 */
 	private void addValidMovesForBox(ArrayList<GameState> moves,
 			GameState state, int x, int y) {
 		// check above and below
 		char[][] board = state.getBoard();
+		
 		if (isFreeSpace(board[y - 1][x]) && isFreeSpace(board[y + 1][x])) {
-			GameState pushUp = (GameState) state.clone();
-			GameState pushDown = (GameState) state.clone();
 
-			makePush(board, pushUp.getBoard(), x, y, x, y + 1);
-			makePush(board, pushDown.getBoard(), x, y, x, y - 1);
+			addMove(moves, state, x, y, x, y - 1);
+			addMove(moves, state, x, y, x, y + 1);
 		}
 		// check left and right
 		if (isFreeSpace(board[y][x - 1]) && isFreeSpace(board[y][x + 1])) {
-			GameState pushRight = (GameState) state.clone();
-			GameState pushLeft = (GameState) state.clone();
-
-			makePush(board, pushRight.getBoard(), x, y, x + 1, y);
-			makePush(board, pushLeft.getBoard(), x, y, x - 1, y);
+			addMove(moves, state, x, y, x - 1, y);
+			addMove(moves, state, x, y, x + 1, y);
 		}
+	}
 
-		// kolla deadlocks
-
-		// kolla om spelaren kan gå dit han måste för att göra moven
+	private void addMove(ArrayList<GameState> moves, GameState state, int x, int y, int x2, int y2) {
+		char[][] board = state.getBoard();
+		
+		GameState newState = (GameState) state.clone();
+		
+		makePush(board, newState.getBoard(), x, y, x2, y2);
+		
+		if (!isDeadlock(newState, x2, y2)) {
+			moves.add(newState);
+		}
 	}
 
 	/**

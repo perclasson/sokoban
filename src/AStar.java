@@ -46,7 +46,7 @@ public class AStar {
 				}
 			}
 		}
-		return "fail";
+		return null;
 	}
 
 	private static int estimateCost(Node start, Node goal) {
