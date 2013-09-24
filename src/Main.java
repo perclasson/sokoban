@@ -58,7 +58,7 @@ public class Main {
 		}
 		GameState root = new GameState(board, ' ', null, x, y);
 
-		System.out.println(findPath(root));
+		System.out.println(lessNaiveFindPath(root));
 	}
 
 	private String findPath(GameState root) {
@@ -68,6 +68,22 @@ public class Main {
 			System.out.println("Took "+(System.currentTimeMillis()-before) + " ms");
 		return recreatePath(goal);
 
+	}
+
+	private String lessNaiveFindPath(GameState root) {
+		GameState goal = lessNaiveSearch(root);
+		return lessNaiveRecreatePath(goal);
+	}
+
+	private String lessNaiveRecreatePath(GameState goal) {
+		GameState current = goal;
+		StringBuilder sb = new StringBuilder();
+		while (current != null) {
+			sb.append(current.getPath());
+			current = current.getPreviousState();
+		}
+
+		return sb.reverse().toString();
 	}
 
 	private String recreatePath(GameState goal) {
@@ -289,6 +305,16 @@ public class Main {
 		if (!isDeadlock(newState, fromX + dX, fromY + dY)) {
 			String path = AStar.findPath(state.getBoard(), state.getX(), state.getY(), fromY - dY, fromX - dX);
 			if (path != null) {
+				if (dY > 0)
+					path = "D" + path;
+				else if (dY < 0)
+					path = "U" + path;
+				else if (dX > 0)
+					path = "R" + path;
+				else 
+					path = "L" + path;
+				newState.setX(fromX);
+				newState.setY(fromY);
 				newState.setPath(path);
 				moves.add(newState);
 			}

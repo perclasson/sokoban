@@ -71,7 +71,7 @@ public class AStar {
 			current = current.getParent();
 		}
 		path.deleteCharAt(path.length() - 1);
-		return path.reverse().toString();
+		return path.toString();
 	}
 
 	private static List<Node> getNeighbours(char[][] board, Node node) {
