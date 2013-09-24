@@ -73,7 +73,7 @@ public class Main {
 
 	private String lessNaiveFindPath(GameState root) {
 		GameState goal = lessNaiveSearch(root);
-		return lessNaiveRecreatePath(goal);
+		return lessNaiveRecreatePath(goal).trim();
 	}
 
 	private String lessNaiveRecreatePath(GameState goal) {
@@ -84,7 +84,9 @@ public class Main {
 		while (current != null) {
 			if (RENDER)
 				stack.add(goal);
-			sb.append(current.getPath());
+			String path = current.getPath();
+			if (path != null)
+				sb.append(current.getPath());
 			current = current.getPreviousState();
 		}
 
@@ -137,7 +139,6 @@ public class Main {
 				}
 				System.out.print('\n');
 			}
-			System.out.print('\n');
 		}
 	}
 
@@ -150,9 +151,7 @@ public class Main {
 		} else if (isCompleted(current)) {
 			return current;
 		}
-		
-		printState(current);
-		
+
 		visited.add(current);
 		List<GameState> possibleStates = findPossibleMoves(current);
 
@@ -335,9 +334,11 @@ public class Main {
 					path = "R " + path;
 				else 
 					path = "L " + path;
+				
 				newState.setX(fromX);
 				newState.setY(fromY);
 				newState.setPath(path);
+				newState.setPreviousState(state);
 				moves.add(newState);
 			}
 		}
@@ -352,6 +353,17 @@ public class Main {
 		char[][] beforePush = state.getBoard();
 		char[][] afterPush = newState.getBoard();
 		
+		// Remove player
+		int playerY = state.getY();
+		int playerX = state.getX();
+		
+		if (beforePush[playerY][playerX] == PLAYER) {
+			afterPush[playerY][playerX] = SPACE;
+		}
+		else if (beforePush[playerY][playerX] == PLAYER_ON_GOAL) {
+			afterPush[playerY][playerX] = GOAL;
+		}
+		
 		if (beforePush[toY][toX] == GOAL || beforePush[toY][toX] == PLAYER_ON_GOAL) {
 			afterPush[toY][toX] = BOX_ON_GOAL;
 		} else {
@@ -364,17 +376,7 @@ public class Main {
 			afterPush[fromY][fromX] = PLAYER;
 		}
 		
-		// Remove player
-		int playerY = state.getY();
-		int playerX = state.getX();
-		
-		if (beforePush[playerY][playerX] == PLAYER) {
-			afterPush[playerY][playerX] = SPACE;
-		}
-		else if (beforePush[playerY][playerX] == PLAYER_ON_GOAL) {
-			afterPush[playerY][playerX] = GOAL;
-		}
-		
+
 	}
 
 	public static boolean isFreeSpace(char node) {

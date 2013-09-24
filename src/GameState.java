@@ -39,6 +39,10 @@ public class GameState implements Cloneable {
 		return previousState;
 	}
 
+	public void setPreviousState(GameState previousState) {
+		this.previousState = previousState;
+	}
+	
 	public int getY() {
 		return y;
 	}
