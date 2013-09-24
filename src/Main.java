@@ -24,6 +24,8 @@ public class Main {
 	public static final int[] bigdx = { -1, -1, -1, 0, 0, 1, 1, 1, 0 };
 	public static final int[] bigdy = { -1, 0, 1, -1, 1, -1, 0, 1, 0 };
 
+	private int hit = 0;
+	private int loops = 0;
 	private Set<GameState> visited;
 	private RenderFrame renderer;
 	private long before;
@@ -73,6 +75,8 @@ public class Main {
 
 	private String lessNaiveFindPath(GameState root) {
 		GameState goal = lessNaiveSearch(root);
+		System.out.println("hits: " + hit);
+		System.out.println("loops: " + loops);
 		return lessNaiveRecreatePath(goal).trim();
 	}
 
@@ -146,16 +150,18 @@ public class Main {
 		// We have already visited this state, which means we can not find a
 		// solution
 		// Else if the the the game is completed, we return the current state
+		loops++;
 		if (visited.contains(current)) {
+			hit++;
 			return null;
 		} else if (isCompleted(current)) {
 			return current;
 		}
-
+		
+		current.initHashBoard();
 		List<GameState> possibleStates = findPossibleMoves(current);
-		current.setPossibleMoves(possibleStates);
 		visited.add(current);
-
+		
 		for (GameState state : possibleStates) {
 			GameState result = lessNaiveSearch(state);
 			if (result != null)
@@ -341,6 +347,7 @@ public class Main {
 				newState.setPath(path);
 				newState.setPreviousState(state);
 				moves.add(newState);
+				state.addToHashBoard(fromX + dY, fromY + dY);
 			}
 		}
 	}
