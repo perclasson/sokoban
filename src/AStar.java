@@ -77,23 +77,19 @@ public class AStar {
 	private static List<Node> getNeighbours(char[][] board, Node node) {
 		List<Node> neighbours = new LinkedList<Node>();
 		// check above
-		if (node.getY() >= 0
-				&& isValidMove(board[node.getY() - 1][node.getX()])) {
+		if (Main.isFreeSpace(board[node.getY() - 1][node.getX()])) {
 			neighbours.add(new Node(node.getY() - 1, node.getX()));
 		}
 		// check left
-		if (node.getX() >= 0
-				&& isValidMove(board[node.getY()][node.getX() - 1])) {
+		if (Main.isFreeSpace(board[node.getY()][node.getX() - 1])) {
 			addOrdered(neighbours, new Node(node.getY(), node.getX() - 1));
 		}
 		// check right
-		if (node.getX() < board[node.getY()].length - 1
-				&& isValidMove(board[node.getY()][node.getX() + 1])) {
+		if (Main.isFreeSpace(board[node.getY()][node.getX() + 1])) {
 			addOrdered(neighbours, new Node(node.getY(), node.getX() + 1));
 		}
 		// check below
-		if (node.getY() < board.length - 1
-				&& isValidMove(board[node.getY() + 1][node.getX()])) {
+		if (Main.isFreeSpace(board[node.getY() + 1][node.getX()])) {
 			addOrdered(neighbours, new Node(node.getY() + 1, node.getX()));
 		}
 		return neighbours;
@@ -107,14 +103,6 @@ public class AStar {
 			}
 		}
 		list.add(node);
-	}
-	
-	private static boolean isValidMove(char node) {
-		if(node == Main.SPACE || node == Main.GOAL) {
-			return true;
-		} else {
-			return false;
-		}
 	}
 	
 	
