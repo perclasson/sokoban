@@ -11,6 +11,10 @@ public class AStar {
 
 	public static String findPath(char[][] board, int startX, int startY,
 			int goalX, int goalY) {
+		if(startX == goalX && startY == goalY) {
+			return "";
+		}
+		
 		Node start = new Node(startY, startX);
 		Node goal = new Node(goalY, goalX);
 

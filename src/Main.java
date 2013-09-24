@@ -79,11 +79,27 @@ public class Main {
 	private String lessNaiveRecreatePath(GameState goal) {
 		GameState current = goal;
 		StringBuilder sb = new StringBuilder();
+		Stack<GameState> stack = new Stack<GameState>();
+
 		while (current != null) {
+			if (RENDER)
+				stack.add(goal);
 			sb.append(current.getPath());
 			current = current.getPreviousState();
 		}
 
+		if (RENDER) {
+			while (!stack.empty()) {
+				printState(stack.pop());
+				try {
+					Thread.sleep(300);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		
 		return sb.reverse().toString();
 	}
 
@@ -266,13 +282,11 @@ public class Main {
 			for (int x = 0; x < board[y].length; x++) {
 				if (board[y][x] == BOX || board[y][x] == BOX_ON_GOAL) {
 					addValidMovesForBox(moves, state, x, y);
-
-					// TODO kolla deadlock eller Astar först?????
 				}
 			}
 		}
 
-		return null;
+		return moves;
 	}
 
 	/**
