@@ -225,6 +225,8 @@ public class Main {
 			for(int x = 0; x < board[y].length; x++) {
 				if(board[y][x] == BOX || board[y][x] == BOX_ON_GOAL) {
 					addValidMovesForBox(moves, state, x, y);
+
+					// TODO kolla deadlock eller Astar först?????
 				}
 			}
 		}
@@ -234,29 +236,52 @@ public class Main {
 	/**
 	 * Adds all valid moves for box represented by x and y. A valid move does not cause a deadlock and 
 	 * can be performed by the player. 
+	 * 
+	 * 
 	 */
 	private void addValidMovesForBox(ArrayList<GameState> moves, GameState state, int x, int y) {
 		// check above and below
 		char[][] board = state.getBoard();
 		if (isFreeSpace(board[y - 1][x]) && isFreeSpace(board[y + 1][x])) {
-			GameState above = (GameState) state.clone();
-			GameState below = (GameState) state.clone();
-			char[][] aboveBoard = above.getBoard();
-			char[][] belowBoard = below.getBoard();
+			GameState pushUp = (GameState) state.clone();
+			GameState pushDown = (GameState) state.clone();
 			
-			//aboveBoard[y + 1][x] =
-			// TODO kom ihåg att vi måste kolla om det är box on goal eller nån annan skit etc
-			// TODO kolla deadlock eller Astar först?????
+			makePush(board, pushUp.getBoard(), x, y, x, y+1);
+			makePush(board, pushDown.getBoard(), x, y, x, y-1);
 		}
 		// check left and right
 		if (isFreeSpace(board[y][x - 1]) && isFreeSpace(board[y][x + 1])) {
+			GameState pushRight = (GameState) state.clone();
+			GameState pushLeft = (GameState) state.clone();
+			
+			makePush(board, pushRight.getBoard(), x, y, x + 1, y);
+			makePush(board, pushLeft.getBoard(), x, y, x - 1, y);
 		}
 		
+		// kolla deadlocks
+		
+		// kolla om spelaren kan gå dit han måste för att göra moven
 	}	
+	/**
+	 * pushes a box from fromX, fromY to toX, toY and stores result in afterPush. Does NOT check that the player
+	 * reach the position requred to make the push, only determines if box and player is on goal or not.
+	 */
+	private void makePush(char[][] beforePush, char[][] afterPush, int fromX, int fromY, int toX, int toY) {
+		if(beforePush[toY][toX] == GOAL || beforePush[toY][toX] == PLAYER_ON_GOAL) {
+			afterPush[toY][toX] = BOX_ON_GOAL;
+		} else {
+			afterPush[toY][toX] = BOX;
+		}
+		
+		if(beforePush[fromY][fromX] == BOX_ON_GOAL) {
+			afterPush[fromY][fromX] = PLAYER_ON_GOAL;
+		} else {
+			afterPush[fromY][fromX] = PLAYER;
+		}
+	}
 
 	public static boolean isFreeSpace(char node) {
 		return node == SPACE || node == GOAL || node == PLAYER || node == PLAYER_ON_GOAL;
-		
 	}
 
 
