@@ -129,33 +129,25 @@ public class Main {
 		GameState tmp = (GameState) current.clone();
 		for (int i = 0; i < 4; i++) {
 			current = (GameState) tmp.clone();
-			if (isOutOfBounds(current, current.getX() + dx[i], current.getY()
-					+ dy[i])) {
+			if (isOutOfBounds(current, current.getX() + dx[i], current.getY() + dy[i])) {
 				continue;
 			}
-			char tile = current.getBoard()[current.getY() + dy[i]][current
-					.getX() + dx[i]];
+			char tile = current.getBoard()[current.getY() + dy[i]][current.getX() + dx[i]];
 			if (tile != WALL) {
 				if (tile == BOX || tile == BOX_ON_GOAL) {
-					if (freeSpace(current.getBoard(), current.getX() + dx[i]
-							* 2, current.getY() + dy[i] * 2)) {
+					if (freeSpace(current.getBoard(), current.getX() + dx[i] * 2, current.getY() + dy[i] * 2)) {
 						char direction = getDirection(dx[i], dy[i]);
-						GameState nextState = new GameState(current.getBoard(),
-								direction, current, current.getX(),
-								current.getY());
+						GameState nextState = new GameState(current.getBoard(), direction, current, current.getX(), current.getY());
 						if (!movePlayer(nextState, dx[i], dy[i])) {
 							continue;
 						}
-						if (!isDeadlock(nextState, current.getX() + dx[i] * 2,
-								current.getY() + dy[i] * 2)
-								&& !visited.contains(nextState)) {
+						if (!isDeadlock(nextState, current.getX() + dx[i] * 2, current.getY() + dy[i] * 2) && !visited.contains(nextState)) {
 							possibleStates.add(nextState);
 						}
 					}
 				} else {
 					char direction = getDirection(dx[i], dy[i]);
-					GameState nextState = new GameState(current.getBoard(),
-							direction, current, current.getX(), current.getY());
+					GameState nextState = new GameState(current.getBoard(), direction, current, current.getX(), current.getY());
 
 					if (!movePlayer(nextState, dx[i], dy[i])) {
 						continue;
@@ -190,17 +182,14 @@ public class Main {
 		if (isOutOfBounds(state, x + dx, y + dy)) {
 			return false;
 		}
-		if ((state.getBoard()[y + dy][x + dx] == BOX || state.getBoard()[y + dy][x
-				+ dx] == BOX_ON_GOAL)
-				&& freeSpace(state.getBoard(), x + dx * 2, y + dy * 2)) {
+		if ((state.getBoard()[y + dy][x + dx] == BOX || state.getBoard()[y + dy][x + dx] == BOX_ON_GOAL) && freeSpace(state.getBoard(), x + dx * 2, y + dy * 2)) {
 			if (state.getBoard()[y + dy * 2][x + dx * 2] == GOAL) {
 				state.getBoard()[y + dy * 2][x + dx * 2] = BOX_ON_GOAL;
 			} else {
 				state.getBoard()[y + dy * 2][x + dx * 2] = BOX;
 			}
 		}
-		if (state.getBoard()[y + dy][x + dx] == GOAL
-				|| state.getBoard()[y + dy][x + dx] == BOX_ON_GOAL) {
+		if (state.getBoard()[y + dy][x + dx] == GOAL || state.getBoard()[y + dy][x + dx] == BOX_ON_GOAL) {
 			state.getBoard()[y + dy][x + dx] = PLAYER_ON_GOAL;
 		} else {
 			state.getBoard()[y + dy][x + dx] = PLAYER;
@@ -243,8 +232,7 @@ public class Main {
 	private boolean isCompleted(GameState gs) {
 		for (int i = 0; i < gs.getBoard().length; i++) {
 			for (int j = 0; j < gs.getBoard()[i].length; j++) {
-				if (gs.getBoard()[i][j] == GOAL
-						|| gs.getBoard()[i][j] == PLAYER_ON_GOAL) {
+				if (gs.getBoard()[i][j] == GOAL || gs.getBoard()[i][j] == PLAYER_ON_GOAL) {
 					return false;
 				}
 			}
@@ -273,31 +261,34 @@ public class Main {
 	 * Adds all valid moves for box represented by x and y. A valid move does
 	 * not cause a deadlock and can be performed by the player.
 	 */
-	private void addValidMovesForBox(ArrayList<GameState> moves,
-			GameState state, int x, int y) {
-		// check above and below
+	private void addValidMovesForBox(ArrayList<GameState> moves, GameState state, int x, int y) {
 		char[][] board = state.getBoard();
 		
+		// check above and below
 		if (isFreeSpace(board[y - 1][x]) && isFreeSpace(board[y + 1][x])) {
-			addMove(moves, state, x, y, x, y - 1);
-			addMove(moves, state, x, y, x, y + 1);
+			addMove(moves, state, x, y, 0, -1);
+			addMove(moves, state, x, y, 0, +1);
 		}
 		// check left and right
 		if (isFreeSpace(board[y][x - 1]) && isFreeSpace(board[y][x + 1])) {
-			addMove(moves, state, x, y, x - 1, y);
-			addMove(moves, state, x, y, x + 1, y);
+			addMove(moves, state, x, y, -1, 0);
+			addMove(moves, state, x, y, +1, 0);
 		}
 	}
 
-	private void addMove(ArrayList<GameState> moves, GameState state, int x, int y, int x2, int y2) {
+	private void addMove(ArrayList<GameState> moves, GameState state, int fromX, int fromY, int dX, int dY) {
 		char[][] board = state.getBoard();
-		
+
 		GameState newState = (GameState) state.clone();
-		
-		makePush(board, newState.getBoard(), x, y, x2, y2);
-		
-		if (!isDeadlock(newState, x2, y2)) {
-			moves.add(newState);
+
+		makePush(board, newState.getBoard(), fromX, fromY, fromX + dX, fromY + dY);
+
+		if (!isDeadlock(newState, fromX + dX, fromY + dY)) {
+			String path = AStar.findPath(state.getBoard(), state.getX(), state.getY(), fromY - dY, fromX - dX);
+			if (path != null) {
+				newState.setPath(path);
+				moves.add(newState);
+			}
 		}
 	}
 
@@ -306,10 +297,8 @@ public class Main {
 	 * afterPush. Does NOT check that the player reach the position requred to
 	 * make the push, only determines if box and player is on goal or not.
 	 */
-	private void makePush(char[][] beforePush, char[][] afterPush, int fromX,
-			int fromY, int toX, int toY) {
-		if (beforePush[toY][toX] == GOAL
-				|| beforePush[toY][toX] == PLAYER_ON_GOAL) {
+	private void makePush(char[][] beforePush, char[][] afterPush, int fromX, int fromY, int toX, int toY) {
+		if (beforePush[toY][toX] == GOAL || beforePush[toY][toX] == PLAYER_ON_GOAL) {
 			afterPush[toY][toX] = BOX_ON_GOAL;
 		} else {
 			afterPush[toY][toX] = BOX;
@@ -323,20 +312,16 @@ public class Main {
 	}
 
 	public static boolean isFreeSpace(char node) {
-		return node == SPACE || node == GOAL || node == PLAYER
-				|| node == PLAYER_ON_GOAL;
+		return node == SPACE || node == GOAL || node == PLAYER || node == PLAYER_ON_GOAL;
 	}
 
 	private boolean freeSpace(char[][] board, int x, int y) {
 		char tile = board[y][x];
-		return tile == SPACE || tile == GOAL || tile == PLAYER
-				|| tile == PLAYER_ON_GOAL;
+		return tile == SPACE || tile == GOAL || tile == PLAYER || tile == PLAYER_ON_GOAL;
 	}
 
 	private boolean isStuck(char[][] board, int x, int y) {
-		if ((board[y][x] == BOX || board[y][x] == BOX_ON_GOAL)
-				&& ((freeSpace(board, x - 1, y) && freeSpace(board, x + 1, y)) || (freeSpace(
-						board, x, y - 1) && freeSpace(board, x, y + 1)))) {
+		if ((board[y][x] == BOX || board[y][x] == BOX_ON_GOAL) && ((freeSpace(board, x - 1, y) && freeSpace(board, x + 1, y)) || (freeSpace(board, x, y - 1) && freeSpace(board, x, y + 1)))) {
 			return false;
 		}
 		return true;
