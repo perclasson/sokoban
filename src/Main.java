@@ -11,8 +11,8 @@ import java.util.Set;
 import java.util.Stack;
 
 public class Main {
-	public static final Boolean TEST = false;
-	public static final Boolean RENDER = false;
+	public static final boolean TEST = false;
+	public static final boolean RENDER = false;
 	public static final char SPACE = ' ';
 	public static final char WALL = '#';
 	public static final char GOAL = '.';
@@ -67,20 +67,23 @@ public class Main {
 		Stack<GameState> stack = new Stack<GameState>();
 		while (goal != null) {
 			//			printState(goal);
-			stack.add(goal);
+			if(RENDER)
+				stack.add(goal);
 			sb.append(goal.getDirectionTo());
 			goal = goal.getPreviousState();
 		}
-		while (!stack.empty()) {
-			printState(stack.pop());
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		if(RENDER) {
+			while (!stack.empty()) {
+				printState(stack.pop());
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
-		return sb.reverse().toString();
+		return sb.reverse().toString().trim();
 	}
 
 	private void printState(GameState gs) {
@@ -100,7 +103,6 @@ public class Main {
 		if (isCompleted(current)) {
 			return current;
 		}
-		//		printState(current);
 		visited.add(current);
 		List<GameState> possibleStates = new ArrayList<GameState>();
 		GameState tmp = (GameState) current.clone();
@@ -145,6 +147,8 @@ public class Main {
 	}
 
 	private boolean isDeadlock(GameState state, int bx, int by) {
+		if(state.getBoard()[by][bx] == BOX_ON_GOAL)
+			return false;
 		for (int i = 0; i < 9; i++) {
 			if (!isStuck(state.getBoard(), bx + bigdx[i], by + bigdy[i])) {
 				return false;
