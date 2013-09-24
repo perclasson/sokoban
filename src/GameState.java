@@ -1,6 +1,7 @@
 public class GameState implements Cloneable {
 	private char[][] board;
 	private char directionTo;
+
 	private GameState previousState;
 	private int x;
 	private int y;
@@ -21,6 +22,10 @@ public class GameState implements Cloneable {
 		this.y = y;
 	}
 
+	public void setDirectionTo(char directionTo) {
+		this.directionTo = directionTo;
+	}
+	
 	public char[][] getBoard() {
 		return board;
 	}
@@ -63,7 +68,7 @@ public class GameState implements Cloneable {
 		this.x = x;
 	}
 
-	private char[][] copyArray(char[][] matrix) {
+	public static char[][] copyArray(char[][] matrix) {
 		char[][] copy = new char[matrix.length][];
 		for (int i = 0; i < matrix.length; i++) {
 			char[] innerOriginal = matrix[i];

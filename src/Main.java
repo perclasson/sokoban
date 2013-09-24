@@ -5,14 +5,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
 public class Main {
 	public static final boolean TEST = false;
-	public static final boolean RENDER = false;
+	public static boolean RENDER = false;
 	public static final char SPACE = ' ';
 	public static final char WALL = '#';
 	public static final char GOAL = '.';
@@ -20,15 +19,20 @@ public class Main {
 	public static final char PLAYER_ON_GOAL = '+';
 	public static final char BOX = '$';
 	public static final char BOX_ON_GOAL = '*';
-	public static final int[] dx = {-1, 1, 0, 0};
-	public static final int[] dy = {0, 0, -1, 1};
-	public static final int[] bigdx = {-1, -1, -1, 0, 0, 1, 1, 1, 0};
-	public static final int[] bigdy = {-1, 0, 1, -1, 1, -1, 0, 1, 0};
-	
+	public static final int[] dx = { -1, 1, 0, 0 };
+	public static final int[] dy = { 0, 0, -1, 1 };
+	public static final int[] bigdx = { -1, -1, -1, 0, 0, 1, 1, 1, 0 };
+	public static final int[] bigdy = { -1, 0, 1, -1, 1, -1, 0, 1, 0 };
+
 	private Set<GameState> visited;
 	private RenderFrame renderer;
+	private long before;
 
 	public static void main(String[] args) {
+		if (args.length != 0)
+			if (args[0].contains("-g")) {
+				RENDER = true;
+			}
 		new Main();
 	}
 
@@ -36,6 +40,7 @@ public class Main {
 		visited = new HashSet<GameState>();
 		if (RENDER) {
 			renderer = new RenderFrame();
+			renderer.pack();
 		}
 		BufferedReader in = getBufferedReader();
 		List<String> tmpBoard = readBoard(in);
@@ -57,7 +62,10 @@ public class Main {
 	}
 
 	private String findPath(GameState root) {
+		before = System.currentTimeMillis();
 		GameState goal = naiveSearch(root);
+		if(RENDER)
+			System.out.println("Took "+(System.currentTimeMillis()-before) + " ms");
 		return recreatePath(goal);
 
 	}
@@ -66,17 +74,16 @@ public class Main {
 		StringBuilder sb = new StringBuilder();
 		Stack<GameState> stack = new Stack<GameState>();
 		while (goal != null) {
-			//			printState(goal);
-			if(RENDER)
+			if (RENDER)
 				stack.add(goal);
 			sb.append(goal.getDirectionTo());
 			goal = goal.getPreviousState();
 		}
-		if(RENDER) {
+		if (RENDER) {
 			while (!stack.empty()) {
 				printState(stack.pop());
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(300);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -87,16 +94,31 @@ public class Main {
 	}
 
 	private void printState(GameState gs) {
-		if(RENDER) {
+		if (RENDER) {
 			renderer.renderBoard(gs.getBoard());
-		} else {
-			for (int i = 0; i < gs.getBoard().length; i++) {
-				for (int j = 0; j < gs.getBoard()[i].length; j++) {
-					System.out.print(gs.getBoard()[i][j]);
-				}
-				System.out.println();
-			}
 		}
+	}
+
+	private GameState lessNaiveSearch(GameState current) {
+		// We have already visited this state, which means we can not find a
+		// solution
+		// Else if the the the game is completed, we return the current state
+		if (visited.contains(current)) {
+			return null;
+		} else if (isCompleted(current)) {
+			return current;
+		}
+
+		visited.add(current);
+		List<GameState> possibleStates = findPossibleMoves(current);
+
+		for (GameState state : possibleStates) {
+			GameState result = lessNaiveSearch(state);
+			if (result != null)
+				return result;
+		}
+
+		return null;
 	}
 
 	private GameState naiveSearch(GameState current) {
@@ -105,9 +127,7 @@ public class Main {
 		}
 		visited.add(current);
 		List<GameState> possibleStates = new ArrayList<GameState>();
-		GameState tmp = (GameState) current.clone();
 		for (int i = 0; i < 4; i++) {
-			current = (GameState) tmp.clone();
 			if (isOutOfBounds(current, current.getX() + dx[i], current.getY() + dy[i])) {
 				continue;
 			}
@@ -116,22 +136,22 @@ public class Main {
 				if (tile == BOX || tile == BOX_ON_GOAL) {
 					if (freeSpace(current.getBoard(), current.getX() + dx[i] * 2, current.getY() + dy[i] * 2)) {
 						char direction = getDirection(dx[i], dy[i]);
-						GameState nextState = new GameState(current.getBoard(), direction, current, current.getX(), current.getY());
+						GameState nextState = new GameState(GameState.copyArray(current.getBoard()), direction, current, current.getX(), current.getY());
 						if (!movePlayer(nextState, dx[i], dy[i])) {
 							continue;
 						}
 						if (!isDeadlock(nextState, current.getX() + dx[i] * 2, current.getY() + dy[i] * 2) && !visited.contains(nextState)) {
 							possibleStates.add(nextState);
-						} 
+						}
 					}
 				} else {
 					char direction = getDirection(dx[i], dy[i]);
-					GameState nextState = new GameState(current.getBoard(), direction, current, current.getX(), current.getY());
-					
+					GameState nextState = new GameState(GameState.copyArray(current.getBoard()), direction, current, current.getX(), current.getY());
+
 					if (!movePlayer(nextState, dx[i], dy[i])) {
 						continue;
 					}
-					if(!visited.contains(nextState)) {
+					if (!visited.contains(nextState)) {
 						possibleStates.add(nextState);
 					}
 				}
@@ -147,7 +167,7 @@ public class Main {
 	}
 
 	private boolean isDeadlock(GameState state, int bx, int by) {
-		if(state.getBoard()[by][bx] == BOX_ON_GOAL)
+		if (state.getBoard()[by][bx] == BOX_ON_GOAL)
 			return false;
 		for (int i = 0; i < 9; i++) {
 			if (!isStuck(state.getBoard(), bx + bigdx[i], by + bigdy[i])) {
@@ -225,9 +245,9 @@ public class Main {
 		ArrayList<GameState> moves = new ArrayList<GameState>();
 		char[][] board = state.getBoard();
 
-		for(int y = 0; y < board.length; y++) {
-			for(int x = 0; x < board[y].length; x++) {
-				if(board[y][x] == BOX || board[y][x] == BOX_ON_GOAL) {
+		for (int y = 0; y < board.length; y++) {
+			for (int x = 0; x < board[y].length; x++) {
+				if (board[y][x] == BOX || board[y][x] == BOX_ON_GOAL) {
 					addValidMovesForBox(moves, state, x, y);
 
 					// TODO kolla deadlock eller Astar först?????
@@ -237,47 +257,55 @@ public class Main {
 
 		return null;
 	}
+
 	/**
-	 * Adds all valid moves for box represented by x and y. A valid move does not cause a deadlock and 
-	 * can be performed by the player. 
+	 * Adds all valid moves for box represented by x and y. A valid move does
+	 * not cause a deadlock and can be performed by the player. <<<<<<< HEAD
 	 * 
 	 * 
+	 * ======= >>>>>>> d812482e4587e41fef1d8f68b471d3551abf1093
 	 */
 	private void addValidMovesForBox(ArrayList<GameState> moves, GameState state, int x, int y) {
 		// check above and below
 		char[][] board = state.getBoard();
+
 		if (isFreeSpace(board[y - 1][x]) && isFreeSpace(board[y + 1][x])) {
-			GameState pushUp = (GameState) state.clone();
-			GameState pushDown = (GameState) state.clone();
-			
-			makePush(board, pushUp.getBoard(), x, y, x, y+1);
-			makePush(board, pushDown.getBoard(), x, y, x, y-1);
+
+			addMove(moves, state, x, y, x, y - 1);
+			addMove(moves, state, x, y, x, y + 1);
 		}
 		// check left and right
 		if (isFreeSpace(board[y][x - 1]) && isFreeSpace(board[y][x + 1])) {
-			GameState pushRight = (GameState) state.clone();
-			GameState pushLeft = (GameState) state.clone();
-			
-			makePush(board, pushRight.getBoard(), x, y, x + 1, y);
-			makePush(board, pushLeft.getBoard(), x, y, x - 1, y);
+			addMove(moves, state, x, y, x - 1, y);
+			addMove(moves, state, x, y, x + 1, y);
 		}
-		
-		// kolla deadlocks
-		
-		// kolla om spelaren kan gå dit han måste för att göra moven
-	}	
+	}
+
+	private void addMove(ArrayList<GameState> moves, GameState state, int x, int y, int x2, int y2) {
+		char[][] board = state.getBoard();
+
+		GameState newState = (GameState) state.clone();
+
+		makePush(board, newState.getBoard(), x, y, x2, y2);
+
+		if (!isDeadlock(newState, x2, y2)) {
+			moves.add(newState);
+		}
+	}
+
 	/**
-	 * pushes a box from fromX, fromY to toX, toY and stores result in afterPush. Does NOT check that the player
-	 * reach the position requred to make the push, only determines if box and player is on goal or not.
+	 * pushes a box from fromX, fromY to toX, toY and stores result in
+	 * afterPush. Does NOT check that the player reach the position requred to
+	 * make the push, only determines if box and player is on goal or not.
 	 */
 	private void makePush(char[][] beforePush, char[][] afterPush, int fromX, int fromY, int toX, int toY) {
-		if(beforePush[toY][toX] == GOAL || beforePush[toY][toX] == PLAYER_ON_GOAL) {
+		if (beforePush[toY][toX] == GOAL || beforePush[toY][toX] == PLAYER_ON_GOAL) {
 			afterPush[toY][toX] = BOX_ON_GOAL;
 		} else {
 			afterPush[toY][toX] = BOX;
 		}
-		
-		if(beforePush[fromY][fromX] == BOX_ON_GOAL) {
+
+		if (beforePush[fromY][fromX] == BOX_ON_GOAL) {
 			afterPush[fromY][fromX] = PLAYER_ON_GOAL;
 		} else {
 			afterPush[fromY][fromX] = PLAYER;
@@ -287,7 +315,6 @@ public class Main {
 	public static boolean isFreeSpace(char node) {
 		return node == SPACE || node == GOAL || node == PLAYER || node == PLAYER_ON_GOAL;
 	}
-
 
 	private boolean freeSpace(char[][] board, int x, int y) {
 		char tile = board[y][x];

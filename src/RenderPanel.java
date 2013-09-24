@@ -11,8 +11,8 @@ public class RenderPanel extends JPanel{
 	private char[][] board;
     public RenderPanel()
     {
-        setBackground(Color.BLACK);
-        setPreferredSize(new Dimension(600,400));
+        setBackground(Color.WHITE);
+      setPreferredSize(new Dimension(1000,1000));
         setLayout(null);
     }
     public void paintComponent(Graphics g)
@@ -20,24 +20,22 @@ public class RenderPanel extends JPanel{
         super.paintComponent(g);
         if(board == null)
         	return;
-        setPreferredSize(new Dimension(board.length*30,board[0].length*30));
-
-        for(int j = 0; j < board.length; j++) {
-        	for(int i = 0; i < board[i].length; i++) {
+        for(int i = 0; i < board.length; i++) {
+        	for(int j = 0; j < board[i].length; j++) {
         		if(board[i][j] == '#') {
-        			g.drawImage(new ImageIcon(getClass().getResource("/images/wall.png")).getImage(), 30*i, 30*j, null);
+        			g.drawImage(new ImageIcon(getClass().getResource("/images/wall.png")).getImage(), 30*j, 30*i, null);
         		} else if(board[i][j] == '.') {
-        			g.drawImage(new ImageIcon(getClass().getResource("/images/goal.png")).getImage(), 30*i, 30*j, null);
+        			g.drawImage(new ImageIcon(getClass().getResource("/images/goal.png")).getImage(), 30*j, 30*i, null);
         		} else if(board[i][j] == ' ') {
-        			g.drawImage(new ImageIcon(getClass().getResource("/images/empty.png")).getImage(), 30*i, 30*j, null);
+        			g.drawImage(new ImageIcon(getClass().getResource("/images/empty.png")).getImage(), 30*j, 30*i, null);
         		} else if(board[i][j] == '@') {
-        			g.drawImage(new ImageIcon(getClass().getResource("/images/player.png")).getImage(), 30*i, 30*j, null);
+        			g.drawImage(new ImageIcon(getClass().getResource("/images/player.png")).getImage(), 30*j, 30*i, null);
         		} else if(board[i][j] == '$') {
-        			g.drawImage(new ImageIcon(getClass().getResource("/images/box.png")).getImage(), 30*i, 30*j, null);
+        			g.drawImage(new ImageIcon(getClass().getResource("/images/box.png")).getImage(), 30*j, 30*i, null);
         		} else if(board[i][j] == '*') {
-        			g.drawImage(new ImageIcon(getClass().getResource("/images/box_on_goal.png")).getImage(), 30*i, 30*j, null);
+        			g.drawImage(new ImageIcon(getClass().getResource("/images/box_on_goal.png")).getImage(), 30*j, 30*i, null);
         		} else if(board[i][j] == '+') {
-        			g.drawImage(new ImageIcon(getClass().getResource("/images/player_on_goal.png")).getImage(), 30*i, 30*j, null);
+        			g.drawImage(new ImageIcon(getClass().getResource("/images/player_on_goal.png")).getImage(), 30*j, 30*i, null);
         		} 
         	}
         }
@@ -45,5 +43,11 @@ public class RenderPanel extends JPanel{
     
     public void setBoard(char[][] board) {
     	this.board = board;
+    	int max = 0;
+    	for(int i = 0; i < board.length; i++) {
+    		if(board[i].length > max)
+    			max = board[i].length;
+    	}
+        setPreferredSize(new Dimension(max*30,board.length*30));
     }
 }

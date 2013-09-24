@@ -12,12 +12,13 @@ public class RenderFrame extends JFrame{
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
         pack(); 
         setLocationRelativeTo(null); 
-        setResizable(false); 
+        setResizable(true); 
         setVisible(true); 
     } 
 	
 	public void renderBoard(char[][] board) {
 		panel.setBoard(board);
 		panel.repaint();
+		pack();
 	}
 }
