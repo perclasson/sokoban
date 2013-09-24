@@ -63,22 +63,22 @@ public class Main {
 
 	private String recreatePath(GameState goal) {
 		StringBuilder sb = new StringBuilder();
-//		Stack<GameState> stack = new Stack<GameState>();
+		Stack<GameState> stack = new Stack<GameState>();
 		while (goal != null) {
-//			stack.add(goal);
+			stack.add(goal);
 			sb.append(goal.getDirectionTo());
 			goal = goal.getPreviousState();
 		}
-//		while (!stack.empty()) {
-//			printState(stack.pop());
-//			try {
-//				Thread.sleep(1000);
-//			} catch (InterruptedException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}
-		return sb.reverse().toString().trim();
+		while (!stack.empty()) {
+			printState(stack.pop());
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return sb.reverse().toString();
 	}
 
 	private void printState(GameState gs) {
