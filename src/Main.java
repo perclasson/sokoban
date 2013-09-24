@@ -321,13 +321,11 @@ public class Main {
 	}
 
 	private void addMove(ArrayList<GameState> moves, GameState state, int fromX, int fromY, int dX, int dY) {
-		char[][] board = state.getBoard();
 		GameState newState = (GameState) state.clone();
-
 		makePush(state, newState, fromX, fromY, fromX + dX, fromY + dY);
 
 		if (!isDeadlock(newState, fromX + dX, fromY + dY)) {
-			String path = AStar.findPath(state.getBoard(), state.getX(), state.getY(), fromY - dY, fromX - dX);
+			String path = AStar.findPath(state.getBoard(), state.getX(), state.getY(), fromX - dX, fromY - dY);
 			if (path != null) {
 				if (dY > 0)
 					path = "D " + path;
