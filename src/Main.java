@@ -50,7 +50,8 @@ public class Main {
 
 		for (int i = 0; i < tmpBoard.size(); i++) {
 			board[i] = tmpBoard.get(i).toCharArray();
-			int indx = tmpBoard.get(i).indexOf('@');
+			int indx = tmpBoard.get(i).indexOf(PLAYER);
+			indx = indx == -1 ? tmpBoard.get(i).indexOf(PLAYER_ON_GOAL) : indx;
 			if (indx != -1) {
 				x = indx;
 				y = i;
