@@ -1,8 +1,12 @@
+import java.util.List;
+
 public class GameState implements Cloneable {
 	private char[][] board;
 	private char directionTo;
 
 	private GameState previousState;
+	private List<GameState> possibleMoves;
+
 	private int x;
 	private int y;
 	private int hashCode = -1;
@@ -103,6 +107,14 @@ public class GameState implements Cloneable {
 	
 	public String getPath() {
 		return path;
+	}
+	
+	public List<GameState> getPossibleMoves() {
+		return possibleMoves;
+	}
+
+	public void setPossibleMoves(List<GameState> possibleMoves) {
+		this.possibleMoves = possibleMoves;
 	}
 	
 }
