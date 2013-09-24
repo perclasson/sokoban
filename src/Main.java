@@ -12,7 +12,7 @@ import java.util.Stack;
 
 public class Main {
 	public static final Boolean TEST = false;
-	public static final Boolean RENDER = true;
+	public static Boolean RENDER = false;
 	public static final char SPACE = ' ';
 	public static final char WALL = '#';
 	public static final char GOAL = '.';
@@ -29,6 +29,10 @@ public class Main {
 	private RenderFrame renderer;
 
 	public static void main(String[] args) {
+		if (args.length != 0)
+			if (args[0].contains("-g")) {
+				RENDER = true;
+			}
 		new Main();
 	}
 
@@ -72,13 +76,15 @@ public class Main {
 			sb.append(goal.getDirectionTo());
 			goal = goal.getPreviousState();
 		}
-		while (!stack.empty()) {
-			printState(stack.pop());
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		if (RENDER) {
+			while (!stack.empty()) {
+				printState(stack.pop());
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 		return sb.reverse().toString();
@@ -87,13 +93,6 @@ public class Main {
 	private void printState(GameState gs) {
 		if (RENDER) {
 			renderer.renderBoard(gs.getBoard());
-		} else {
-			for (int i = 0; i < gs.getBoard().length; i++) {
-				for (int j = 0; j < gs.getBoard()[i].length; j++) {
-					System.out.print(gs.getBoard()[i][j]);
-				}
-				System.out.println();
-			}
 		}
 	}
 
