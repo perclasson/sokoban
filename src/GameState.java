@@ -54,6 +54,12 @@ public class GameState {
 		}
 		return hashCode;
 	}
+	public BoxList getBoxList() {
+		return boxList;
+	}
+	public int numberOfBoxes() {
+		return boxList.size();
+	}
 	
 	@Override
 	public Object clone() {
