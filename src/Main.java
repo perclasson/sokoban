@@ -107,7 +107,7 @@ public class Main {
 
 		if (RENDER) {
 			while (!stack.empty()) {
-			//	printState(stack.pop()); // TODO anton
+				printState(stack.pop());
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
@@ -118,21 +118,15 @@ public class Main {
 
 		return sb.reverse().toString();
 	}
-/* TODO ANTON
 	private void printState(GameState gs) {
 		if (RENDER) {
-			renderer.renderBoard(gs.getBoard());
+			renderer.renderState(board,gs);
 		}
 		else {
-			for (int i = 0; i < gs.getBoard().length; i++) {
-				for (int j = 0; j < gs.getBoard()[i].length; j++) {
-					System.out.print(gs.getBoard()[i][j]);
-				}
-				System.out.print('\n');
-			}
+			
 		}
 	}
-	*/
+	
 
 	private GameState search(GameState current) {
 		if (visited.contains(current)) {

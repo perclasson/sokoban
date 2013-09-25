@@ -16,8 +16,8 @@ public class RenderFrame extends JFrame{
         setVisible(true); 
     } 
 	
-	public void renderBoard(char[][] board) {
-		panel.setBoard(board);
+	public void renderState(char[][] board, GameState state) {
+		panel.setBoard(board, state);
 		panel.repaint();
 		pack();
 	}
