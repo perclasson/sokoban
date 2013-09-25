@@ -126,7 +126,6 @@ public class Main {
 			
 		}
 	}
-	
 
 	private GameState search(GameState current) {
 		if (visited.contains(current)) {
@@ -134,8 +133,7 @@ public class Main {
 		} else if (isCompleted(current)) {
 			return current;
 		}
-
-		//current.initHashBoard();TODO
+		System.out.println(visited.size());
 		List<GameState> possibleStates = findPossibleMoves(current);
 		visited.add(current);
 
@@ -222,7 +220,6 @@ public class Main {
 				newState.setPath(path);
 				newState.setPreviousState(state);
 				moves.add(newState);
-				//state.addToHashBoard(fromX + dY, fromY + dY); TODO
 			}
 		}
 	}

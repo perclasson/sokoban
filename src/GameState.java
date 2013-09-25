@@ -41,6 +41,11 @@ public class GameState {
 	}
 	
 	@Override
+	public boolean equals(Object o) {
+		return hashCode == ((GameState) o).hashCode();
+	}
+	
+	@Override
 	public int hashCode() {
 		if(hashCode == -1) {
 			StringBuilder sb = new StringBuilder();
