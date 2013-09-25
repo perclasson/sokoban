@@ -18,7 +18,11 @@ public class RenderPanel extends JPanel{
     }
     public void paintComponent(Graphics g)
     {
-    	int numBoxes= currentState.numberOfBoxes();
+    	if(currentState == null) {
+    		System.out.println("SLUTA SKICKA IN NULL TILL MIG NÄR JAG RENDERAR!!!");
+    		return;
+    	}
+    	int numBoxes = currentState.numberOfBoxes();
     	int index = 0;
         super.paintComponent(g);
         if(board == null)
