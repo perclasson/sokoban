@@ -28,10 +28,6 @@ public class GameState {
 		this.path = path;
 	}
 	
-	public BoxList getBoxList() {
-		return boxList;
-	}
-	
 	public boolean containsBox(int x, int y) {
 		return boxList.containsBox(x, y);
 	}
