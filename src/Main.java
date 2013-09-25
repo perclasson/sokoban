@@ -24,10 +24,9 @@ public class Main {
 	public static final int[] bigdx = { -1, -1, -1, 0, 0, 1, 1, 1, 0 };
 	public static final int[] bigdy = { -1, 0, 1, -1, 1, -1, 0, 1, 0 };
 
-	private int hit = 0;
-	private int loops = 0;
 	private Set<GameState> visited;
 	private RenderFrame renderer;
+	public static char[][] board;
 
 	public static void main(String[] args) {
 		if (args.length != 0)
@@ -46,21 +45,44 @@ public class Main {
 		BufferedReader in = getBufferedReader();
 		List<String> tmpBoard = readBoard(in);
 
-		char[][] board = new char[tmpBoard.size()][];
-		int x = 0, y = 0;
-
-		for (int i = 0; i < tmpBoard.size(); i++) {
-			board[i] = tmpBoard.get(i).toCharArray();
-			int indx = tmpBoard.get(i).indexOf(PLAYER);
-			indx = indx == -1 ? tmpBoard.get(i).indexOf(PLAYER_ON_GOAL) : indx;
-			if (indx != -1) {
-				x = indx;
-				y = i;
-			}
-		}
-		GameState root = new GameState(board, ' ', null, x, y);
+		GameState root  = generateRoot(tmpBoard);
 
 		System.out.println(findPath(root));
+	}
+
+	private GameState generateRoot(List<String> tmpBoard) {
+		board = new char[tmpBoard.size()][];
+		BoxList bl = new BoxList();
+		int playerX = 0, playerY = 0;
+		for (int y = 0; y < tmpBoard.size(); y++) {
+			board[y] = tmpBoard.get(y).toCharArray();
+			for (int x = 0; x < tmpBoard.get(y).toCharArray().length; x++) {
+				switch (tmpBoard.get(y).charAt(x)) {
+				case BOX:
+					board[y][x] = SPACE;
+					bl.addBox(x, y);
+					break;
+				case BOX_ON_GOAL:
+					board[y][x] = GOAL;
+					bl.addBox(x, y);
+					break;
+				case PLAYER:
+					board[y][x] = SPACE;
+					playerX = x;
+					playerY = y;
+					break;
+				case PLAYER_ON_GOAL:
+					board[y][x] = GOAL;
+					playerX = x;
+					playerY = y;
+					break;
+				default:
+					board[y][x] = tmpBoard.get(y).charAt(x);
+					break;
+				}
+			}
+		}
+		return new GameState(bl, playerX, playerY);
 	}
 
 
@@ -85,7 +107,7 @@ public class Main {
 
 		if (RENDER) {
 			while (!stack.empty()) {
-				printState(stack.pop());
+			//	printState(stack.pop()); // TODO anton
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
@@ -93,10 +115,10 @@ public class Main {
 				}
 			}
 		}
-		
+
 		return sb.reverse().toString();
 	}
-
+/* TODO ANTON
 	private void printState(GameState gs) {
 		if (RENDER) {
 			renderer.renderBoard(gs.getBoard());
@@ -110,29 +132,24 @@ public class Main {
 			}
 		}
 	}
+	*/
 
 	private GameState search(GameState current) {
-		// We have already visited this state, which means we can not find a
-		// solution
-		// Else if the the the game is completed, we return the current state
-		loops++;
 		if (visited.contains(current)) {
-			hit++;
 			return null;
 		} else if (isCompleted(current)) {
 			return current;
 		}
-		
-		current.initHashBoard();
+
+		//current.initHashBoard();TODO
 		List<GameState> possibleStates = findPossibleMoves(current);
 		visited.add(current);
-		
+
 		for (GameState state : possibleStates) {
 			GameState result = search(state);
 			if (result != null)
 				return result;
 		}
-
 		return null;
 	}
 
@@ -160,16 +177,14 @@ public class Main {
 
 	private ArrayList<GameState> findPossibleMoves(GameState state) {
 		ArrayList<GameState> moves = new ArrayList<GameState>();
-		char[][] board = state.getBoard();
 
 		for (int y = 0; y < board.length; y++) {
 			for (int x = 0; x < board[y].length; x++) {
-				if (board[y][x] == BOX || board[y][x] == BOX_ON_GOAL) {
+				if (state.containsBox(x, y)) {
 					addValidMovesForBox(moves, state, x, y);
 				}
 			}
 		}
-
 		return moves;
 	}
 
@@ -179,15 +194,14 @@ public class Main {
 	 * not cause a deadlock and can be performed by the player.
 	 */
 	private void addValidMovesForBox(ArrayList<GameState> moves, GameState state, int x, int y) {
-		char[][] board = state.getBoard();
-		
+
 		// check above and below
-		if (isFreeSpace(board[y - 1][x]) && isFreeSpace(board[y + 1][x])) {
+		if (isFreeSpace(state, x, y - 1) && isFreeSpace(state, x, y + 1)) {
 			addMove(moves, state, x, y, 0, -1);
 			addMove(moves, state, x, y, 0, +1);
 		}
 		// check left and right
-		if (isFreeSpace(board[y][x - 1]) && isFreeSpace(board[y][x + 1])) {
+		if (isFreeSpace(state, x - 1, y) && isFreeSpace(state, x + 1, y)) {
 			addMove(moves, state, x, y, -1, 0);
 			addMove(moves, state, x, y, +1, 0);
 		}
@@ -198,7 +212,7 @@ public class Main {
 		makePush(state, newState, fromX, fromY, fromX + dX, fromY + dY);
 
 		if (!isDeadlock(newState, fromX + dX, fromY + dY)) {
-			String path = AStar.findPath(state.getBoard(), state.getX(), state.getY(), fromX - dX, fromY - dY);
+			String path = AStar.findPath(state, state.x, state.y, fromX - dX, fromY - dY);
 			if (path != null) {
 				if (dY > 0)
 					path = "D " + path;
@@ -208,13 +222,13 @@ public class Main {
 					path = "R " + path;
 				else 
 					path = "L " + path;
-				
-				newState.setX(fromX);
-				newState.setY(fromY);
+
+				newState.y = fromX;
+				newState.y = fromY;
 				newState.setPath(path);
 				newState.setPreviousState(state);
 				moves.add(newState);
-				state.addToHashBoard(fromX + dY, fromY + dY);
+				//state.addToHashBoard(fromX + dY, fromY + dY); TODO
 			}
 		}
 	}
@@ -225,20 +239,21 @@ public class Main {
 	 * make the push, only determines if box and player is on goal or not.
 	 */
 	private void makePush(GameState state, GameState newState, int fromX, int fromY, int toX, int toY) {
-		char[][] beforePush = state.getBoard();
+		/*TO FUCKING DO TODO
+		char[][] beforePush = state.getBoard(); 
 		char[][] afterPush = newState.getBoard();
-		
+
 		// Remove player
-		int playerY = state.getY();
-		int playerX = state.getX();
-		
+		int playerY = state.y;
+		int playerX = state.x;
+
 		if (beforePush[playerY][playerX] == PLAYER) {
 			afterPush[playerY][playerX] = SPACE;
 		}
 		else if (beforePush[playerY][playerX] == PLAYER_ON_GOAL) {
 			afterPush[playerY][playerX] = GOAL;
 		}
-		
+
 		if (beforePush[toY][toX] == GOAL || beforePush[toY][toX] == PLAYER_ON_GOAL) {
 			afterPush[toY][toX] = BOX_ON_GOAL;
 		} else {
@@ -249,13 +264,11 @@ public class Main {
 			afterPush[fromY][fromX] = PLAYER_ON_GOAL;
 		} else {
 			afterPush[fromY][fromX] = PLAYER;
-		}
-		
-
+		}*/
 	}
 
-	public static boolean isFreeSpace(char node) {
-		return node == SPACE || node == GOAL || node == PLAYER || node == PLAYER_ON_GOAL;
+	public static boolean isFreeSpace(GameState state, int x, int y) {
+		return !state.containsBox(x, y) && board[y][x] != WALL;
 	}
 
 	private boolean freeSpace(char[][] board, int x, int y) {
@@ -298,8 +311,6 @@ public class Main {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 		return board;
 	}
-
 }

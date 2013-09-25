@@ -5,11 +5,14 @@ public class GameState {
 	private BoxList boxList;
 	public int x, y, hashCode = -1;
 	private String path;
+	private GameState previousState;
 	
-	public GameState(BoxList boxList) {
+	public GameState(BoxList boxList, int x, int y) {
 		this.boxList = boxList;
+		this.x = x;
+		this.y = y;
 	}
-	public GameState(BoxList boxList, int x, int y, int hashCode, String path) {
+	private GameState(BoxList boxList, int x, int y, int hashCode, String path) {
 		this.boxList = boxList;
 		this.x = x;
 		this.y = y;
@@ -27,6 +30,14 @@ public class GameState {
 	
 	public boolean containsBox(int x, int y) {
 		return boxList.containsBox(x, y);
+	}
+	
+	public void setPreviousState(GameState state) {
+		previousState = state;
+	}
+	
+	public GameState getPreviousState() {
+		return previousState;
 	}
 	
 	@Override

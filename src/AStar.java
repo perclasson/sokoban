@@ -4,7 +4,7 @@ import java.util.List;
 
 public class AStar {
 
-	public static String findPath(char[][] board, int startX, int startY,
+	public static String findPath(GameState state, int startX, int startY,
 			int goalX, int goalY) {
 		if(startX == goalX && startY == goalY) {
 			return "";
@@ -27,7 +27,7 @@ public class AStar {
 			if (current.equals(goal)) {
 				return reconstructPath(start, current);
 			}
-			List<Node> neighbours = getNeighbours(board, current);
+			List<Node> neighbours = getNeighbours(state, current);
 			
 			for (Node n : neighbours) {
 				int tentativeCost = current.getCost() + 1;
@@ -72,22 +72,22 @@ public class AStar {
 		return path.toString();
 	}
 
-	private static List<Node> getNeighbours(char[][] board, Node node) {
+	private static List<Node> getNeighbours(GameState state, Node node) {
 		List<Node> neighbours = new LinkedList<Node>();
 		// check above
-		if (Main.isFreeSpace(board[node.getY() - 1][node.getX()])) {
+		if (Main.isFreeSpace(state, node.getX(), node.getY() - 1)) {
 			neighbours.add(new Node(node.getY() - 1, node.getX()));
 		}
 		// check left
-		if (Main.isFreeSpace(board[node.getY()][node.getX() - 1])) {
+		if (Main.isFreeSpace(state, node.getX() - 1, node.getY())) {
 			addOrdered(neighbours, new Node(node.getY(), node.getX() - 1));
 		}
 		// check right
-		if (Main.isFreeSpace(board[node.getY()][node.getX() + 1])) {
+		if (Main.isFreeSpace(state, node.getX() + 1, node.getY())) {
 			addOrdered(neighbours, new Node(node.getY(), node.getX() + 1));
 		}
 		// check below
-		if (Main.isFreeSpace(board[node.getY() + 1][node.getX()])) {
+		if (Main.isFreeSpace(state, node.getX(), node.getY() + 1)) {
 			addOrdered(neighbours, new Node(node.getY() + 1, node.getX()));
 		}
 		return neighbours;
