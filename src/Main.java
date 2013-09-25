@@ -24,6 +24,8 @@ public class Main {
 	public static final int[] bigdx = { -1, -1, -1, 0, 0, 1, 1, 1, 0 };
 	public static final int[] bigdy = { -1, 0, 1, -1, 1, -1, 0, 1, 0 };
 
+	private int hit = 0;
+	private int loops = 0;
 	private Set<GameState> visited;
 	private RenderFrame renderer;
 
@@ -74,7 +76,7 @@ public class Main {
 
 		while (current != null) {
 			if (RENDER)
-				stack.add(goal);
+				stack.add(current);
 			String path = current.getPath();
 			if (path != null)
 				sb.append(current.getPath());
@@ -85,7 +87,7 @@ public class Main {
 			while (!stack.empty()) {
 				printState(stack.pop());
 				try {
-					Thread.sleep(300);
+					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -113,15 +115,18 @@ public class Main {
 		// We have already visited this state, which means we can not find a
 		// solution
 		// Else if the the the game is completed, we return the current state
+		loops++;
 		if (visited.contains(current)) {
+			hit++;
 			return null;
 		} else if (isCompleted(current)) {
 			return current;
 		}
-
-		visited.add(current);
+		
+		current.initHashBoard();
 		List<GameState> possibleStates = findPossibleMoves(current);
-
+		visited.add(current);
+		
 		for (GameState state : possibleStates) {
 			GameState result = search(state);
 			if (result != null)
@@ -209,6 +214,7 @@ public class Main {
 				newState.setPath(path);
 				newState.setPreviousState(state);
 				moves.add(newState);
+				state.addToHashBoard(fromX + dY, fromY + dY);
 			}
 		}
 	}

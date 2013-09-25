@@ -1,8 +1,12 @@
+import java.util.List;
+
 public class GameState implements Cloneable {
 	private char[][] board;
+	private char[][] hashBoard;
 	private char directionTo;
 
 	private GameState previousState;
+
 	private int x;
 	private int y;
 	private int hashCode = -1;
@@ -53,11 +57,21 @@ public class GameState implements Cloneable {
 
 	@Override
 	public int hashCode() {
+		if (hashBoard == null) {
+			hashBoard = board;
+		}
 		if (hashCode == -1) {
 			StringBuilder sb = new StringBuilder();
-			for(int i = 0 ; i < board.length ; i++) {
-				for(int j = 0 ; j < board[i].length ; j++) {
-					sb.append(board[i][j]);
+			for(int i = 0 ; i < hashBoard.length ; i++) {
+				for(int j = 0 ; j < hashBoard[i].length ; j++) {
+					if (hashBoard[i][j] == Main.PLAYER) {
+						sb.append(Main.SPACE);
+					}
+					else if (hashBoard[i][j] == Main.PLAYER_ON_GOAL) {
+						sb.append(Main.GOAL);
+					}
+					
+					sb.append(hashBoard[i][j]);
 				}
 			}
 			hashCode = sb.toString().hashCode();
@@ -103,6 +117,15 @@ public class GameState implements Cloneable {
 	
 	public String getPath() {
 		return path;
+	}
+
+	public void initHashBoard() {
+		this.hashBoard = copyArray(board);
+		
+	}
+
+	public void addToHashBoard(int x, int y) {
+		hashBoard[y][x] = 'k';		
 	}
 	
 }
