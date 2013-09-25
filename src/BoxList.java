@@ -41,4 +41,29 @@ public class BoxList {
 	public int getLeft(int box) {
 		return boxes.get(box)[LEFT];
 	}
+	
+	/* LEGACY!!!!!!!!!!!!!!!
+	private int findPos(int x, int y, int start, int stop) {
+		int mid = (start+stop)/2;
+		int[] middleBox = boxes.get(mid);
+		int[] nextBox = boxes.get(mid+1);
+		if(middleBox[X] > x && nextBox[X] < x) {
+			return mid+1;
+		}
+		else if(middleBox[X] > x) {
+			return findPos(x, y, 0, mid);
+		} else if(middleBox[X] < x) {
+			return findPos(x, y, mid, stop);
+		} else {
+			if(middleBox[Y] > x && nextBox[Y] < x) {
+				return mid+1;
+			} else if (middleBox[Y] > y){
+				return findPos(x, y, 0, mid);
+			} else if(middleBox[Y] < y) {
+				return findPos(x, y, mid, stop);
+			}
+		}
+		return 0;
+	}
+	*/
 }
