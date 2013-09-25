@@ -154,10 +154,10 @@ public class Main {
 	}
 
 	private boolean isDeadlock(GameState state, int bx, int by) {
-		if (state.getBoard()[by][bx] == BOX_ON_GOAL)
+		if (board[by][bx] == GOAL)
 			return false;
 		for (int i = 0; i < 9; i++) {
-			if (!isStuck(state.getBoard(), bx + bigdx[i], by + bigdy[i])) {
+			if (!isStuck(state, bx + bigdx[i], by + bigdy[i])) {
 				return false;
 			}
 		}
@@ -165,9 +165,9 @@ public class Main {
 	}
 
 	private boolean isCompleted(GameState gs) {
-		for (int i = 0; i < gs.getBoard().length; i++) {
-			for (int j = 0; j < gs.getBoard()[i].length; j++) {
-				if (gs.getBoard()[i][j] == GOAL || gs.getBoard()[i][j] == PLAYER_ON_GOAL) {
+		for (int i = 0; i < board.length; i++) {
+			for (int j = 0; j < board[i].length; j++) {
+				if (board[i][j] == GOAL && !gs.containsBox(j, i)) {
 					return false;
 				}
 			}
@@ -178,7 +178,7 @@ public class Main {
 	private ArrayList<GameState> findPossibleMoves(GameState state) {
 		ArrayList<GameState> moves = new ArrayList<GameState>();
 
-		for (int y = 0; y < board.length; y++) {
+		for (int y = 0; y < board.length; y++) { // TODO loopa över keyset av lådor istället
 			for (int x = 0; x < board[y].length; x++) {
 				if (state.containsBox(x, y)) {
 					addValidMovesForBox(moves, state, x, y);
@@ -239,45 +239,18 @@ public class Main {
 	 * make the push, only determines if box and player is on goal or not.
 	 */
 	private void makePush(GameState state, GameState newState, int fromX, int fromY, int toX, int toY) {
-		/*TO FUCKING DO TODO
-		char[][] beforePush = state.getBoard(); 
-		char[][] afterPush = newState.getBoard();
-
-		// Remove player
-		int playerY = state.y;
-		int playerX = state.x;
-
-		if (beforePush[playerY][playerX] == PLAYER) {
-			afterPush[playerY][playerX] = SPACE;
-		}
-		else if (beforePush[playerY][playerX] == PLAYER_ON_GOAL) {
-			afterPush[playerY][playerX] = GOAL;
-		}
-
-		if (beforePush[toY][toX] == GOAL || beforePush[toY][toX] == PLAYER_ON_GOAL) {
-			afterPush[toY][toX] = BOX_ON_GOAL;
-		} else {
-			afterPush[toY][toX] = BOX;
-		}
-
-		if (beforePush[fromY][fromX] == BOX_ON_GOAL) {
-			afterPush[fromY][fromX] = PLAYER_ON_GOAL;
-		} else {
-			afterPush[fromY][fromX] = PLAYER;
-		}*/
+		BoxList bl = newState.getBoxList();
+		bl.removeBox(fromX, fromY);
+		bl.addBox(toX, toY);
 	}
 
 	public static boolean isFreeSpace(GameState state, int x, int y) {
 		return !state.containsBox(x, y) && board[y][x] != WALL;
 	}
 
-	private boolean freeSpace(char[][] board, int x, int y) {
-		char tile = board[y][x];
-		return tile == SPACE || tile == GOAL || tile == PLAYER || tile == PLAYER_ON_GOAL;
-	}
-
-	private boolean isStuck(char[][] board, int x, int y) {
-		if ((board[y][x] == BOX || board[y][x] == BOX_ON_GOAL) && ((freeSpace(board, x - 1, y) && freeSpace(board, x + 1, y)) || (freeSpace(board, x, y - 1) && freeSpace(board, x, y + 1)))) {
+	private boolean isStuck(GameState state, int x, int y) {
+		if (state.containsBox(x, y) && ((isFreeSpace(state, x - 1, y) && 
+				isFreeSpace(state, x + 1, y)) || (isFreeSpace(state, x, y - 1) && isFreeSpace(state, x, y + 1)))) {
 			return false;
 		}
 		return true;

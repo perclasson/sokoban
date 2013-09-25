@@ -30,6 +30,14 @@ public class BoxList implements Cloneable {
 		boxes.put(x*X_SHIFT+y,box);
 	}
 	
+	public int[] getBox(int x, int y) {
+		return boxes.get(x*X_SHIFT+y);
+	}
+	
+	public void removeBox(int x, int y) {
+		boxes.remove(x*X_SHIFT+y);
+	}
+	
 	public int size() {
 		return boxes.size();
 	}
