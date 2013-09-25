@@ -26,7 +26,6 @@ public class Main {
 
 	private Set<GameState> visited;
 	private RenderFrame renderer;
-	private long before;
 
 	public static void main(String[] args) {
 		if (args.length != 0)
@@ -59,24 +58,16 @@ public class Main {
 		}
 		GameState root = new GameState(board, ' ', null, x, y);
 
-		System.out.println(lessNaiveFindPath(root));
+		System.out.println(findPath(root));
 	}
+
 
 	private String findPath(GameState root) {
-		before = System.currentTimeMillis();
-		GameState goal = naiveSearch(root);
-		if(RENDER)
-			System.out.println("Took "+(System.currentTimeMillis()-before) + " ms");
-		return recreatePath(goal);
-
+		GameState goal = search(root);
+		return recreatePath(goal).trim();
 	}
 
-	private String lessNaiveFindPath(GameState root) {
-		GameState goal = lessNaiveSearch(root);
-		return lessNaiveRecreatePath(goal).trim();
-	}
-
-	private String lessNaiveRecreatePath(GameState goal) {
+	private String recreatePath(GameState goal) {
 		GameState current = goal;
 		StringBuilder sb = new StringBuilder();
 		Stack<GameState> stack = new Stack<GameState>();
@@ -96,36 +87,12 @@ public class Main {
 				try {
 					Thread.sleep(300);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		}
 		
 		return sb.reverse().toString();
-	}
-
-	private String recreatePath(GameState goal) {
-		StringBuilder sb = new StringBuilder();
-		Stack<GameState> stack = new Stack<GameState>();
-		while (goal != null) {
-			if (RENDER)
-				stack.add(goal);
-			sb.append(goal.getDirectionTo());
-			goal = goal.getPreviousState();
-		}
-		if (RENDER) {
-			while (!stack.empty()) {
-				printState(stack.pop());
-				try {
-					Thread.sleep(300);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-		return sb.reverse().toString().trim();
 	}
 
 	private void printState(GameState gs) {
@@ -142,7 +109,7 @@ public class Main {
 		}
 	}
 
-	private GameState lessNaiveSearch(GameState current) {
+	private GameState search(GameState current) {
 		// We have already visited this state, which means we can not find a
 		// solution
 		// Else if the the the game is completed, we return the current state
@@ -156,52 +123,7 @@ public class Main {
 		List<GameState> possibleStates = findPossibleMoves(current);
 
 		for (GameState state : possibleStates) {
-			GameState result = lessNaiveSearch(state);
-			if (result != null)
-				return result;
-		}
-
-		return null;
-	}
-
-	private GameState naiveSearch(GameState current) {
-		if (isCompleted(current)) {
-			return current;
-		}
-		visited.add(current);
-		List<GameState> possibleStates = new ArrayList<GameState>();
-		for (int i = 0; i < 4; i++) {
-			if (isOutOfBounds(current, current.getX() + dx[i], current.getY() + dy[i])) {
-				continue;
-			}
-			char tile = current.getBoard()[current.getY() + dy[i]][current.getX() + dx[i]];
-			if (tile != WALL) {
-				if (tile == BOX || tile == BOX_ON_GOAL) {
-					if (freeSpace(current.getBoard(), current.getX() + dx[i] * 2, current.getY() + dy[i] * 2)) {
-						char direction = getDirection(dx[i], dy[i]);
-						GameState nextState = new GameState(GameState.copyArray(current.getBoard()), direction, current, current.getX(), current.getY());
-						if (!movePlayer(nextState, dx[i], dy[i])) {
-							continue;
-						}
-						if (!isDeadlock(nextState, current.getX() + dx[i] * 2, current.getY() + dy[i] * 2) && !visited.contains(nextState)) {
-							possibleStates.add(nextState);
-						}
-					}
-				} else {
-					char direction = getDirection(dx[i], dy[i]);
-					GameState nextState = new GameState(GameState.copyArray(current.getBoard()), direction, current, current.getX(), current.getY());
-
-					if (!movePlayer(nextState, dx[i], dy[i])) {
-						continue;
-					}
-					if (!visited.contains(nextState)) {
-						possibleStates.add(nextState);
-					}
-				}
-			}
-		}
-		for (GameState state : possibleStates) {
-			GameState result = naiveSearch(state);
+			GameState result = search(state);
 			if (result != null)
 				return result;
 		}
@@ -218,59 +140,6 @@ public class Main {
 			}
 		}
 		return true;
-	}
-
-	private boolean movePlayer(GameState state, int dx, int dy) {
-		int x = state.getX();
-		int y = state.getY();
-		if (isOutOfBounds(state, x + dx, y + dy)) {
-			return false;
-		}
-		if ((state.getBoard()[y + dy][x + dx] == BOX || state.getBoard()[y + dy][x + dx] == BOX_ON_GOAL) && freeSpace(state.getBoard(), x + dx * 2, y + dy * 2)) {
-			if (state.getBoard()[y + dy * 2][x + dx * 2] == GOAL) {
-				state.getBoard()[y + dy * 2][x + dx * 2] = BOX_ON_GOAL;
-			} else {
-				state.getBoard()[y + dy * 2][x + dx * 2] = BOX;
-			}
-		}
-		if (state.getBoard()[y + dy][x + dx] == GOAL || state.getBoard()[y + dy][x + dx] == BOX_ON_GOAL) {
-			state.getBoard()[y + dy][x + dx] = PLAYER_ON_GOAL;
-		} else {
-			state.getBoard()[y + dy][x + dx] = PLAYER;
-		}
-		if (state.getBoard()[y][x] == PLAYER_ON_GOAL) {
-			state.getBoard()[y][x] = GOAL;
-		} else {
-			state.getBoard()[y][x] = SPACE;
-		}
-		state.setX(x + dx);
-		state.setY(y + dy);
-		return true;
-	}
-
-	private boolean isOutOfBounds(GameState state, int x, int y) {
-		if (y >= state.getBoard().length || y < 0) {
-			return true;
-		}
-
-		if (x >= state.getBoard()[y].length || x < 0) {
-			return true;
-		}
-		return false;
-	}
-
-	private char getDirection(int x, int y) {
-		if (x == -1) {
-			return 'L';
-		} else if (x == 1) {
-			return 'R';
-		} else if (y == 1) {
-			return 'D';
-		} else if (y == -1) {
-			return 'U';
-		} else {
-			throw new IllegalArgumentException("Invalid direction");
-		}
 	}
 
 	private boolean isCompleted(GameState gs) {

@@ -1,8 +1,3 @@
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -107,59 +102,4 @@ public class AStar {
 		}
 		list.add(node);
 	}
-	
-	
-	
-	
-	
-	
-	
-//////////////<TEST SUPPORT>  ////////////////////
-//////////////<TEST SUPPORT>  ////////////////////	
-//////////////<TEST SUPPORT>  ////////////////////
-////////////// <TEST SUPPORT>  ////////////////////
-	
-	public static void main(String[] args) {
-
-		BufferedReader in = getBufferedReader();
-		List<String> tmpBoard = readBoard(in);
-
-		char[][] board = new char[tmpBoard.size()][];
-
-		for (int i = 0; i < tmpBoard.size(); i++) {
-			board[i] = tmpBoard.get(i).toCharArray();
-		}
-		System.out.println(findPath(board, 1, 1, 2, 6));
-		
-	/*	System.out.println(findPath(board, Integer.parseInt(args[0]),
-				Integer.parseInt(args[1]), Integer.parseInt(args[2]),
-				Integer.parseInt(args[3])));*/
-	}
-
-	private static BufferedReader getBufferedReader() {
-			try {
-				return new BufferedReader(new FileReader("test"));
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-		return new BufferedReader(new InputStreamReader(System.in));
-	}
-
-	private static List<String> readBoard(BufferedReader in) {
-		List<String> board = new ArrayList<String>();
-		String line = null;
-
-		try {
-			while ((line = in.readLine()) != null && line.charAt(0) != ';') {
-				board.add(line);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return board;
-	}
-	
-	/////////////////// </TEST SUPPORT> ///////////////////
-	
 }
