@@ -28,10 +28,6 @@ public class GameState {
 		this.path = path;
 	}
 	
-	public BoxList getBoxList() {
-		return boxList;
-	}
-	
 	public boolean containsBox(int x, int y) {
 		return boxList.containsBox(x, y);
 	}
@@ -42,6 +38,11 @@ public class GameState {
 	
 	public GameState getPreviousState() {
 		return previousState;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		return hashCode == ((GameState) o).hashCode();
 	}
 	
 	@Override
