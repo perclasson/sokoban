@@ -51,85 +51,11 @@ public class Main {
 		}
 		BufferedReader in = getBufferedReader();
 		List<String> tmpBoard = readBoard(in);
-
-		GameState root  = generateRoot(tmpBoard);
+		System.out.println("Approximated solution distance: " + MMLB.calcMMLB(tmpBoard));
+		GameState root = generateRoot(tmpBoard);
 		System.out.println(findPath(root));
 	}
-	/*
-	 * Minimum Matching Lower Bound
-	 */
-	private int MMLB(List<String> tmpBoard) {
-		board = new char[tmpBoard.size()][];
-		int numBoxes = 0;
-		ArrayList<Coordinate> boxes = new ArrayList<Coordinate>();
-		ArrayList<Coordinate> goals = new ArrayList<Coordinate>();
-		goalList = goals;
-		String line = "";
-		for (int y = 0; y < tmpBoard.size(); y++) {
-			line = tmpBoard.get(y);
-			board[y] = line.toCharArray();
-			for(int i = 0; i < line.length(); i++) {
-				if(line.charAt(i) == '$' || line.charAt(i) == '*') {
-					numBoxes += 1;
-					boxes.add(new Coordinate(i,y));
-				} else if(line.charAt(i) == '.' || line.charAt(i) == '*' || line.charAt(i) == '+') {
-					goals.add(new Coordinate(i,y));
-				}
-			}
-		}
-		int[][] manhattanDist = new int[numBoxes][numBoxes];
-		int[][] manhattanDistOrg = new int[numBoxes][numBoxes];
-		int x = 0;
-		int y = 0;
-		int dist = 0;
-		for(Coordinate box : boxes) {
-			for(Coordinate goal : goals) {
-				dist = Math.abs(box.x-goal.x) + Math.abs(box.x-goal.x);
-				manhattanDist[x][y] = dist;
-				manhattanDistOrg[x][y] = dist;
-				x++;
-			}
-			x=0;y++;
-		}
-		/*
-		 * For each row, find the min element and subtract it from every column
-		 */
-		for(int r = 0; r < manhattanDist.length; r++) {
-			int min = minEle(manhattanDist[r]);
-			for(int c = 0; c < manhattanDist[r].length; c++) {
-				manhattanDist[r][c] = manhattanDist[r][c] - min;
-			}
-		}
-		/*
-		 * For each column, find the min element and subtract it from every row
-		 */
-		for(int r = 0; r < manhattanDist.length; r++) {
-			int min = minEle(manhattanDist[r]);
-			for(int c = 0; c < manhattanDist[r].length; c++) {
-				manhattanDist[r][c] = manhattanDist[r][c] - min;
-			}
-		}
-		return 0;
-		
-	}/*
-	private int minEleRow(int[][] matrix, int row) {
-		for(int r = 0; r < manhattanDist.length; r++) {
-			int min = minEle(manhattanDist[r]);
-			for(int c = 0; c < manhattanDist[r].length; c++) {
-				manhattanDist[r][c] = manhattanDist[r][c] - min;
-			
-	}
-			
-	*/
-	private int minEle(int[] list) {
-		int min = Integer.MAX_VALUE;
-		for(int i = 0; i < list.length; i++) {
-			if(list[i] < min)
-				min = list[i];
-		}
-		return min;
-	}
-	
+
 	private GameState generateRoot(List<String> tmpBoard) {
 		board = new char[tmpBoard.size()][];
 		BoxList bl = new BoxList();
@@ -177,7 +103,8 @@ public class Main {
 							}
 							upperLeftX = -1;
 
-						} else if (board[y][x] != WALL || (board[y + 1][x] != SPACE && board[y + 1][x] != DEADLOCK)) {
+						} else if (board[y][x] != WALL
+								|| (board[y + 1][x] != SPACE && board[y + 1][x] != DEADLOCK)) {
 							upperLeftX = -1;
 						}
 					} else if (downLeftX > 0) {
@@ -187,18 +114,28 @@ public class Main {
 							}
 							downLeftX = -1;
 
-						} else if ((board[y][x] != SPACE && board[y][x] != DEADLOCK) || board[y + 1][x] != WALL) {
+						} else if ((board[y][x] != SPACE && board[y][x] != DEADLOCK)
+								|| board[y + 1][x] != WALL) {
 							downLeftX = -1;
 						}
-					} else if (board[y][x] == WALL && board[y + 1][x] == WALL && board[y][x + 1] == WALL && (board[y + 1][x + 1] == SPACE || board[y + 1][x + 1] == DEADLOCK)) {
+					} else if (board[y][x] == WALL
+							&& board[y + 1][x] == WALL
+							&& board[y][x + 1] == WALL
+							&& (board[y + 1][x + 1] == SPACE || board[y + 1][x + 1] == DEADLOCK)) {
 						// We found a corner
 						board[y + 1][x + 1] = DEADLOCK;
 						upperLeftX = x + 1;
-					} else if (board[y][x] == WALL && board[y + 1][x] == WALL && (board[y][x + 1] == SPACE || board[y][x + 1] == DEADLOCK) && board[y + 1][x + 1] == WALL) {
+					} else if (board[y][x] == WALL
+							&& board[y + 1][x] == WALL
+							&& (board[y][x + 1] == SPACE || board[y][x + 1] == DEADLOCK)
+							&& board[y + 1][x + 1] == WALL) {
 						// We found a corner
 						board[y][x + 1] = DEADLOCK;
 						downLeftX = x + 1;
-					} else if ((board[y][x] == SPACE || board[y][x] == DEADLOCK) && board[y+1][x] == WALL && board[y][x+1] == WALL && board[y+1][x+1] == WALL) {
+					} else if ((board[y][x] == SPACE || board[y][x] == DEADLOCK)
+							&& board[y + 1][x] == WALL
+							&& board[y][x + 1] == WALL
+							&& board[y + 1][x + 1] == WALL) {
 						// We found a corner
 						board[y][x] = DEADLOCK;
 					}
@@ -223,7 +160,8 @@ public class Main {
 							}
 							upperLeftY = -1;
 
-						} else if (board[y][x] != WALL || (board[y][x + 1] != SPACE && board[y][x + 1] != DEADLOCK)) {
+						} else if (board[y][x] != WALL
+								|| (board[y][x + 1] != SPACE && board[y][x + 1] != DEADLOCK)) {
 							upperLeftY = -1;
 						}
 					} else if (upperRightY > 0) {
@@ -233,14 +171,21 @@ public class Main {
 							}
 							upperRightY = -1;
 
-						} else if ((board[y][x] != SPACE && board[y][x] != DEADLOCK) || board[y][x + 1] != WALL) {
+						} else if ((board[y][x] != SPACE && board[y][x] != DEADLOCK)
+								|| board[y][x + 1] != WALL) {
 							upperRightY = -1;
 						}
-					} else if (board[y][x] == WALL && board[y + 1][x] == WALL && board[y][x + 1] == WALL && (board[y + 1][x + 1] == SPACE || board[y + 1][x + 1] == DEADLOCK)) {
+					} else if (board[y][x] == WALL
+							&& board[y + 1][x] == WALL
+							&& board[y][x + 1] == WALL
+							&& (board[y + 1][x + 1] == SPACE || board[y + 1][x + 1] == DEADLOCK)) {
 						// We found a corner
 						board[y + 1][x + 1] = DEADLOCK;
 						upperLeftY = y + 1;
-					} else if (board[y][x] == WALL && (board[y + 1][x] == SPACE || board[y + 1][x] == DEADLOCK) && board[y][x + 1] == WALL && board[y + 1][x + 1] == WALL) {
+					} else if (board[y][x] == WALL
+							&& (board[y + 1][x] == SPACE || board[y + 1][x] == DEADLOCK)
+							&& board[y][x + 1] == WALL
+							&& board[y + 1][x + 1] == WALL) {
 						// We found a corner
 						board[y + 1][x] = DEADLOCK;
 						upperRightY = y + 1;
@@ -252,13 +197,13 @@ public class Main {
 			upperLeftY = -1;
 			upperRightY = -1;
 		}
-		
+
 		return new GameState(bl, playerX, playerY);
 	}
 
 	private String findPath(GameState root) {
 		GameState goal = search(root, START_DEPTH);
-		if(goal == null) {
+		if (goal == null) {
 			goal = BFS();
 		}
 		return recreatePath(goal).trim();
@@ -266,13 +211,13 @@ public class Main {
 
 	private GameState BFS() {
 		GameState state = queue.poll();
-		while(state != null) {
+		while (state != null) {
 			visited.add(state);
-			if(isCompleted(state)) {
+			if (isCompleted(state)) {
 				return state;
 			}
-			for(GameState gs : findPossibleMoves(state)) {
-				if(!visited.contains(gs)) {
+			for (GameState gs : findPossibleMoves(state)) {
+				if (!visited.contains(gs)) {
 					queue.add(gs);
 				}
 			}
@@ -308,22 +253,22 @@ public class Main {
 
 		return sb.reverse().toString();
 	}
+
 	private void printState(GameState gs) {
 		if (RENDER) {
-			renderer.renderState(board,gs);
-		}
-		else {
+			renderer.renderState(board, gs);
+		} else {
 			BoxList bl = gs.getBoxList();
-			for(int i = 0; i < board.length; i++) {
-				for(int j = 0; j < board[i].length; j++) {
-					if(bl.containsBox(j, i)) {
-						if(board[i][j] == '.') {
+			for (int i = 0; i < board.length; i++) {
+				for (int j = 0; j < board[i].length; j++) {
+					if (bl.containsBox(j, i)) {
+						if (board[i][j] == '.') {
 							System.out.print('*');
 						} else {
 							System.out.print("$");
 						}
-					} else if(gs.x == j && gs.y == i) {
-						if(board[i][j] == '.') {
+					} else if (gs.x == j && gs.y == i) {
+						if (board[i][j] == '.') {
 							System.out.print('+');
 						} else {
 							System.out.print("@");
@@ -338,7 +283,7 @@ public class Main {
 	}
 
 	private GameState search(GameState current, int depth) {
-		if(visited.contains(current)) {
+		if (visited.contains(current)) {
 			return null;
 		} else if (isCompleted(current)) {
 			return current;
@@ -347,16 +292,16 @@ public class Main {
 		visited.add(current);
 
 		if (depth <= 0) {
-			for(GameState gs : possibleStates) {
-				if(!visited.contains(gs)) {
+			for (GameState gs : possibleStates) {
+				if (!visited.contains(gs)) {
 					queue.add(gs);
 				}
 			}
 			return null;
 		}
-		
+
 		for (GameState state : possibleStates) {
-			GameState result = search(state, depth-1);
+			GameState result = search(state, depth - 1);
 			if (result != null)
 				return result;
 		}
@@ -390,7 +335,8 @@ public class Main {
 	private ArrayList<GameState> findPossibleMoves(GameState state) {
 		ArrayList<GameState> moves = new ArrayList<GameState>();
 
-		for (int y = 0; y < board.length; y++) { // TODO loopa över keyset av lådor istället
+		for (int y = 0; y < board.length; y++) { // TODO loopa över keyset av
+													// lådor istället
 			for (int x = 0; x < board[y].length; x++) {
 				if (state.containsBox(x, y)) {
 					addValidMovesForBox(moves, state, x, y);
@@ -402,10 +348,11 @@ public class Main {
 
 	/**
 	 * Adds all valid moves for box represented by x and y. A valid move does
-
+	 * 
 	 * not cause a deadlock and can be performed by the player.
 	 */
-	private void addValidMovesForBox(ArrayList<GameState> moves, GameState state, int x, int y) {
+	private void addValidMovesForBox(ArrayList<GameState> moves,
+			GameState state, int x, int y) {
 
 		// check above and below
 		if (isFreeSpace(state, x, y - 1) && isFreeSpace(state, x, y + 1)) {
@@ -419,12 +366,14 @@ public class Main {
 		}
 	}
 
-	private void addMove(ArrayList<GameState> moves, GameState state, int fromX, int fromY, int dX, int dY) {
+	private void addMove(ArrayList<GameState> moves, GameState state,
+			int fromX, int fromY, int dX, int dY) {
 		GameState newState = (GameState) state.clone();
 		makePush(state, newState, fromX, fromY, fromX + dX, fromY + dY);
 
 		if (!isDeadlock(newState, fromX + dX, fromY + dY)) {
-			String path = AStar.findPath(state, state.x, state.y, fromX - dX, fromY - dY);
+			String path = AStar.findPath(state, state.x, state.y, fromX - dX,
+					fromY - dY);
 			if (path != null) {
 				if (dY > 0)
 					path = "D " + path;
@@ -432,7 +381,7 @@ public class Main {
 					path = "U " + path;
 				else if (dX > 0)
 					path = "R " + path;
-				else 
+				else
 					path = "L " + path;
 
 				newState.x = fromX;
@@ -449,7 +398,8 @@ public class Main {
 	 * afterPush. Does NOT check that the player reach the position requred to
 	 * make the push, only determines if box and player is on goal or not.
 	 */
-	private void makePush(GameState state, GameState newState, int fromX, int fromY, int toX, int toY) {
+	private void makePush(GameState state, GameState newState, int fromX,
+			int fromY, int toX, int toY) {
 		BoxList bl = newState.getBoxList();
 		bl.removeBox(fromX, fromY);
 		bl.addBox(toX, toY);
@@ -460,8 +410,10 @@ public class Main {
 	}
 
 	private boolean isStuck(GameState state, int x, int y) {
-		if (state.containsBox(x, y) && ((isFreeSpace(state, x - 1, y) && 
-				isFreeSpace(state, x + 1, y)) || (isFreeSpace(state, x, y - 1) && isFreeSpace(state, x, y + 1)))) {
+		if (state.containsBox(x, y)
+				&& ((isFreeSpace(state, x - 1, y) && isFreeSpace(state, x + 1,
+						y)) || (isFreeSpace(state, x, y - 1) && isFreeSpace(
+						state, x, y + 1)))) {
 			return false;
 		}
 		return true;
