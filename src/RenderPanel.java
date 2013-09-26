@@ -22,8 +22,7 @@ public class RenderPanel extends JPanel{
     		System.out.println("SLUTA SKICKA IN NULL TILL MIG NÄR JAG RENDERAR!!!");
     		return;
     	}
-    	int numBoxes = currentState.numberOfBoxes();
-    	int index = 0;
+    	BoxList boxList = currentState.getBoxList();
         super.paintComponent(g);
         if(board == null)
         	return;
@@ -32,22 +31,25 @@ public class RenderPanel extends JPanel{
         		if(board[i][j] == '#') {
         			g.drawImage(new ImageIcon(getClass().getResource("/images/wall.png")).getImage(), 30*j, 30*i, null);
         		} else if(board[i][j] == '.') {
-        			if(!(index == numBoxes)) {
-	        			if(currentState.getBoxList().getY(index) == i && currentState.getBoxList().getX(index) == j) {
+        			if(boxList.containsBox(j, i)) {
 	            			g.drawImage(new ImageIcon(getClass().getResource("/images/box_on_goal.png")).getImage(), 30*j, 30*i, null);
-	            			index++;
-	        			} else	
+	        			} else if(currentState.x == j && currentState.y == i) {
+	            			g.drawImage(new ImageIcon(getClass().getResource("/images/player.png")).getImage(), 30*j, 30*i, null);
+	        			}else	
 	        				g.drawImage(new ImageIcon(getClass().getResource("/images/goal.png")).getImage(), 30*j, 30*i, null);
-        			} else
-        				g.drawImage(new ImageIcon(getClass().getResource("/images/goal.png")).getImage(), 30*j, 30*i, null);
         		} else if(board[i][j] == ' ') {
+        			if(boxList.containsBox(j, i)) {
+            			g.drawImage(new ImageIcon(getClass().getResource("/images/box.png")).getImage(), 30*j, 30*i, null);
+        			} else if(currentState.x == j && currentState.y == i) {
+            			g.drawImage(new ImageIcon(getClass().getResource("/images/player.png")).getImage(), 30*j, 30*i, null);
+        			}
+        			else
         			g.drawImage(new ImageIcon(getClass().getResource("/images/empty.png")).getImage(), 30*j, 30*i, null);
         		}
         	}
         }
-        for(int i = index; index < numBoxes; i++) {
-			g.drawImage(new ImageIcon(getClass().getResource("/images/box_on_goal.png")).getImage(), 30*currentState.getBoxList().getX(i), 30*currentState.getBoxList().getY(i), null);
-    	}
+  
+    	
     }
     
     public void setBoard(char[][] board, GameState state) {
@@ -60,4 +62,29 @@ public class RenderPanel extends JPanel{
     	}
         setPreferredSize(new Dimension(max*30,board.length*30));
     }
+    
+    void printInTerminal(GameState gs) {
+    	BoxList bl = gs.getBoxList();
+		for(int i = 0; i < board.length; i++) {
+			for(int j = 0; j < board[i].length; j++) {
+				if(bl.containsBox(j, i)) {
+					if(board[i][j] == '.') {
+						System.out.print('*');
+					} else {
+						System.out.print("$");
+					}
+				} else if(gs.x == j && gs.y == i) {
+					if(board[i][j] == '.') {
+						System.out.print('+');
+					} else {
+						System.out.print("@");
+					}
+				} else {
+					System.out.print(board[i][j]);
+				}
+			}
+			System.out.println();
+		}
+    }
+    
 }
