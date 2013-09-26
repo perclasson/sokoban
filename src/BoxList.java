@@ -21,6 +21,9 @@ public class BoxList implements Cloneable {
 		this.boxes = boxes;
 	}
 	
+	public Map<Integer, int[]> getTree() {
+		return boxes;
+	}
 	public void addBox(int x, int y) {
 		addBox(x, y, 0, 0, 0, 0);
 	}
@@ -64,14 +67,15 @@ public class BoxList implements Cloneable {
 	public int getLeft(Integer box) {
 		return boxes.get(box)[LEFT];
 	}
+	
 	public boolean containsBox(int x, int y) {
 		return boxes.containsKey(x*X_SHIFT+y);
 	}
 	
 	public String getDirectionString(Integer box) {
-		String res = "";
-		res += getUp(box) != 0 ? 1 : 0 + getRight(box) != 0 ? 1 : 0 + getDown(box) != 0 ? 1 : 0 + getLeft(box) != 0 ? 1 : 0;
-		return res;
+		StringBuilder sb = new StringBuilder();
+		sb.append(getUp(box) != 0 ? "1" : "0").append(getRight(box) != 0 ? "1" : "0").append(getDown(box) != 0 ? "1" : "0").append(getLeft(box) != 0 ? "1" : "0");
+		return sb.toString();
 	}
 	
 	public Object clone() {
