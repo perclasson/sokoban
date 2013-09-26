@@ -32,6 +32,7 @@ public class Main {
 	private Set<GameState> visited;
 	private RenderFrame renderer;
 	private List<Coordinate> goalList;
+	private Heuristic heuristic;
 	public static char[][] board;
 
 	public static void main(String[] args) {
@@ -53,6 +54,7 @@ public class Main {
 		List<String> tmpBoard = readBoard(in);
 
 		GameState root  = generateRoot(tmpBoard);
+		heuristic = new Heuristic(board);
 		System.out.println(findPath(root));
 	}
 	/*
@@ -322,7 +324,7 @@ public class Main {
 			}
 			return null;
 		}
-		Collections.sort(possibleStates, Heuristic);
+		Collections.sort(possibleStates, heuristic);
 		for (GameState state : possibleStates) {
 			GameState result = search(state, depth-1);
 			if (result != null)
