@@ -215,7 +215,7 @@ public class Main {
 				else 
 					path = "L " + path;
 
-				newState.y = fromX;
+				newState.x = fromX;
 				newState.y = fromY;
 				newState.setPath(path);
 				newState.setPreviousState(state);
