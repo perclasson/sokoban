@@ -227,31 +227,7 @@ public class Main {
 	}
 
 	private String recreatePath(GameState goal) {
-		GameState current = goal;
-		StringBuilder sb = new StringBuilder();
-		Stack<GameState> stack = new Stack<GameState>();
-
-		while (current != null) {
-			if (RENDER)
-				stack.add(current);
-			String path = current.getPath();
-			if (path != null)
-				sb.append(current.getPath());
-			current = current.getPreviousState();
-		}
-
-		if (RENDER) {
-			while (!stack.empty()) {
-				printState(stack.pop());
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-
-		return sb.reverse().toString();
+		return new StringBuilder(goal.getPath()).reverse().toString();
 	}
 
 	private void printState(GameState gs) {
@@ -386,8 +362,7 @@ public class Main {
 
 				newState.x = fromX;
 				newState.y = fromY;
-				newState.setPath(path);
-				newState.setPreviousState(state);
+				newState.setPath(path + state.getPath());
 				moves.add(newState);
 			}
 		}
