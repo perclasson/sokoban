@@ -84,7 +84,6 @@ public class Main {
 		return new GameState(bl, playerX, playerY);
 	}
 
-
 	private String findPath(GameState root) {
 		GameState goal = search(root);
 		return recreatePath(goal).trim();

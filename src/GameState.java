@@ -12,11 +12,10 @@ public class GameState {
 		this.x = x;
 		this.y = y;
 	}
-	private GameState(BoxList boxList, int x, int y, int hashCode, String path) {
+	private GameState(BoxList boxList, int x, int y, String path) {
 		this.boxList = boxList;
 		this.x = x;
 		this.y = y;
-		this.hashCode = hashCode;
 		this.path = path;
 	}
 
@@ -64,7 +63,7 @@ public class GameState {
 	
 	@Override
 	public Object clone() {
-		return new GameState((BoxList) boxList.clone(), x, y, hashCode, path);
+		return new GameState((BoxList) boxList.clone(), x, y, path);
 	}
 	
 }
