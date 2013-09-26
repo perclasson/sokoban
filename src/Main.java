@@ -46,7 +46,6 @@ public class Main {
 		List<String> tmpBoard = readBoard(in);
 
 		GameState root  = generateRoot(tmpBoard);
-
 		System.out.println(findPath(root));
 	}
 
@@ -123,11 +122,32 @@ public class Main {
 			renderer.renderState(board,gs);
 		}
 		else {
-			
+			BoxList bl = gs.getBoxList();
+			for(int i = 0; i < board.length; i++) {
+				for(int j = 0; j < board[i].length; j++) {
+					if(bl.containsBox(j, i)) {
+						if(board[i][j] == '.') {
+							System.out.print('*');
+						} else {
+							System.out.print("$");
+						}
+					} else if(gs.x == j && gs.y == i) {
+						if(board[i][j] == '.') {
+							System.out.print('+');
+						} else {
+							System.out.print("@");
+						}
+					} else {
+						System.out.print(board[i][j]);
+					}
+				}
+				System.out.println();
+			}
 		}
 	}
 
 	private GameState search(GameState current) {
+		printState(current);
 		if (visited.contains(current)) {
 			return null;
 		} else if (isCompleted(current)) {
