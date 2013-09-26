@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
@@ -24,7 +26,9 @@ public class Main {
 	public static final int[] dy = { 0, 0, -1, 1 };
 	public static final int[] bigdx = { -1, -1, -1, 0, 0, 1, 1, 1, 0 };
 	public static final int[] bigdy = { -1, 0, 1, -1, 1, -1, 0, 1, 0 };
+	private static final int START_DEPTH = 30;
 
+	private Queue<GameState> queue;
 	private Set<GameState> visited;
 	private RenderFrame renderer;
 	public static char[][] board;
@@ -39,6 +43,7 @@ public class Main {
 
 	public Main() {
 		visited = new HashSet<GameState>();
+		queue = new LinkedList<GameState>();
 		if (RENDER) {
 			renderer = new RenderFrame();
 			renderer.pack();
@@ -177,8 +182,28 @@ public class Main {
 	}
 
 	private String findPath(GameState root) {
-		GameState goal = search(root);
+		GameState goal = search(root, START_DEPTH);
+		if(goal == null) {
+			goal = BFS();
+		}
 		return recreatePath(goal).trim();
+	}
+
+	private GameState BFS() {
+		GameState state = queue.poll();
+		while(state != null) {
+			visited.add(state);
+			if(isCompleted(state)) {
+				return state;
+			}
+			for(GameState gs : findPossibleMoves(state)) {
+				if(!visited.contains(gs)) {
+					queue.add(gs);
+				}
+			}
+			state = queue.poll();
+		}
+		return null;
 	}
 
 	private String recreatePath(GameState goal) {
@@ -237,9 +262,8 @@ public class Main {
 		}
 	}
 
-	private GameState search(GameState current) {
-		printState(current);
-		if (visited.contains(current)) {
+	private GameState search(GameState current, int depth) {
+		if(visited.contains(current)) {
 			return null;
 		} else if (isCompleted(current)) {
 			return current;
@@ -247,8 +271,17 @@ public class Main {
 		List<GameState> possibleStates = findPossibleMoves(current);
 		visited.add(current);
 
+		if (depth <= 0) {
+			for(GameState gs : possibleStates) {
+				if(!visited.contains(gs)) {
+					queue.add(gs);
+				}
+			}
+			return null;
+		}
+		
 		for (GameState state : possibleStates) {
-			GameState result = search(state);
+			GameState result = search(state, depth-1);
 			if (result != null)
 				return result;
 		}
