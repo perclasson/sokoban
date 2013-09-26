@@ -4,12 +4,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
-import java.util.Stack;
 
 public class Main {
 	public static final boolean TEST = false;
@@ -21,15 +22,18 @@ public class Main {
 	public static final char PLAYER_ON_GOAL = '+';
 	public static final char BOX = '$';
 	public static final char BOX_ON_GOAL = '*';
+	public static final char DEADLOCK = 'D';
 	public static final int[] dx = { -1, 1, 0, 0 };
 	public static final int[] dy = { 0, 0, -1, 1 };
 	public static final int[] bigdx = { -1, -1, -1, 0, 0, 1, 1, 1, 0 };
 	public static final int[] bigdy = { -1, 0, 1, -1, 1, -1, 0, 1, 0 };
+	private static final int START_DEPTH = 30;
 
-	private int hits = 0;
-
+	private Queue<GameState> queue;
 	private Set<GameState> visited;
 	private RenderFrame renderer;
+	private List<Coordinate> goalList;
+	private Heuristic heuristic;
 	public static char[][] board;
 
 	public static void main(String[] args) {
@@ -42,6 +46,7 @@ public class Main {
 
 	public Main() {
 		visited = new HashSet<GameState>();
+		queue = new LinkedList<GameState>();
 		if (RENDER) {
 			renderer = new RenderFrame();
 			renderer.pack();
@@ -49,10 +54,11 @@ public class Main {
 		BufferedReader in = getBufferedReader();
 		List<String> tmpBoard = readBoard(in);
 
-		GameState root = generateRoot(tmpBoard);
+		GameState root  = generateRoot(tmpBoard);
+		heuristic = new Heuristic(board);
 		System.out.println(findPath(root));
 	}
-
+	
 	private GameState generateRoot(List<String> tmpBoard) {
 		board = new char[tmpBoard.size()][];
 		BoxList bl = new BoxList();
@@ -85,42 +91,119 @@ public class Main {
 				}
 			}
 		}
+
+		int upperLeftX = -1, downLeftX = -1, maxWidth = 0;
+
+		// Mark horizontal deadlocks
+		for (int y = 0; y < board.length; y++) {
+			maxWidth = Math.max(board[y].length, maxWidth);
+			for (int x = 0; x < board[y].length; x++) {
+				try {
+					if (upperLeftX > 0) {
+						if (board[y][x] == WALL && board[y + 1][x] == WALL) {
+							for (int xi = upperLeftX; xi < x; xi++) {
+								board[y + 1][xi] = DEADLOCK;
+							}
+							upperLeftX = -1;
+
+						} else if (board[y][x] != WALL || (board[y + 1][x] != SPACE && board[y + 1][x] != DEADLOCK)) {
+							upperLeftX = -1;
+						}
+					} else if (downLeftX > 0) {
+						if (board[y][x] == WALL && board[y + 1][x] == WALL) {
+							for (int xi = downLeftX; xi < x; xi++) {
+								board[y][xi] = DEADLOCK;
+							}
+							downLeftX = -1;
+
+						} else if ((board[y][x] != SPACE && board[y][x] != DEADLOCK) || board[y + 1][x] != WALL) {
+							downLeftX = -1;
+						}
+					} else if (board[y][x] == WALL && board[y + 1][x] == WALL && board[y][x + 1] == WALL && (board[y + 1][x + 1] == SPACE || board[y + 1][x + 1] == DEADLOCK)) {
+						// We found a corner
+						board[y + 1][x + 1] = DEADLOCK;
+						upperLeftX = x + 1;
+					} else if (board[y][x] == WALL && board[y + 1][x] == WALL && (board[y][x + 1] == SPACE || board[y][x + 1] == DEADLOCK) && board[y + 1][x + 1] == WALL) {
+						// We found a corner
+						board[y][x + 1] = DEADLOCK;
+						downLeftX = x + 1;
+					} else if ((board[y][x] == SPACE || board[y][x] == DEADLOCK) && board[y+1][x] == WALL && board[y][x+1] == WALL && board[y+1][x+1] == WALL) {
+						// We found a corner
+						board[y][x] = DEADLOCK;
+					}
+				} catch (ArrayIndexOutOfBoundsException e) {
+					continue;
+				}
+			}
+			upperLeftX = -1;
+			downLeftX = -1;
+		}
+
+		int upperLeftY = -1, upperRightY = -1;
+
+		// Mark vertical deadlocks
+		for (int x = 0; x < maxWidth; x++) {
+			for (int y = 0; y < board.length; y++) {
+				try {
+					if (upperLeftY > 0) {
+						if (board[y][x] == WALL && board[y][x + 1] == WALL) {
+							for (int yi = upperLeftY; yi < y; yi++) {
+								board[yi][x + 1] = DEADLOCK;
+							}
+							upperLeftY = -1;
+
+						} else if (board[y][x] != WALL || (board[y][x + 1] != SPACE && board[y][x + 1] != DEADLOCK)) {
+							upperLeftY = -1;
+						}
+					} else if (upperRightY > 0) {
+						if (board[y][x] == WALL && board[y][x + 1] == WALL) {
+							for (int yi = upperRightY; yi < y; yi++) {
+								board[yi][x] = DEADLOCK;
+							}
+							upperRightY = -1;
+
+						} else if ((board[y][x] != SPACE && board[y][x] != DEADLOCK) || board[y][x + 1] != WALL) {
+							upperRightY = -1;
+						}
+					} else if (board[y][x] == WALL && board[y + 1][x] == WALL && board[y][x + 1] == WALL && (board[y + 1][x + 1] == SPACE || board[y + 1][x + 1] == DEADLOCK)) {
+						// We found a corner
+						board[y + 1][x + 1] = DEADLOCK;
+						upperLeftY = y + 1;
+					} else if (board[y][x] == WALL && (board[y + 1][x] == SPACE || board[y + 1][x] == DEADLOCK) && board[y][x + 1] == WALL && board[y + 1][x + 1] == WALL) {
+						// We found a corner
+						board[y + 1][x] = DEADLOCK;
+						upperRightY = y + 1;
+					}
+				} catch (ArrayIndexOutOfBoundsException e) {
+					continue;
+				}
+			}
+			upperLeftY = -1;
+			upperRightY = -1;
+		}
+		
 		return new GameState(bl, playerX, playerY);
 	}
 
 	private String findPath(GameState root) {
-		GameState goal = search(root);
-		return recreatePath(goal).trim();
+		GameState goal = search(root, START_DEPTH);
+		if(goal != null) {
+			return recreatePath(goal).trim();
+		}
+		String s = null;
+		while (goal != null) {
+			s = findPath(goal);
+			goal = queue.poll();
+			if (s != null) {
+				return s;
+			}
+		}
+		return null;
 	}
 
 	private String recreatePath(GameState goal) {
-		GameState current = goal;
-		StringBuilder sb = new StringBuilder();
-		Stack<GameState> stack = new Stack<GameState>();
-
-		while (current != null) {
-			if (RENDER)
-				stack.add(current);
-			String path = current.getPath();
-			if (path != null)
-				sb.append(current.getPath());
-			current = current.getPreviousState();
-		}
-
-		if (RENDER) {
-			while (!stack.empty()) {
-				printState(stack.pop());
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-
-		return sb.reverse().toString();
+		return new StringBuilder(goal.getPath()).reverse().toString();
 	}
-
 	private void printState(GameState gs) {
 		if (RENDER) {
 			renderer.renderState(board, gs);
@@ -149,15 +232,32 @@ public class Main {
 		}
 	}
 
-	private GameState search(GameState current) {
+
+	private GameState search(GameState current, int depth) {
 		if (isCompleted(current)) {
 			return current;
 		}
 		List<GameState> possibleStates = findPossibleMoves(current);
 		visited.add(current);
-		for (GameState state : possibleStates) {
-			GameState result = search(state);
+		System.out.println(possibleStates.size());
+		printState(current);
+		System.out.println("===");
+		for(GameState s : possibleStates) {
+			printState(s);
+		}
+		System.out.println("----");
 
+		if (depth <= 0) {
+			for(GameState gs : possibleStates) {
+				if(!visited.contains(gs)) {
+					queue.add(gs);
+				}
+			}
+			return null;
+		}
+//		Collections.sort(possibleStates, heuristic);
+		for (GameState state : possibleStates) {
+			GameState result = search(state, depth-1);
 			if (result != null)
 				return result;
 		}
@@ -167,6 +267,8 @@ public class Main {
 	private boolean isDeadlock(GameState state, int bx, int by) {
 		if (board[by][bx] == GOAL)
 			return false;
+		else if (board[by][bx] == DEADLOCK)
+			return true;
 		for (int i = 0; i < 9; i++) {
 			if (!isStuck(state, bx + bigdx[i], by + bigdy[i])) {
 				return false;
@@ -186,45 +288,33 @@ public class Main {
 		return true;
 	}
 
-	private ArrayList<GameState> findPossibleMoves(GameState state) {
-		ArrayList<GameState> moves = new ArrayList<GameState>();
+	private List<GameState> findPossibleMoves(GameState state) {
+		List<GameState> moves = new ArrayList<GameState>();
 		for (Map.Entry<Integer, int[]> entry : state.getBoxList().getEntrySet()) {
 			addMovesForBox(moves, state, entry.getValue());
 		}
 		return moves;
 	}
 
-	private void addMovesForBox(ArrayList<GameState> moves, GameState state, int[] box) {
+	private void addMovesForBox(List<GameState> moves, GameState state, int[] box) {
 		int bX = box[0], bY = box[1];
 
-		GameState newState = moveBox(state, bX, bY, 0, 1); // push down
-		if (newState != null && !visited.contains(newState)) {
-			moves.add(newState);
-		}
-
-		newState = moveBox(state, bX, bY, 0, -1); // push up
-		if (newState != null && !visited.contains(newState)) {
-			moves.add(newState);
-		}
-
-		newState = moveBox(state, bX, bY, -1, 0); // push left
-		if (newState != null && !visited.contains(newState)) {
-			moves.add(newState);
-		}
-
-		newState = moveBox(state, bX, bY, 1, 0); // push right
-		if (newState != null && !visited.contains(newState)) {
-			moves.add(newState);
+		GameState newState = null;
+		
+		for(int i = 0 ; i < dx.length ; i++) {
+			newState = moveBox(state, bX, bY, dx[i], dy[i]);
+			if (newState != null && !visited.contains(newState)) {
+				moves.add(newState);
+			}
 		}
 	}
 
 	private GameState moveBox(GameState state, int bX, int bY, int dX, int dY) {
 		if (tryMove(state, bX, bY, dX, dY)) { // Does a push result in a valid, non-deadlock state?
-			String path = findPath(state, bX, bY, dX, dY);
+			String path = getPath(state, bX, bY, dX, dY);
 			if (path != null) {
 				GameState newState = (GameState) state.clone();
-				newState.setPath(path);
-				newState.setPreviousState(state);
+				newState.setPath(path + state.getPath());
 				makePush(newState, bX, bY, dX, dY);
 				return newState;
 			}
@@ -246,9 +336,9 @@ public class Main {
 		bl.addBox(bX + dX, bY + dY, u, r, d, l); // TODO
 	}
 
-	private String findPath(GameState state, int bX, int bY, int dX, int dY) {
+	private String getPath(GameState state, int bX, int bY, int dX, int dY) {
 		String path = AStar.findPath(state, state.x, state.y, bX - dX, bY - dY);
-		if (path == null)
+		if (path == null || path.equals(""))
 			return null;
 		if (dY > 0)
 			return path = "D " + path;
@@ -258,6 +348,7 @@ public class Main {
 			return path = "R " + path;
 		if (dX < 0)
 			return path = "L " + path;
+		
 		return null;
 	}
 
@@ -271,7 +362,7 @@ public class Main {
 			gs.y = bY;
 			if (!isDeadlock(gs, bX + dX, bY + dY)) {
 				return true;
-			}
+			} 
 		}
 		return false;
 	}

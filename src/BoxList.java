@@ -3,6 +3,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+/**
+ * A box array has the following format: {x, y, up, right, down, left}
+ * 
+ */
 
 public class BoxList implements Cloneable {
 	public static final int X = 0, Y = 1, UP = 2, RIGHT = 3, DOWN = 4, LEFT = 5;
@@ -27,7 +31,7 @@ public class BoxList implements Cloneable {
 	public Set<Entry<Integer, int[]>> getEntrySet() {
 		return boxes.entrySet();
 	}
-	
+
 	public void addBox(int x, int y, int up, int right, int down, int left) {
 		int[] box = {x, y, up, right, down, left};
 		boxes.put(x*X_SHIFT+y,box);
