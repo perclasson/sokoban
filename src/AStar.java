@@ -7,7 +7,7 @@ public class AStar {
 	public static String findPath(GameState state, int startX, int startY,
 			int goalX, int goalY) {
 		if(startX == goalX && startY == goalY) {
-			return "";
+			return "Q";
 		}
 		
 		Node start = new Node(startY, startX);
@@ -45,6 +45,7 @@ public class AStar {
 				}
 			}
 		}
+		
 		return null;
 	}
 

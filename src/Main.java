@@ -239,13 +239,6 @@ public class Main {
 		}
 		List<GameState> possibleStates = findPossibleMoves(current);
 		visited.add(current);
-		System.out.println(possibleStates.size());
-		printState(current);
-		System.out.println("===");
-		for(GameState s : possibleStates) {
-			printState(s);
-		}
-		System.out.println("----");
 
 		if (depth <= 0) {
 			for(GameState gs : possibleStates) {
@@ -340,6 +333,9 @@ public class Main {
 		String path = AStar.findPath(state, state.x, state.y, bX - dX, bY - dY);
 		if (path == null || path.equals(""))
 			return null;
+		if(path.equals("Q")) {
+			path = "";
+		}
 		if (dY > 0)
 			return path = "D " + path;
 		if (dY < 0)
