@@ -4,12 +4,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
-import java.util.Stack;
 
 public class Main {
 	public static final boolean TEST = false;
@@ -258,25 +258,16 @@ public class Main {
 
 	private String findPath(GameState root) {
 		GameState goal = search(root, START_DEPTH);
-		if(goal == null) {
-			goal = BFS();
+		if(goal != null) {
+			return recreatePath(goal).trim();
 		}
-		return recreatePath(goal).trim();
-	}
-
-	private GameState BFS() {
-		GameState state = queue.poll();
-		while(state != null) {
-			visited.add(state);
-			if(isCompleted(state)) {
-				return state;
+		String s = null;
+		while (goal != null) {
+			s = findPath(goal);
+			goal = queue.poll();
+			if (s != null) {
+				return s;
 			}
-			for(GameState gs : findPossibleMoves(state)) {
-				if(!visited.contains(gs)) {
-					queue.add(gs);
-				}
-			}
-			state = queue.poll();
 		}
 		return null;
 	}
@@ -331,7 +322,7 @@ public class Main {
 			}
 			return null;
 		}
-		
+		Collections.sort(possibleStates, Heuristic);
 		for (GameState state : possibleStates) {
 			GameState result = search(state, depth-1);
 			if (result != null)
