@@ -1,22 +1,25 @@
 import java.util.Map.Entry;
 
 
-public class GameState {
+public class GameState implements Comparable<GameState> {
 	private BoxList boxList;
 	public int x, y, hashCode = -1;
 	private String path;
+	private Heuristic heuristic;
 	
-	public GameState(BoxList boxList, int x, int y) {
+	public GameState(BoxList boxList, int x, int y, Heuristic heuristic) {
 		this.boxList = boxList;
 		this.x = x;
 		this.y = y;
+		this.heuristic = heuristic;
 		path = "";
 	}
-	private GameState(BoxList boxList, int x, int y, String path) {
+	private GameState(BoxList boxList, int x, int y, String path, Heuristic heuristic) {
 		this.boxList = boxList;
 		this.x = x;
 		this.y = y;
 		this.path = path;
+		this.heuristic = heuristic;
 	}
 
 	public String getPath() {
@@ -55,7 +58,22 @@ public class GameState {
 	
 	@Override
 	public Object clone() {
-		return new GameState((BoxList) boxList.clone(), x, y, path);
+		return new GameState((BoxList) boxList.clone(), x, y, path, heuristic);
+	}
+	
+	//TODO: Is this actually correct?
+	@Override
+	public int compareTo(GameState arg0) {
+		if(heuristic.stupidHeuristic(this) < heuristic.stupidHeuristic(arg0)) {
+			return 1;
+		} else if(heuristic.stupidHeuristic(this) > heuristic.stupidHeuristic(arg0)) {
+			return -1;
+		}
+		return 0;
+	}
+
+	public void setHeuristic(Heuristic heuristic) {
+		this.heuristic = heuristic;
 	}
 	
 }
