@@ -63,6 +63,7 @@ public class BoxList implements Cloneable {
 	public int getLeft(Integer box) {
 		return boxes.get(box)[LEFT];
 	}
+	
 	public boolean containsBox(int x, int y) {
 		return boxes.containsKey(x*X_SHIFT+y);
 	}

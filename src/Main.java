@@ -164,18 +164,6 @@ public class Main {
 		return null;
 	}
 
-	/*
-	 * private LinkedList<GameState> queue = new LinkedList<GameState>();
-	 * 
-	 * private GameState searchBFS(GameState current) { printState(current);
-	 * 
-	 * if (isCompleted(current)) { return current; }
-	 * 
-	 * visited.add(current); queue.addAll(findPossibleMoves(current));
-	 * 
-	 * return searchBFS(queue.pop()); }
-	 */
-
 	private boolean isDeadlock(GameState state, int bx, int by) {
 		if (board[by][bx] == GOAL)
 			return false;
