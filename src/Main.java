@@ -152,7 +152,6 @@ public class Main {
 		} else if (isCompleted(current)) {
 			return current;
 		}
-		System.out.println(visited.size());
 		List<GameState> possibleStates = findPossibleMoves(current);
 		visited.add(current);
 

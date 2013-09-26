@@ -42,11 +42,11 @@ public class BoxList implements Cloneable {
 		return boxes.size();
 	}
 	
-	public int getX(Integer box) {
-		return boxes.get(box)[X];
+	public int getX(int x, int y) {
+		return boxes.get(x*X_SHIFT+y)[X];
 	}
-	public int getY(Integer box) {
-		return boxes.get(box)[Y];
+	public int getY(int x, int y) {
+		return boxes.get(x*X_SHIFT+y)[Y];
 	}
 	public int getUp(Integer box) {
 		return boxes.get(box)[UP];
