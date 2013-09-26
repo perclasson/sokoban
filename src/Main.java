@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -146,13 +148,11 @@ public class Main {
 	}
 
 	private GameState search(GameState current) {
-		printState(current);
-		if (visited.contains(current)) {
-			return null;
-		} else if (isCompleted(current)) {
+		//printState(current);
+		if (isCompleted(current)) {
 			return current;
 		}
-		System.out.println(visited.size());
+		//System.out.println(visited.size());
 		List<GameState> possibleStates = findPossibleMoves(current);
 		visited.add(current);
 
@@ -164,6 +164,21 @@ public class Main {
 		return null;
 	}
 
+	/*private LinkedList<GameState> queue = new LinkedList<GameState>();
+	
+	private GameState searchBFS(GameState current) {
+		printState(current);
+
+		if (isCompleted(current)) {
+			return current;
+		}
+		
+		visited.add(current);
+		queue.addAll(findPossibleMoves(current));
+		
+		return searchBFS(queue.pop());
+	}*/
+	
 	private boolean isDeadlock(GameState state, int bx, int by) {
 		if (board[by][bx] == GOAL)
 			return false;
@@ -189,6 +204,11 @@ public class Main {
 	private ArrayList<GameState> findPossibleMoves(GameState state) {
 		ArrayList<GameState> moves = new ArrayList<GameState>();
 
+		//Iterator i = state.getBoxList().//.iterator();
+		//while(i.hasNext()) {
+		//	addValidMovesForBox(moves, state, i.next().)
+		//}
+		
 		for (int y = 0; y < board.length; y++) { // TODO loopa över keyset av lådor istället
 			for (int x = 0; x < board[y].length; x++) {
 				if (state.containsBox(x, y)) {
@@ -238,7 +258,9 @@ public class Main {
 				newState.y = fromY;
 				newState.setPath(path);
 				newState.setPreviousState(state);
-				moves.add(newState);
+				if(!visited.contains(newState)) {
+					moves.add(newState);
+				}
 			}
 		}
 	}
