@@ -2,7 +2,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 
 
-public class Heuristic {
+
+public class Heuristic implements Comparator<GameState>{
 	char[][] board;
 	
 	public Heuristic(char[][] board) {
@@ -35,5 +36,16 @@ public class Heuristic {
 			total += min;
 		}
 		return total;
+	}
+
+
+	@Override
+	public int compare(GameState state0, GameState state1) {
+		if(stupidHeuristic(state0) < stupidHeuristic(state1)) {
+			return 1;
+		} else if(stupidHeuristic(state0) > stupidHeuristic(state1)) {
+			return -1;
+		}
+		return 0;
 	}
 }

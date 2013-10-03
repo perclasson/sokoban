@@ -44,7 +44,8 @@ public class GameState implements Comparable<GameState> {
 		if(hashCode == -1) {
 			StringBuilder sb = new StringBuilder();
 			for (Entry<Integer, int[]> e : boxList.getEntrySet())
-				sb.append(e.getValue()[BoxList.X]).append(',').append(e.getValue()[BoxList.Y]).append(';').append(boxList.getDirectionString(e.getKey()));
+				sb.append(e.getValue()[BoxList.X]).append(',').append(e.getValue()[BoxList.Y]).
+				append(';').append(boxList.getDirectionString(e.getKey()));
 			hashCode = sb.toString().hashCode();
 		}
 		return hashCode;

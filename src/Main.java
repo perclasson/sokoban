@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
@@ -33,8 +34,11 @@ public class Main {
 	private RenderFrame renderer;
 	private List<Coordinate> goalList;
 	private Heuristic heuristic;
+<<<<<<< HEAD
 	private Queue<GameState> queue; 
 	private SortedSet<GameState> nextStates;
+=======
+>>>>>>> 64dd3410572370275ed9bd6aa986aaa2d7790f78
 	public static char[][] board;
 
 	public static void main(String[] args) {
@@ -55,13 +59,23 @@ public class Main {
 		}
 		BufferedReader in = getBufferedReader();
 		List<String> tmpBoard = readBoard(in);
+<<<<<<< HEAD
 		GameState root = generateRoot(tmpBoard);
 		heuristic = new Heuristic(board);
 		root.setHeuristic(heuristic);
+=======
+
+		GameState root  = generateRoot(tmpBoard);
+		heuristic = new Heuristic(board);
+>>>>>>> 64dd3410572370275ed9bd6aa986aaa2d7790f78
 		System.out.println(findPath(root));
 		System.out.println(visited.size());
 	}
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> 64dd3410572370275ed9bd6aa986aaa2d7790f78
 	private GameState generateRoot(List<String> tmpBoard) {
 		board = new char[tmpBoard.size()][];
 		BoxList bl = new BoxList();
@@ -228,7 +242,10 @@ public class Main {
 	private String recreatePath(GameState goal) {
 		return new StringBuilder(goal.getPath()).reverse().toString();
 	}
+<<<<<<< HEAD
 
+=======
+>>>>>>> 64dd3410572370275ed9bd6aa986aaa2d7790f78
 	private void printState(GameState gs) {
 		if (RENDER) {
 			renderer.renderState(board, gs);
@@ -257,6 +274,7 @@ public class Main {
 		}
 	}
 
+
 	private GameState search(GameState current, int depth) {
 		if (isCompleted(current)) {
 			return current;
@@ -272,12 +290,18 @@ public class Main {
 			}
 			return null;
 		}
+<<<<<<< HEAD
 		nextStates.addAll(possibleStates);
 		GameState result = null;
 		for (GameState state : new TreeSet<GameState>(nextStates)) {
 			if (!visited.contains(state)) {
 				result = search(state, depth - 1);
 			}
+=======
+//		Collections.sort(possibleStates, heuristic);
+		for (GameState state : possibleStates) {
+			GameState result = search(state, depth-1);
+>>>>>>> 64dd3410572370275ed9bd6aa986aaa2d7790f78
 			if (result != null)
 				return result;
 		}
@@ -308,6 +332,7 @@ public class Main {
 		return true;
 	}
 
+<<<<<<< HEAD
 	private ArrayList<GameState> findPossibleMoves(GameState state) {
 		ArrayList<GameState> moves = new ArrayList<GameState>();
 
@@ -318,10 +343,17 @@ public class Main {
 					addValidMovesForBox(moves, state, x, y);
 				}
 			}
+=======
+	private List<GameState> findPossibleMoves(GameState state) {
+		List<GameState> moves = new ArrayList<GameState>();
+		for (Map.Entry<Integer, int[]> entry : state.getBoxList().getEntrySet()) {
+			addMovesForBox(moves, state, entry.getValue());
+>>>>>>> 64dd3410572370275ed9bd6aa986aaa2d7790f78
 		}
 		return moves;
 	}
 
+<<<<<<< HEAD
 	/**
 	 * Adds all valid moves for box represented by x and y. A valid move does
 	 * 
@@ -329,19 +361,22 @@ public class Main {
 	 */
 	private void addValidMovesForBox(ArrayList<GameState> moves,
 			GameState state, int x, int y) {
+=======
+	private void addMovesForBox(List<GameState> moves, GameState state, int[] box) {
+		int bX = box[0], bY = box[1];
+>>>>>>> 64dd3410572370275ed9bd6aa986aaa2d7790f78
 
-		// check above and below
-		if (isFreeSpace(state, x, y - 1) && isFreeSpace(state, x, y + 1)) {
-			addMove(moves, state, x, y, 0, -1);
-			addMove(moves, state, x, y, 0, +1);
-		}
-		// check left and right
-		if (isFreeSpace(state, x - 1, y) && isFreeSpace(state, x + 1, y)) {
-			addMove(moves, state, x, y, -1, 0);
-			addMove(moves, state, x, y, +1, 0);
+		GameState newState = null;
+		
+		for(int i = 0 ; i < dx.length ; i++) {
+			newState = moveBox(state, bX, bY, dx[i], dy[i]);
+			if (newState != null && !visited.contains(newState)) {
+				moves.add(newState);
+			}
 		}
 	}
 
+<<<<<<< HEAD
 	private void addMove(ArrayList<GameState> moves, GameState state,
 			int fromX, int fromY, int dX, int dY) {
 		GameState newState = (GameState) state.clone();
@@ -362,12 +397,55 @@ public class Main {
 
 				newState.x = fromX;
 				newState.y = fromY;
+=======
+	private GameState moveBox(GameState state, int bX, int bY, int dX, int dY) {
+		if (tryMove(state, bX, bY, dX, dY)) { // Does a push result in a valid, non-deadlock state?
+			String path = getPath(state, bX, bY, dX, dY);
+			if (path != null) {
+				GameState newState = (GameState) state.clone();
+>>>>>>> 64dd3410572370275ed9bd6aa986aaa2d7790f78
 				newState.setPath(path + state.getPath());
-				moves.add(newState);
+				makePush(newState, bX, bY, dX, dY);
+				return newState;
 			}
 		}
+		return null;
 	}
 
+	private void makePush(GameState state, int bX, int bY, int dX, int dY) {
+		state.x = bX;
+		state.y = bY;
+		BoxList bl = state.getBoxList();
+		bl.removeBox(bX, bY);
+		bl.addBox(bX + dX, bY + dY);
+		int u = tryMove(state, bX + dX, bY + dY, 0, -1) && AStar.findPath(state, state.x, state.y, bX + dX, bY + dY + 1) != null ? 1 : 0;
+		int d = tryMove(state, bX + dX, bY + dY, 0, 1) && AStar.findPath(state, state.x, state.y, bX + dX, bY + dY - 1) != null ? 1 : 0;
+		int l = tryMove(state, bX + dX, bY + dY, -1, 0) && AStar.findPath(state, state.x, state.y, bX + dX + 1, bY + dY) != null ? 1 : 0;
+		int r = tryMove(state, bX + dX, bY + dY, 1, 0) && AStar.findPath(state, state.x, state.y, bX + dX - 1, bY + dY) != null ? 1 : 0;
+		bl.removeBox(bX + dX, bY + dY);
+		bl.addBox(bX + dX, bY + dY, u, r, d, l); // TODO
+	}
+
+	private String getPath(GameState state, int bX, int bY, int dX, int dY) {
+		String path = AStar.findPath(state, state.x, state.y, bX - dX, bY - dY);
+		if (path == null || path.equals(""))
+			return null;
+		if(path.equals("Q")) {
+			path = "";
+		}
+		if (dY > 0)
+			return path = "D " + path;
+		if (dY < 0)
+			return path = "U " + path;
+		if (dX > 0)
+			return path = "R " + path;
+		if (dX < 0)
+			return path = "L " + path;
+		
+		return null;
+	}
+
+<<<<<<< HEAD
 	/**
 	 * pushes a box from fromX, fromY to toX, toY and stores result in
 	 * afterPush. Does NOT check that the player reach the position requred to
@@ -378,6 +456,21 @@ public class Main {
 		BoxList bl = newState.getBoxList();
 		bl.removeBox(fromX, fromY);
 		bl.addBox(toX, toY);
+=======
+	private boolean tryMove(GameState state, int bX, int bY, int dX, int dY) {
+		if (isFreeSpace(state, bX + dX, bY + dY) && isFreeSpace(state, bX - dX, bY - dY)) {
+			GameState gs = (GameState) state.clone(); // TODO
+			BoxList bl = gs.getBoxList();
+			bl.removeBox(bX, bY);
+			bl.addBox(bX + dX, bY + dY);
+			gs.x = bX;
+			gs.y = bY;
+			if (!isDeadlock(gs, bX + dX, bY + dY)) {
+				return true;
+			} 
+		}
+		return false;
+>>>>>>> 64dd3410572370275ed9bd6aa986aaa2d7790f78
 	}
 
 	public static boolean isFreeSpace(GameState state, int x, int y) {
@@ -385,10 +478,14 @@ public class Main {
 	}
 
 	private boolean isStuck(GameState state, int x, int y) {
+<<<<<<< HEAD
 		if (state.containsBox(x, y)
 				&& ((isFreeSpace(state, x - 1, y) && isFreeSpace(state, x + 1,
 						y)) || (isFreeSpace(state, x, y - 1) && isFreeSpace(
 						state, x, y + 1)))) {
+=======
+		if (state.containsBox(x, y) && ((isFreeSpace(state, x - 1, y) && isFreeSpace(state, x + 1, y)) || (isFreeSpace(state, x, y - 1) && isFreeSpace(state, x, y + 1)))) {
+>>>>>>> 64dd3410572370275ed9bd6aa986aaa2d7790f78
 			return false;
 		}
 		return true;

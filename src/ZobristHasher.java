@@ -5,7 +5,7 @@ import java.util.Random;
 public class ZobristHasher {
 	
 	private Random random;
-	String[][][] table;
+	int[][][] table;
 	private final int PLAYER = 0;
 	private final int BOX = 1;
 	
@@ -16,17 +16,17 @@ public class ZobristHasher {
 	
 	private void initiate(char[][] board) {
 		int longestCol = Integer.MIN_VALUE;
-		table = new String[board.length][][];
+		table = new int[board.length][][];
 		for(int r = 0; r < board.length; r++) {
 			if(board[r].length > longestCol) {
 				longestCol = board[r].length;
 			}
 		}
-		table = new String[board.length][longestCol][2];
+		table = new int[board.length][longestCol][2];
 		for(int r = 0; r <  board.length; r++) {
 			for(int c = 0; c < longestCol; c++) {
-				table[r][c][PLAYER] = randomBitString();
-				table[r][c][BOX] = randomBitString();
+				table[r][c][PLAYER] = randomBitString().hashCode();
+				table[r][c][BOX] = randomBitString().hashCode();
 			}
 		}
 	}
@@ -34,9 +34,9 @@ public class ZobristHasher {
 	public int hash(List<Coordinate> boxes, Coordinate player) {
 		int hash = 0;
 		for(Coordinate box : boxes) {
-			hash = hash ^ table[box.y][box.x][BOX].hashCode();
+			hash = hash ^ table[box.y][box.x][BOX];
 		}
-		hash = hash ^ table[player.y][player.x][PLAYER].hashCode();
+		hash = hash ^ table[player.y][player.x][PLAYER];
 		return hash;
 	}
 		
@@ -47,8 +47,8 @@ public class ZobristHasher {
 	}
 	
 	private int moveTile(int hash, int fromX, int fromY, int toX, int toY, int tile)  {
-		hash = hash ^ table[fromY][fromX][tile].hashCode();
-		hash = hash ^ table[toY][toX][tile].hashCode();
+		hash = hash ^ table[fromY][fromX][tile];
+		hash = hash ^ table[toY][toX][tile];
 		return hash;
 	}
 	
