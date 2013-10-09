@@ -186,7 +186,7 @@ public class Main {
 			upperRightY = -1;
 		}
 		
-		return new GameState(bl, playerX, playerY);
+		return new GameState(bl, playerX, playerY , heuristic);
 	}
 
 	private String findPath(GameState root) {
