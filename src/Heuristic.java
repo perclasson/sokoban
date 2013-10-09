@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 
 
+
 public class Heuristic implements Comparator<GameState>{
 	char[][] board;
 	
@@ -36,6 +37,7 @@ public class Heuristic implements Comparator<GameState>{
 		}
 		return total;
 	}
+
 
 	@Override
 	public int compare(GameState state0, GameState state1) {
