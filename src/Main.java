@@ -56,7 +56,11 @@ public class Main {
 
 		GameState root  = generateRoot(tmpBoard);
 		heuristic = new Heuristic(board);
+		long b = System.currentTimeMillis();
 		System.out.println(findPath(root));
+		long a = System.currentTimeMillis();
+		
+		System.out.println(a - b);
 	}
 	
 	private GameState generateRoot(List<String> tmpBoard) {
@@ -248,7 +252,7 @@ public class Main {
 			}
 			return null;
 		}
-//		Collections.sort(possibleStates, heuristic);
+		//Collections.sort(possibleStates, heuristic);
 		for (GameState state : possibleStates) {
 			GameState result = search(state, depth-1);
 			if (result != null)
