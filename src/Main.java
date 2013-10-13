@@ -34,6 +34,7 @@ public class Main {
 	private RenderFrame renderer;
 	private List<Coordinate> goalList;
 	private Heuristic heuristic;
+	private ZobristHasher hasher;
 	public static char[][] board;
 
 	public static void main(String[] args) {
@@ -53,9 +54,10 @@ public class Main {
 		}
 		BufferedReader in = getBufferedReader();
 		List<String> tmpBoard = readBoard(in);
-
 		GameState root  = generateRoot(tmpBoard);
+		hasher = new ZobristHasher(board);
 		heuristic = new Heuristic(board);
+		heuristic.printBoardValues();
 		long b = System.currentTimeMillis();
 		System.out.println(findPath(root));
 		long a = System.currentTimeMillis();

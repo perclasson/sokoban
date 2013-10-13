@@ -1,7 +1,7 @@
 import java.util.Map.Entry;
 
 
-public class GameState implements Comparable<GameState> {
+public class GameState {
 	private BoxList boxList;
 	public int x, y, hashCode = -1;
 	private String path;
@@ -39,6 +39,10 @@ public class GameState implements Comparable<GameState> {
 		return hashCode == ((GameState) o).hashCode();
 	}
 	
+	public void setHashCode(int hashCode) {
+		this.hashCode = hashCode;
+	}
+	
 	@Override
 	public int hashCode() {
 		if(hashCode == -1) {
@@ -61,17 +65,17 @@ public class GameState implements Comparable<GameState> {
 	public Object clone() {
 		return new GameState((BoxList) boxList.clone(), x, y, path, heuristic);
 	}
-	
+	/*
 	//TODO: Is this actually correct?
 	@Override
 	public int compareTo(GameState arg0) {
-		if(heuristic.stupidHeuristic(this) < heuristic.stupidHeuristic(arg0)) {
+		if(heuristic.getValue(this) < heuristic.stupidHeuristic(arg0)) {
 			return 1;
 		} else if(heuristic.stupidHeuristic(this) > heuristic.stupidHeuristic(arg0)) {
 			return -1;
 		}
 		return 0;
-	}
+	}*/
 
 	public void setHeuristic(Heuristic heuristic) {
 		this.heuristic = heuristic;
