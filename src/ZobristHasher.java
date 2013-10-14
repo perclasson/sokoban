@@ -1,5 +1,5 @@
-import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 
 public class ZobristHasher {
@@ -31,7 +31,7 @@ public class ZobristHasher {
 		}
 	}
 	
-	public int hash(List<Coordinate> boxes, Coordinate player) {
+	public int hash(Set<Coordinate> boxes, Coordinate player) {
 		int hash = 0;
 		for(Coordinate box : boxes) {
 			hash = hash ^ table[box.y][box.x][BOX];
