@@ -4,11 +4,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -55,9 +54,6 @@ public class Main {
 		BufferedReader in = getBufferedReader();
 		List<String> tmpBoard = readBoard(in);
 		GameState root  = generateRoot(tmpBoard);
-		hasher = new ZobristHasher(board);
-		heuristic = new Heuristic(board);
-		heuristic.printBoardValues();
 		long b = System.currentTimeMillis();
 		System.out.println(findPath(root));
 		long a = System.currentTimeMillis();
@@ -67,7 +63,7 @@ public class Main {
 	
 	private GameState generateRoot(List<String> tmpBoard) {
 		board = new char[tmpBoard.size()][];
-		BoxList bl = new BoxList();
+		List<Coordinate> boxes = new ArrayList<Coordinate>();
 		int playerX = 0, playerY = 0;
 		for (int y = 0; y < tmpBoard.size(); y++) {
 			board[y] = tmpBoard.get(y).toCharArray();
@@ -75,11 +71,11 @@ public class Main {
 				switch (tmpBoard.get(y).charAt(x)) {
 				case BOX:
 					board[y][x] = SPACE;
-					bl.addBox(x, y);
+					boxes.add(new Coordinate(x, y));
 					break;
 				case BOX_ON_GOAL:
 					board[y][x] = GOAL;
-					bl.addBox(x, y);
+					boxes.add(new Coordinate(x, y));
 					break;
 				case PLAYER:
 					board[y][x] = SPACE;
@@ -97,9 +93,7 @@ public class Main {
 				}
 			}
 		}
-
 		int upperLeftX = -1, downLeftX = -1, maxWidth = 0;
-
 		// Mark horizontal deadlocks
 		for (int y = 0; y < board.length; y++) {
 			maxWidth = Math.max(board[y].length, maxWidth);
@@ -187,8 +181,11 @@ public class Main {
 			upperLeftY = -1;
 			upperRightY = -1;
 		}
-		
-		return new GameState(bl, playerX, playerY , heuristic);
+		hasher = new ZobristHasher(board);
+		heuristic = new Heuristic(board);
+		GameState root = new GameState(boxes, new Coordinate(playerX, playerY), heuristic.getValue(boxes));
+		root.setHashCode(hasher.hash(boxes, new Coordinate(playerX, playerY)));
+		return root;
 	}
 
 	private String findPath(GameState root) {
@@ -214,10 +211,9 @@ public class Main {
 		if (RENDER) {
 			renderer.renderState(board, gs);
 		} else {
-			BoxList bl = gs.getBoxList();
 			for (int i = 0; i < board.length; i++) {
 				for (int j = 0; j < board[i].length; j++) {
-					if (bl.containsBox(j, i)) {
+					if (gs.containsBox(j, i)) {
 						if (board[i][j] == '.') {
 							System.out.print('*');
 						} else {
@@ -243,9 +239,10 @@ public class Main {
 		if (isCompleted(current)) {
 			return current;
 		}
+		System.out.println("visited: " + visited.size());
 		List<GameState> possibleStates = findPossibleMoves(current);
+		System.out.println("Possible states: " + possibleStates.size());
 		visited.add(current);
-
 		if (depth <= 0) {
 			for(GameState gs : possibleStates) {
 				if(!visited.contains(gs)) {
@@ -289,19 +286,20 @@ public class Main {
 
 	private List<GameState> findPossibleMoves(GameState state) {
 		List<GameState> moves = new ArrayList<GameState>();
-		for (Map.Entry<Integer, int[]> entry : state.getBoxList().getEntrySet()) {
-			addMovesForBox(moves, state, entry.getValue());
+		Coordinate[] boxes = new Coordinate[state.getBoxes().size()];
+		state.getBoxes().toArray(boxes);
+		for(int i = 0; i < boxes.length; i++) {
+			//System.out.println("box: " + boxes[i].x + " " + boxes[i].y);
+			addMovesForBox(moves, state, boxes[i]);
 		}
 		return moves;
 	}
 
-	private void addMovesForBox(List<GameState> moves, GameState state, int[] box) {
-		int bX = box[0], bY = box[1];
-
+	private void addMovesForBox(List<GameState> moves, GameState state, Coordinate box) {
 		GameState newState = null;
 		
 		for(int i = 0 ; i < dx.length ; i++) {
-			newState = moveBox(state, bX, bY, dx[i], dy[i]);
+			newState = moveBox(state, box.x, box.y, dx[i], dy[i]);
 			if (newState != null && !visited.contains(newState)) {
 				moves.add(newState);
 			}
@@ -322,21 +320,31 @@ public class Main {
 	}
 
 	private void makePush(GameState state, int bX, int bY, int dX, int dY) {
-		state.x = bX;
-		state.y = bY;
-		BoxList bl = state.getBoxList();
-		bl.removeBox(bX, bY);
-		bl.addBox(bX + dX, bY + dY);
+		int newCode = hasher.movePlayer(state.hashCode, state.getPlayer().x, state.getPlayer().y, bX,bY);
+		state.getPlayer().x = bX;
+		state.getPlayer().y = bY;
+		newCode = hasher.moveBox(newCode, bX, bY, bX+dX,bY+dY);
+		//System.out.println("Before: " + state.getBoxes().size());
+		//System.out.println("bX: " + bX + ", bY: " + bY);
+		state.removeBox(bX, bY);
+		//System.out.println("After: " + state.getBoxes().size());
+
+		state.addBox(bX+dX, bY+dY);
+		state.setHashCode(newCode);
+		state.setHeuristic(heuristic.getValue(state.getBoxes()));
+		/*
 		int u = tryMove(state, bX + dX, bY + dY, 0, -1) && AStar.findPath(state, state.x, state.y, bX + dX, bY + dY + 1) != null ? 1 : 0;
 		int d = tryMove(state, bX + dX, bY + dY, 0, 1) && AStar.findPath(state, state.x, state.y, bX + dX, bY + dY - 1) != null ? 1 : 0;
 		int l = tryMove(state, bX + dX, bY + dY, -1, 0) && AStar.findPath(state, state.x, state.y, bX + dX + 1, bY + dY) != null ? 1 : 0;
 		int r = tryMove(state, bX + dX, bY + dY, 1, 0) && AStar.findPath(state, state.x, state.y, bX + dX - 1, bY + dY) != null ? 1 : 0;
-		bl.removeBox(bX + dX, bY + dY);
-		bl.addBox(bX + dX, bY + dY, u, r, d, l); // TODO
+		
+		state.removeBox(bX + dX, bY + dY);
+		state.addBox(bX + dX, bY + dY); // TODO behövs det här?
+		*/
 	}
 
 	private String getPath(GameState state, int bX, int bY, int dX, int dY) {
-		String path = AStar.findPath(state, state.x, state.y, bX - dX, bY - dY);
+		String path = AStar.findPath(state, state.getPlayer().x, state.getPlayer().y, bX - dX, bY - dY);
 		if (path == null || path.equals(""))
 			return null;
 		if(path.equals("Q")) {
@@ -357,15 +365,15 @@ public class Main {
 	private boolean tryMove(GameState state, int bX, int bY, int dX, int dY) {
 		if (isFreeSpace(state, bX + dX, bY + dY) && isFreeSpace(state, bX - dX, bY - dY)) {
 			GameState gs = (GameState) state.clone(); // TODO
-			BoxList bl = gs.getBoxList();
-			bl.removeBox(bX, bY);
-			bl.addBox(bX + dX, bY + dY);
-			gs.x = bX;
-			gs.y = bY;
+			gs.removeBox(bX, bY);
+			gs.addBox(bX + dX, bY + dY);
+			gs.getPlayer().x = bX;
+			gs.getPlayer().y = bY;
 			if (!isDeadlock(gs, bX + dX, bY + dY)) {
 				return true;
 			} 
 		}
+
 		return false;
 	}
 

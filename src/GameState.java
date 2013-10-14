@@ -1,23 +1,23 @@
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.List;
 
-
-public class GameState {
-	private BoxList boxList;
+public class GameState implements Comparable<GameState> {
+	private List<Coordinate> boxes;
 	public int x, y, hashCode = -1;
 	private String path;
-	private Heuristic heuristic;
-	
-	public GameState(BoxList boxList, int x, int y, Heuristic heuristic) {
-		this.boxList = boxList;
-		this.x = x;
-		this.y = y;
+	private Coordinate player;
+	private int heuristic;
+
+	public GameState(List<Coordinate> boxes, Coordinate player, int heuristic) {
+		this.boxes = boxes;
+		this.player = player;
 		this.heuristic = heuristic;
 		path = "";
 	}
-	private GameState(BoxList boxList, int x, int y, String path, Heuristic heuristic) {
-		this.boxList = boxList;
-		this.x = x;
-		this.y = y;
+
+	private GameState(List<Coordinate> boxes, Coordinate player, String path, int heuristic) {
+		this.boxes = boxes;
+		this.player = player;
 		this.path = path;
 		this.heuristic = heuristic;
 	}
@@ -29,56 +29,92 @@ public class GameState {
 	public void setPath(String path) {
 		this.path = path;
 	}
-	
+
 	public boolean containsBox(int x, int y) {
-		return boxList.containsBox(x, y);
+		for(Coordinate lbox : boxes) {
+			if(lbox.x == x && lbox.y == y) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
+	public boolean removeBox(int x, int y) {
+		for(Coordinate lbox : boxes) {
+			if(lbox.x == x && y == lbox.y) {
+				//System.out.println("Before removing box: " + boxes.size());
+				boxes.remove(lbox);
+				//System.out.println("After removing box: " + boxes.size());
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean addBox(int x, int y) {
+		boxes.add(new Coordinate(x,y));
+		return true;
+	}
 	@Override
 	public boolean equals(Object o) {
 		return hashCode == ((GameState) o).hashCode();
 	}
-	
+
 	public void setHashCode(int hashCode) {
 		this.hashCode = hashCode;
 	}
-	
+
 	@Override
 	public int hashCode() {
-		if(hashCode == -1) {
-			StringBuilder sb = new StringBuilder();
-			for (Entry<Integer, int[]> e : boxList.getEntrySet())
-				sb.append(e.getValue()[BoxList.X]).append(',').append(e.getValue()[BoxList.Y]).
-				append(';').append(boxList.getDirectionString(e.getKey()));
-			hashCode = sb.toString().hashCode();
+		if (hashCode == -1) {
+			
 		}
 		return hashCode;
 	}
-	public BoxList getBoxList() {
-		return boxList;
+
+	public List<Coordinate> getBoxes() {
+		return boxes;
 	}
+
 	public int numberOfBoxes() {
-		return boxList.size();
+		return boxes.size();
 	}
-	
+
 	@Override
 	public Object clone() {
-		return new GameState((BoxList) boxList.clone(), x, y, path, heuristic);
-	}
-	/*
-	//TODO: Is this actually correct?
-	@Override
-	public int compareTo(GameState arg0) {
-		if(heuristic.getValue(this) < heuristic.stupidHeuristic(arg0)) {
-			return 1;
-		} else if(heuristic.stupidHeuristic(this) > heuristic.stupidHeuristic(arg0)) {
-			return -1;
+		List<Coordinate> nBoxes = new ArrayList<Coordinate>();
+		for(Coordinate box : boxes) {
+			nBoxes.add(box.clone());
 		}
-		return 0;
-	}*/
+		return new GameState(nBoxes, player.clone(), path, heuristic);
+	}
 
-	public void setHeuristic(Heuristic heuristic) {
+	/*
+	 * //TODO: Is this actually correct?
+	 * 
+	 * @Override public int compareTo(GameState arg0) {
+	 * if(heuristic.getValue(this) < heuristic.stupidHeuristic(arg0)) { return
+	 * 1; } else if(heuristic.stupidHeuristic(this) >
+	 * heuristic.stupidHeuristic(arg0)) { return -1; } return 0; }
+	 */
+
+	public void setHeuristic(int heuristic) {
 		this.heuristic = heuristic;
 	}
+
+	@Override
+	public int compareTo(GameState arg0) {
+		if (this.heuristic < arg0.heuristic) {
+			return -1;
+		} else if (this.heuristic > arg0.heuristic) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
 	
+	public Coordinate getPlayer() {
+		return player;
+	}
+
 }

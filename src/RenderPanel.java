@@ -22,7 +22,7 @@ public class RenderPanel extends JPanel{
     		System.out.println("SLUTA SKICKA IN NULL TILL MIG NÄR JAG RENDERAR!!!");
     		return;
     	}
-    	BoxList boxList = currentState.getBoxList();
+    	BoxList boxList = currentState.getBoxes();
         super.paintComponent(g);
         if(board == null)
         	return;
@@ -64,7 +64,7 @@ public class RenderPanel extends JPanel{
     }
     
     void printInTerminal(GameState gs) {
-    	BoxList bl = gs.getBoxList();
+    	BoxList bl = gs.getBoxes();
 		for(int i = 0; i < board.length; i++) {
 			for(int j = 0; j < board[i].length; j++) {
 				if(bl.containsBox(j, i)) {

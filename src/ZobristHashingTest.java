@@ -103,7 +103,11 @@ public class ZobristHashingTest {
 		hashMove = hasher.movePlayer(hashMove, 4, 4, 4, 3); //Move Down
 		assertEquals(hashMove, initialHash);
 
-
+		ArrayList<Coordinate> boxes2 = new ArrayList<Coordinate>();
+		Coordinate box =new Coordinate(1,2);
+		boxes2.add(box);
+		boxes2.remove(box);
+		assertEquals(0, boxes2.size());
 		
 	}
 }

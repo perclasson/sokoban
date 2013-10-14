@@ -16,8 +16,6 @@ public class Heuristic {
 			visited[i] = new int[board[i].length];
 			boardValues[i] = new int[board[i].length];
 		}
-		printBoardValues();
-		printBoard();
 		setBoardValues();
 	}
 
