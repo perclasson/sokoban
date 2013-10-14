@@ -23,7 +23,10 @@ public class State {
 	}
 	
 	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent, boolean playerOnGoal) {
-		this(hashCode, player, boxes, parent);
+		this.hashCode = hashCode;
+		this.boxes = boxes;
+		this.parent = parent;
+		this.player = player;
 		this.playerOnGoal = playerOnGoal;
 	}
 

@@ -62,19 +62,34 @@ public class Main {
 
 	private String findPath(State root) {
 		State goal = search(root);
-		return goal.getPath();
+		return recreatePath(goal);
 	}
 
 	private State search(State state) {
 		if (isCompleted(state)) {
+			printState(state);
 			return state;
 		}
-
+		visited.add(state);
 		List<State> nextMoves = findPossibleMoves(state);
-
+		for(State move : nextMoves) {
+			State goal =  search(move);
+			if(goal != null) {
+				return goal;
+			}
+		}
 		return null;
 	}
 
+	public String recreatePath(State goal) {
+		StringBuilder sb = new StringBuilder();
+		while(goal != null) {
+			sb.append(goal.getPath());
+			goal = goal.getParent();
+		}
+		return sb.toString(); 
+	}
+	
 	private List<State> findPossibleMoves(State state) {
 		List<State> moves = new ArrayList<State>();
 		Coordinate[] boxes = new Coordinate[state.getBoxes().size()];
@@ -98,19 +113,20 @@ public class Main {
 	}
 
 	private State makeMove(State state, Coordinate box, int dx, int dy) {
-		String path = getPath(board, state, state.getPlayer(), new Coordinate(box.x + dx, box.y + dy));
+		String path = getPath(board, state, box, new Coordinate(box.x + dx, box.y + dy));
 		if (path == null) {
 			return null;
 		}
 		State newState = state.clone();
 		newState.setPath(path);
 		newState.setParent(state);
+		System.out.println(state);
 		newState.movePlayer(new Coordinate(box.x + 2*dx, box.y + 2*dy));
 		newState.moveBox(box, new Coordinate(box.x + dx, box.y + dy));
 		return newState;
 	}
 	
-	private String getPath(char[][] board, State state, Coordinate from, Coordinate to) {
+	private String getPath(char[][] board, State state, Coordinate box, Coordinate to) {
 		String path = AStar.findPath(board, state, state.getPlayer(), to);
 		if(path == null) {
 			return null;
@@ -118,17 +134,17 @@ public class Main {
 		if(path == "") {
 			return "";
 		}
-		if(to.x > from.x) {
+		if(to.x > box.x) {
 			return "R " + path;
 		}
-		if(to.x < from.x) {
+		if(to.x < box.x) {
 			return "L " + path;
 		}
-		if(to.y > from.y) {
-			return 
+		if(to.y > box.y) {
+			return "D " + path;
 		}
-		if(to.y < from.y) {
-			
+		if(to.y < box.y) {
+			return "U " + path;
 		}
 		return null;
 	}
@@ -179,6 +195,7 @@ public class Main {
 				case Constants.PLAYER_ON_GOAL: {
 					boxes.add(new Coordinate(x, y));
 					player = new Coordinate(x, y);
+					board[y][x] = Constants.SPACE;
 					playerOnGoal = true;
 					break;
 				}
@@ -220,6 +237,26 @@ public class Main {
 		for (int i = 0; i < matrix.length; i++) {
 			for (int j = 0; j < matrix[i].length; j++) {
 				System.err.print(matrix[i][j]);
+			}
+			System.err.println();
+		}
+	}
+	
+	private void printState(State state) {
+		System.err.println("Number of boxes: " + state.getBoxes().size());
+		for (int i = 0; i < board.length; i++) {
+			for (int j = 0; j < board[i].length; j++) {
+				if(state.containsBox(new Coordinate(j, i)) && board[i][j] == '.') {
+					System.err.print('*');
+				} else if(state.containsBox(new Coordinate(j, i))) {
+					System.err.print('$');
+				} else if (state.getPlayer().x == j && state.getPlayer().y == i && board[i][j] == '.') {
+					System.err.print('+');
+				} else if(state.getPlayer().x == j && state.getPlayer().y == i) {
+					System.err.print('@');
+				} else {
+					System.err.print(board[i][j]);
+				}
 			}
 			System.err.println();
 		}
