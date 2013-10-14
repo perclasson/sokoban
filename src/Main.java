@@ -13,6 +13,7 @@ public class Main {
 	private char[][] board;
 	private final int[] dx = { 1, -1, 0, 0 };
 	private final int[] dy = { 0, 0, -1, 1 };
+	private Coordinate initialPosition;
 
 	public static void main(String[] args) {
 		new Main();
@@ -83,11 +84,16 @@ public class Main {
 
 	public String recreatePath(State goal) {
 		StringBuilder sb = new StringBuilder();
+		String endPath = AStar.findPath(board, goal, goal.getPlayer(), initialPosition);
+
 		while(goal != null) {
+			//printState(goal);
+			//System.err.println(goal.getPath());
+			if(goal.getPath() != null)
 			sb.append(goal.getPath());
 			goal = goal.getParent();
 		}
-		return sb.toString(); 
+		return invertPath(endPath+sb.toString()); 
 	}
 	
 	private List<State> findPossibleMoves(State state) {
@@ -120,7 +126,6 @@ public class Main {
 		State newState = state.clone();
 		newState.setPath(path);
 		newState.setParent(state);
-		System.out.println(state);
 		newState.movePlayer(new Coordinate(box.x + 2*dx, box.y + 2*dy));
 		newState.moveBox(box, new Coordinate(box.x + dx, box.y + dy));
 		return newState;
@@ -130,9 +135,6 @@ public class Main {
 		String path = AStar.findPath(board, state, state.getPlayer(), to);
 		if(path == null) {
 			return null;
-		}
-		if(path == "") {
-			return "";
 		}
 		if(to.x > box.x) {
 			return "R " + path;
@@ -147,6 +149,31 @@ public class Main {
 			return "U " + path;
 		}
 		return null;
+	}
+
+	private String invertPath(String path) {
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < path.length(); i++) {
+			char toBeInverted = path.charAt(i);
+			switch(toBeInverted) {
+			case 'R':
+				sb.append('L');
+				break;
+			case 'L':
+				sb.append('R');
+				break;
+			case 'U':
+				sb.append('D');
+				break;
+			case 'D':
+				sb.append('U');
+				break;
+			default:
+				sb.append(' ');
+				break;
+			}
+		}
+		return sb.toString();
 	}
 
 	private boolean isPossibleMove(State state, Coordinate box, int dx, int dy) {
@@ -202,6 +229,7 @@ public class Main {
 				}
 			}
 		}
+		initialPosition = player.clone();
 		return new State(hasher.hash(boxes, player), player, boxes, null, playerOnGoal);
 	}
 
@@ -243,7 +271,6 @@ public class Main {
 	}
 	
 	private void printState(State state) {
-		System.err.println("Number of boxes: " + state.getBoxes().size());
 		for (int i = 0; i < board.length; i++) {
 			for (int j = 0; j < board[i].length; j++) {
 				if(state.containsBox(new Coordinate(j, i)) && board[i][j] == '.') {

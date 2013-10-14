@@ -14,7 +14,6 @@ public class State {
 	private boolean playerOnGoal;
 
 	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent) {
-		boxes = new HashSet<Coordinate>();
 		this.hashCode = hashCode;
 		this.player = player;
 		this.boxes = boxes;
