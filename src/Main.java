@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -183,8 +182,7 @@ public class Main {
 		}
 		hasher = new ZobristHasher(board);
 		heuristic = new Heuristic(board);
-		GameState root = new GameState(boxes, new Coordinate(playerX, playerY), heuristic.getValue(boxes));
-		root.setHashCode(hasher.hash(boxes, new Coordinate(playerX, playerY)));
+		GameState root = new GameState(boxes, new Coordinate(playerX, playerY), "", hasher.hash(boxes, new Coordinate(playerX, playerY)), heuristic.getValue(boxes));
 		return root;
 	}
 
@@ -239,9 +237,7 @@ public class Main {
 		if (isCompleted(current)) {
 			return current;
 		}
-		System.out.println("visited: " + visited.size());
 		List<GameState> possibleStates = findPossibleMoves(current);
-		System.out.println("Possible states: " + possibleStates.size());
 		visited.add(current);
 		if (depth <= 0) {
 			for(GameState gs : possibleStates) {
@@ -289,7 +285,6 @@ public class Main {
 		Coordinate[] boxes = new Coordinate[state.getBoxes().size()];
 		state.getBoxes().toArray(boxes);
 		for(int i = 0; i < boxes.length; i++) {
-			//System.out.println("box: " + boxes[i].x + " " + boxes[i].y);
 			addMovesForBox(moves, state, boxes[i]);
 		}
 		return moves;
@@ -312,7 +307,9 @@ public class Main {
 			if (path != null) {
 				GameState newState = (GameState) state.clone();
 				newState.setPath(path + state.getPath());
+				newState.createHashCode(hasher, heuristic, bX, bY, dX, dY);
 				makePush(newState, bX, bY, dX, dY);
+				newState.setHeuristic(heuristic.getValue(newState.getBoxes()));
 				return newState;
 			}
 		}
@@ -320,27 +317,11 @@ public class Main {
 	}
 
 	private void makePush(GameState state, int bX, int bY, int dX, int dY) {
-		int newCode = hasher.movePlayer(state.hashCode, state.getPlayer().x, state.getPlayer().y, bX,bY);
 		state.getPlayer().x = bX;
 		state.getPlayer().y = bY;
-		newCode = hasher.moveBox(newCode, bX, bY, bX+dX,bY+dY);
-		//System.out.println("Before: " + state.getBoxes().size());
-		//System.out.println("bX: " + bX + ", bY: " + bY);
 		state.removeBox(bX, bY);
-		//System.out.println("After: " + state.getBoxes().size());
-
 		state.addBox(bX+dX, bY+dY);
-		state.setHashCode(newCode);
-		state.setHeuristic(heuristic.getValue(state.getBoxes()));
-		/*
-		int u = tryMove(state, bX + dX, bY + dY, 0, -1) && AStar.findPath(state, state.x, state.y, bX + dX, bY + dY + 1) != null ? 1 : 0;
-		int d = tryMove(state, bX + dX, bY + dY, 0, 1) && AStar.findPath(state, state.x, state.y, bX + dX, bY + dY - 1) != null ? 1 : 0;
-		int l = tryMove(state, bX + dX, bY + dY, -1, 0) && AStar.findPath(state, state.x, state.y, bX + dX + 1, bY + dY) != null ? 1 : 0;
-		int r = tryMove(state, bX + dX, bY + dY, 1, 0) && AStar.findPath(state, state.x, state.y, bX + dX - 1, bY + dY) != null ? 1 : 0;
-		
-		state.removeBox(bX + dX, bY + dY);
-		state.addBox(bX + dX, bY + dY); // TODO behövs det här?
-		*/
+
 	}
 
 	private String getPath(GameState state, int bX, int bY, int dX, int dY) {
@@ -364,7 +345,7 @@ public class Main {
 
 	private boolean tryMove(GameState state, int bX, int bY, int dX, int dY) {
 		if (isFreeSpace(state, bX + dX, bY + dY) && isFreeSpace(state, bX - dX, bY - dY)) {
-			GameState gs = (GameState) state.clone(); // TODO
+			GameState gs = (GameState) state.clone(); 
 			gs.removeBox(bX, bY);
 			gs.addBox(bX + dX, bY + dY);
 			gs.getPlayer().x = bX;

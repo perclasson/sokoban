@@ -58,7 +58,7 @@ public class Heuristic {
 		Coordinate u = null;
 		int[] dY = {1, 0, -1, 0};
 		int[] dX = {0, 1, 0, -1};
-		while (Q.size() > 0) {
+		while (!Q.isEmpty()) {
 			u = Q.pop();
 			for(int i = 0; i < 4; i++) {
 				char nextTile = board[u.y+dY[i]][u.x+dX[i]];

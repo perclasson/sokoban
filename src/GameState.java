@@ -8,17 +8,18 @@ public class GameState implements Comparable<GameState> {
 	private Coordinate player;
 	private int heuristic;
 
-	public GameState(List<Coordinate> boxes, Coordinate player, int heuristic) {
-		this.boxes = boxes;
-		this.player = player;
-		this.heuristic = heuristic;
-		path = "";
+	public GameState(List<Coordinate> boxes, Coordinate player, int hashCode) {
+		this(boxes, player, "", hashCode);
 	}
 
-	private GameState(List<Coordinate> boxes, Coordinate player, String path, int heuristic) {
+	public GameState(List<Coordinate> boxes, Coordinate player, String path, int hashCode) {
+		this(boxes, player, path, hashCode, -1);
+	}
+	public GameState(List<Coordinate> boxes, Coordinate player, String path, int hashCode, int heuristic) {
 		this.boxes = boxes;
 		this.player = player;
 		this.path = path;
+		this.hashCode = hashCode;
 		this.heuristic = heuristic;
 	}
 
@@ -40,15 +41,7 @@ public class GameState implements Comparable<GameState> {
 	}
 	
 	public boolean removeBox(int x, int y) {
-		for(Coordinate lbox : boxes) {
-			if(lbox.x == x && y == lbox.y) {
-				//System.out.println("Before removing box: " + boxes.size());
-				boxes.remove(lbox);
-				//System.out.println("After removing box: " + boxes.size());
-				return true;
-			}
-		}
-		return false;
+		return boxes.remove(new Coordinate(x, y));
 	}
 
 	public boolean addBox(int x, int y) {
@@ -63,12 +56,15 @@ public class GameState implements Comparable<GameState> {
 	public void setHashCode(int hashCode) {
 		this.hashCode = hashCode;
 	}
+	
+	public void createHashCode(ZobristHasher hasher, Heuristic heuristic, int bX, int bY, int dX, int dY) {
+		int newCode = hasher.movePlayer(hashCode, getPlayer().x, getPlayer().y, bX,bY);
+		newCode = hasher.moveBox(newCode, bX, bY, bX+dX,bY+dY);
+		setHashCode(newCode);
+	}
 
 	@Override
 	public int hashCode() {
-		if (hashCode == -1) {
-			
-		}
 		return hashCode;
 	}
 
@@ -86,17 +82,9 @@ public class GameState implements Comparable<GameState> {
 		for(Coordinate box : boxes) {
 			nBoxes.add(box.clone());
 		}
-		return new GameState(nBoxes, player.clone(), path, heuristic);
+		return new GameState(nBoxes, player.clone(), path, hashCode);
 	}
 
-	/*
-	 * //TODO: Is this actually correct?
-	 * 
-	 * @Override public int compareTo(GameState arg0) {
-	 * if(heuristic.getValue(this) < heuristic.stupidHeuristic(arg0)) { return
-	 * 1; } else if(heuristic.stupidHeuristic(this) >
-	 * heuristic.stupidHeuristic(arg0)) { return -1; } return 0; }
-	 */
 
 	public void setHeuristic(int heuristic) {
 		this.heuristic = heuristic;
