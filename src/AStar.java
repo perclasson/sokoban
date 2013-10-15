@@ -5,7 +5,7 @@ import java.util.Queue;
 
 public class AStar {
 
-	public static String findPathBFS(State state, Coordinate start, Coordinate goal) {
+	public static String findPath(State state, Coordinate start, Coordinate goal) {
 		if (start.equals(goal)) {
 			return "";
 		}
@@ -24,13 +24,13 @@ public class AStar {
 				if (Main.isFreeSpace(state, c) && visited[c.y][c.x] == '\u0000') {
 					queue.add(c);
 					if (Constants.dx[i] > 0) {
-						visited[c.y][c.x] = 'L';
-					} else if (Constants.dx[i] < 0) {
 						visited[c.y][c.x] = 'R';
+					} else if (Constants.dx[i] < 0) {
+						visited[c.y][c.x] = 'L';
 					} else if (Constants.dy[i] > 0) {
-						visited[c.y][c.x] = 'U';
-					} else if(Constants.dy[i] < 0){
 						visited[c.y][c.x] = 'D';
+					} else if(Constants.dy[i] < 0){
+						visited[c.y][c.x] = 'U';
 					} else {
 						System.err.println("This should never happen");
 						System.exit(1);
@@ -47,16 +47,16 @@ public class AStar {
 		while (!curr.equals(start)) {
 			sb.append(visited[curr.y][curr.x]).append(' ');
 			switch (visited[curr.y][curr.x]) {
-			case 'R':
+			case 'L':
 				curr = new Coordinate(curr.x + 1, curr.y);
 				break;
-			case 'L':
+			case 'R':
 				curr = new Coordinate(curr.x - 1, curr.y);
 				break;
-			case 'U': 
+			case 'D': 
 				curr = new Coordinate(curr.x, curr.y - 1);
 				break;
-			case 'D': 
+			case 'U': 
 				curr = new Coordinate(curr.x, curr.y + 1);
 				break;
 			}
@@ -64,7 +64,7 @@ public class AStar {
 		return sb.toString();
 	}
 
-	public static String findPath(State state, Coordinate start, Coordinate goal) {
+	public static String findPathASTAR(State state, Coordinate start, Coordinate goal) {
 		if (start.x == goal.x && start.y == goal.y) {
 			return "";
 		}

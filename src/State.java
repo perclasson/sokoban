@@ -1,7 +1,7 @@
 import java.util.HashSet;
 import java.util.Set;
 
-public class State {
+public class State implements Comparable<State> {
 	private Set<Coordinate> boxes;
 	private int hashCode;
 	private Coordinate player;
@@ -11,11 +11,12 @@ public class State {
 	private State parent;
 	private boolean playerOnGoal;
 	private Set<Coordinate> goals;
-	
+	private int stepsTo = 0;
+
 	/**
 	 * @return Low value is good.
 	 */
-	public int getValue() {
+	public int getValue2() {
 		if(value != Integer.MIN_VALUE)
 			return value;
 		value = boxes.size();
@@ -30,7 +31,7 @@ public class State {
 		return value;
 	}
 
-	public int getValue2() {
+	public int getValue() {
 		if (value != Integer.MIN_VALUE)
 			return value;
 		int N = boxes.size();
@@ -80,8 +81,6 @@ public class State {
 		
 		return value;
 	}
-	
-
 
 	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent, Set<Coordinate> goals) {
 		this.goals = goals;
@@ -112,7 +111,6 @@ public class State {
 		this.parent = parent;
 		this.topMostLeftPosition = topLeftmostPosition;
 		value = Integer.MIN_VALUE;
-		
 	}
 
 	public void setParent(State parent) {
@@ -161,6 +159,8 @@ public class State {
 
 	public void setPath(String path) {
 		this.pathFromParent = path;
+		if(parent != null)
+			stepsTo = parent.getStepsTo()+path.length();
 	}
 
 	@Override
@@ -172,7 +172,7 @@ public class State {
 	public boolean equals(Object o) {
 		return o.hashCode() == hashCode;
 	}
-
+	
 	public boolean containsBox(Coordinate box) {
 		return boxes.contains(box);
 	}
@@ -191,5 +191,15 @@ public class State {
 
 	public void setHash(int hash) {
 		this.hashCode = hash;
+	}
+
+	@Override
+	public int compareTo(State arg0) {
+		return (getValue()+getStepsTo())-(arg0.getValue()+arg0.getStepsTo());
+	}
+
+	
+	public int getStepsTo() {
+		return stepsTo;
 	}
 }

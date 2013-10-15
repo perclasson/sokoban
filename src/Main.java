@@ -2,10 +2,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 public class Main {
@@ -13,7 +17,6 @@ public class Main {
 	public static char[][] board;
 	private Coordinate initialPosition;
 	private Set<Coordinate> goals;
-	public Map<State, Integer> f_score;
 
 	public static void main(String[] args) {
 		new Main();
@@ -25,9 +28,9 @@ public class Main {
 		hasher = new ZobristHasher(board);
 		long before = System.currentTimeMillis();
 		System.out.println(solve());
-		System.out.println("Took "+(System.currentTimeMillis()-before)+" ms");
+//		System.out.println("Took " + (System.currentTimeMillis() - before) + " ms");
 	}
-	
+
 	public Main(char[][] b) {
 		goals = new HashSet<Coordinate>();
 		board = b;
@@ -78,40 +81,50 @@ public class Main {
 	}
 
 	private State search(State start) {
+		Map<State, Integer> f_score = new HashMap<State, Integer>();
+		Map<State, Integer> g_score = new HashMap<State, Integer>();
 		Set<State> visited = new HashSet<State>();
 		Set<State> openSet = new HashSet<State>();
-		openSet.add(start);
-		Map<State, Integer> g_score = new HashMap<State, Integer>();
 		g_score.put(start, 0);
-		f_score = new HashMap<State, Integer>();
 		f_score.put(start, g_score.get(start) + start.getValue());
-		while (!openSet.isEmpty()) {
-			State current = null;
-			for (State s : openSet) { 
-				if (current == null || f_score.get(s) < f_score.get(current)) {
-					current = s;
-				}
-			}
-			openSet.remove(current);
+		openSet.add(start);
+		int depth = 200;
+		List<State> newDepth = new ArrayList<State>();
 
-			if (isCompleted(current) && !isStuck(current))
-				return current;
-			visited.add(current);
-			List<State> nextMoves = findPossibleMoves(current);
-			for (State move : nextMoves) {
-				int tentative_g_score = g_score.get(current) + 1;
-				int tentative_f_score = tentative_g_score + move.getValue();
-				if (visited.contains(move) && tentative_f_score >= f_score.get(move)) {
+		while (depth < 5000) {
+			while (!openSet.isEmpty()) {
+				State current = null;
+				for (State s : openSet) {
+					if (current == null || f_score.get(s) < f_score.get(current)) {
+						current = s;
+					}
+				}
+				openSet.remove(current);
+				if (current.getStepsTo() + current.getValue() > depth) {
+					newDepth.add(current);
 					continue;
 				}
+				if (isCompleted(current) && !isStuck(current))
+					return current;
+				visited.add(current);
+				List<State> nextMoves = findPossibleMoves(current);
+				for (State move : nextMoves) {
+					int tentative_g_score = g_score.get(current) + 1;
+					int tentative_f_score = tentative_g_score + move.getValue();
+					if (visited.contains(move) && tentative_f_score >= f_score.get(move)) {
+						continue;
+					}
 
-				if (!visited.contains(move) || tentative_f_score < f_score.get(move)) {
-					g_score.put(move, tentative_g_score);
-					f_score.put(move, tentative_f_score);
-					openSet.add(move);
+					if (!visited.contains(move) || tentative_f_score < f_score.get(move)) {
+						g_score.put(move, tentative_g_score);
+						f_score.put(move, tentative_f_score);
+						openSet.add(move);
+					}
 				}
 			}
-
+			depth *= 2;
+			openSet.addAll(newDepth);
+			newDepth.clear();
 		}
 		return null;
 	}
