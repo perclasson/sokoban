@@ -1,9 +1,8 @@
 import java.util.HashSet;
 import java.util.Set;
 
-public class State {
+public class State implements Comparable<State> {
 	private Set<Coordinate> boxes;
-	private Set<Coordinate> goals;
 	private int hashCode;
 	private Coordinate player;
 	private Coordinate topMostLeftPosition;
@@ -11,6 +10,7 @@ public class State {
 	private String pathFromParent;
 	private State parent;
 	private boolean playerOnGoal;
+	private Set<Coordinate> goals;
 
 	public int getValue() {
 		if (value != -1)
@@ -62,8 +62,11 @@ public class State {
 		
 		return value;
 	}
+	
 
-	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent) {
+
+	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent, Set<Coordinate> goals) {
+		this.goals = goals;
 		this.hashCode = hashCode;
 		this.player = player;
 		this.boxes = boxes;
@@ -72,7 +75,8 @@ public class State {
 		value = -1;
 	}
 
-	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent, boolean playerOnGoal) {
+	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent, Set<Coordinate> goals, boolean playerOnGoal) {
+		this.goals = goals;
 		this.hashCode = hashCode;
 		this.boxes = boxes;
 		this.parent = parent;
@@ -80,13 +84,15 @@ public class State {
 		this.playerOnGoal = playerOnGoal;
 	}
 	
-	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent, Coordinate topLeftmostPosition) {
+	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent, Set<Coordinate> goals, Coordinate topLeftmostPosition) {
+		this.goals = goals;
 		this.hashCode = hashCode;
 		this.player = player;
 		this.boxes = boxes;
 		pathFromParent = "";
 		this.parent = parent;
 		this.topMostLeftPosition = topLeftmostPosition;
+		
 	}
 
 	public void setParent(State parent) {
@@ -110,7 +116,7 @@ public class State {
 		for (Coordinate box : boxes) {
 			newBoxes.add(box.clone());
 		}
-		return new State(hashCode, player.clone(), newBoxes, parent, topMostLeftPosition);
+		return new State(hashCode, player.clone(), newBoxes, parent, goals, topMostLeftPosition);
 	}
 
 	public Coordinate getPlayer() {
@@ -165,5 +171,12 @@ public class State {
 
 	public void setHash(int hash) {
 		this.hashCode = hash;
+	}
+
+
+
+	@Override
+	public int compareTo(State arg0) {
+		return getValue() - arg0.getValue();
 	}
 }
