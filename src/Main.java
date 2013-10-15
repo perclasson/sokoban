@@ -21,10 +21,16 @@ public class Main {
 		visited = new HashSet<State>();
 		board = readBoard();
 		hasher = new ZobristHasher(board);
-		solve();
+		System.out.println(solve());
+	}
+	
+	public Main(char[][] b) {
+		visited = new HashSet<State>();
+		board = b;
+		hasher = new ZobristHasher(board);
 	}
 
-	private void solve() {
+	public String solve() {
 		State root = extractRootState(board);
 		String path = "";
 		if (root.isPlayerOnGoal()) {
@@ -32,7 +38,7 @@ public class Main {
 		} else {
 			path = findPath(root);
 		}
-		System.out.println(path);
+		return path;
 	}
 
 	private String findPathForPlayerOnGoal(State root) {
@@ -62,8 +68,7 @@ public class Main {
 	private String findPath(State root) {
 		State goal = search(root);
 		if (goal == null) {
-			System.out.println("No path");
-			System.exit(0);
+			return "No path";
 		}
 		return recreatePath(goal);
 	}
@@ -113,27 +118,10 @@ public class Main {
 				if (newState != null) {
 					if (!visited.contains(newState)) {
 						moves.add(newState);
-					} else {
-						// State match = testFunc(newState);
-						// System.err.println(newState.hashCode());
-						// System.err.println(newState.getTopLeftmost());
-						// printState(newState);
-						// System.out.println(newState.hashCode());
-						// System.out.println(match.getTopLeftmost());
-						// printSTDState(match);
 					}
 				}
 			}
 		}
-	}
-
-	private State testFunc(State state) {
-		for (State s : visited) {
-			if (s.equals(state)) {
-				return s;
-			}
-		}
-		return null;
 	}
 
 	private State makeMove(State state, Coordinate box, int dx, int dy) {
@@ -258,12 +246,10 @@ public class Main {
 		String line = null;
 		List<char[]> tmp = new ArrayList<char[]>();
 		int i = 0;
-		int breadth = 0;
 
 		try {
 			for (i = 0; (line = in.readLine()) != null; i++) {
 				char[] lineArray = line.toCharArray();
-				breadth = Math.max(breadth, line.length());
 				tmp.add(lineArray);
 			}
 		} catch (IOException e) {
@@ -306,25 +292,6 @@ public class Main {
 				}
 			}
 			System.err.println();
-		}
-	}
-
-	private void printSTDState(State state) {
-		for (int i = 0; i < board.length; i++) {
-			for (int j = 0; j < board[i].length; j++) {
-				if (state.containsBox(new Coordinate(j, i)) && board[i][j] == '.') {
-					System.out.print('*');
-				} else if (state.containsBox(new Coordinate(j, i))) {
-					System.out.print('$');
-				} else if (state.getPlayer().x == j && state.getPlayer().y == i && board[i][j] == '.') {
-					System.out.print('+');
-				} else if (state.getPlayer().x == j && state.getPlayer().y == i) {
-					System.out.print('@');
-				} else {
-					System.out.print(board[i][j]);
-				}
-			}
-			System.out.println();
 		}
 	}
 }
