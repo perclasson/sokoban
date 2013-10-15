@@ -12,6 +12,7 @@ public class State implements Comparable<State> {
 	private boolean playerOnGoal;
 	private Set<Coordinate> goals;
 	private int stepsTo = 0;
+	public int fScore, gScore;
 
 	/**
 	 * @return Low value is good.

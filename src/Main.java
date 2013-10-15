@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 
@@ -28,7 +29,7 @@ public class Main {
 		hasher = new ZobristHasher(board);
 		long before = System.currentTimeMillis();
 		System.out.println(solve());
-//		System.out.println("Took " + (System.currentTimeMillis() - before) + " ms");
+		System.out.println("Took " + (System.currentTimeMillis() - before) + " ms");
 	}
 
 	public Main(char[][] b) {
@@ -41,15 +42,23 @@ public class Main {
 		State root = extractRootState(board);
 		String path = "";
 		if (root.isPlayerOnGoal()) {
-			path = findPathForPlayerOnGoal(root);
+			path = findPathWithNewStartPos(root, root.getPlayer());
 		} else {
 			path = findPath(root);
+		}
+		if (path == null) {
+			for (Coordinate box : root.getBoxes()) {
+				path = findPathWithNewStartPos(root, box);
+				if (path == null) {
+					break;
+				}
+			}
 		}
 		return path;
 	}
 
-	private String findPathForPlayerOnGoal(State root) {
-		List<State> rootStates = findStartPositions(root);
+	private String findPathWithNewStartPos(State root, Coordinate position) {
+		List<State> rootStates = findStartPositions(root, position);
 		for (State state : rootStates) {
 			String path = findPath(state);
 			if (path != null) {
@@ -59,10 +68,10 @@ public class Main {
 		return null;
 	}
 
-	private List<State> findStartPositions(State root) {
+	private List<State> findStartPositions(State root, Coordinate position) {
 		List<State> states = new ArrayList<State>();
 		for (int i = 0; i < Constants.dx.length; i++) {
-			Coordinate newPlayerPos = new Coordinate(root.getPlayer().x + Constants.dx[i], root.getPlayer().y + Constants.dy[i]);
+			Coordinate newPlayerPos = new Coordinate(position.x + Constants.dx[i], position.y + Constants.dy[i]);
 			if (isFreeSpace(root, newPlayerPos)) {
 				State newState = root.clone();
 				newState.movePlayer(newPlayerPos);
@@ -75,67 +84,60 @@ public class Main {
 	private String findPath(State root) {
 		State goal = search(root);
 		if (goal == null) {
-			return "No path";
+			return null;
 		}
 		return recreatePath(goal);
 	}
 
 	private State search(State start) {
-		Map<State, Integer> f_score = new HashMap<State, Integer>();
-		Map<State, Integer> g_score = new HashMap<State, Integer>();
 		Set<State> visited = new HashSet<State>();
-		Set<State> openSet = new HashSet<State>();
-		g_score.put(start, 0);
-		f_score.put(start, g_score.get(start) + start.getValue());
+		PriorityQueue<State> openSet = new PriorityQueue<State>();
+		start.gScore = 0;
+		start.fScore = start.gScore + start.getValue();
 		openSet.add(start);
-		int depth = 200;
-		List<State> newDepth = new ArrayList<State>();
+		// int depth = 200;
+		// List<State> newDepth = new ArrayList<State>();
 
-		while (depth < 5000) {
-			while (!openSet.isEmpty()) {
-				State current = null;
-				for (State s : openSet) {
-					if (current == null || f_score.get(s) < f_score.get(current)) {
-						current = s;
-					}
-				}
-				openSet.remove(current);
-				if (current.getStepsTo() + current.getValue() > depth) {
-					newDepth.add(current);
+		// while (depth < 5000) {
+		while (!openSet.isEmpty()) {
+			State current = openSet.poll();
+
+			// if (current.getStepsTo() + current.getValue() > depth) {
+			// newDepth.add(current);
+			// continue;
+			// }
+			if (isCompleted(current) && !isStuck(current))
+				return current;
+			visited.add(current);
+			List<State> nextMoves = findPossibleMoves(current);
+			for (State neighbor : nextMoves) {
+				int tentative_g_score = current.gScore + neighbor.getStepsTo();
+				int tentative_f_score = tentative_g_score + neighbor.getValue();
+				if (visited.contains(neighbor) && tentative_f_score >= neighbor.fScore) {
 					continue;
 				}
-				if (isCompleted(current) && !isStuck(current))
-					return current;
-				visited.add(current);
-				List<State> nextMoves = findPossibleMoves(current);
-				for (State move : nextMoves) {
-					int tentative_g_score = g_score.get(current) + 1;
-					int tentative_f_score = tentative_g_score + move.getValue();
-					if (visited.contains(move) && tentative_f_score >= f_score.get(move)) {
-						continue;
-					}
 
-					if (!visited.contains(move) || tentative_f_score < f_score.get(move)) {
-						g_score.put(move, tentative_g_score);
-						f_score.put(move, tentative_f_score);
-						openSet.add(move);
-					}
+				if (!visited.contains(neighbor) || tentative_f_score < neighbor.fScore) {
+					neighbor.gScore = tentative_g_score;
+					neighbor.fScore = tentative_f_score;
+					openSet.add(neighbor);
 				}
 			}
-			depth *= 2;
-			openSet.addAll(newDepth);
-			newDepth.clear();
 		}
+		// depth *= 2;
+		// openSet.addAll(newDepth);
+		// newDepth.clear();
+		// }
 		return null;
 	}
 
 	private boolean isStuck(State state) {
-		return AStar.findPath(state, state.getPlayer(), initialPosition) == null;
+		return BoardSearcher.findPath(state, state.getPlayer(), initialPosition) == null;
 	}
 
 	public String recreatePath(State goal) {
 		StringBuilder sb = new StringBuilder();
-		String endPath = AStar.findPath(goal, goal.getPlayer(), initialPosition);
+		String endPath = BoardSearcher.findPath(goal, goal.getPlayer(), initialPosition);
 
 		while (goal != null) {
 			if (goal.getPath() != null)
@@ -179,7 +181,7 @@ public class Main {
 	}
 
 	private String getPath(State state, Coordinate box, Coordinate to) {
-		String path = AStar.findPath(state, state.getPlayer(), to);
+		String path = BoardSearcher.findPath(state, state.getPlayer(), to);
 		if (path == null) {
 			return null;
 		}
