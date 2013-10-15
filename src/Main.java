@@ -29,7 +29,7 @@ public class Main {
 		hasher = new ZobristHasher(board);
 		long before = System.currentTimeMillis();
 		System.out.println(solve());
-//		System.out.println("Took " + (System.currentTimeMillis() - before) + " ms");
+		System.out.println("Took " + (System.currentTimeMillis() - before) + " ms");
 	}
 
 	public Main(char[][] b) {
@@ -111,7 +111,8 @@ public class Main {
 				if (!queue.contains(neighbor) || tentative_f_score < neighbor.fScore) {
 					neighbor.gScore = tentative_g_score;
 					neighbor.fScore = tentative_f_score;
-					queue.add(neighbor);
+					if(!queue.contains(neighbor))
+						queue.add(neighbor);
 				}
 			}
 		}
