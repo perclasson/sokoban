@@ -65,10 +65,6 @@ public class ZobristHasher {
 		return moveTile(state.hashCode(), oldTopLeftmost.x, oldTopLeftmost.y, newTopLeftmost.x, newTopLeftmost.y, PLAYER);
 	}
 	
-	/* 
-	 * FLYTTA SPELARJÄVELN FÖRST!!!!!!Annars blir det kaos.
-	 * 
-	 */
 	public int moveBox(int hash, int fromX, int fromY, int toX, int toY) {
 		return moveTile(hash, fromX, fromY, toX, toY, BOX);
 	}
@@ -83,7 +79,6 @@ public class ZobristHasher {
 		queue.add(state.getPlayer());
 		while(!queue.isEmpty()) {
 			current = queue.pop();
-			visited[current.y][current.x] = 'V';
 			if((current.x < topLeftmost.x) || (current.x == topLeftmost.x && current.y < topLeftmost.y)) {
 				topLeftmost = current;
 			}

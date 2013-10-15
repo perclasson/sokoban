@@ -61,7 +61,7 @@ public class Main {
 
 	private String findPath(State root) {
 		State goal = search(root);
-		if(goal == null) {
+		if (goal == null) {
 			System.out.println("No path");
 			System.exit(0);
 		}
@@ -111,12 +111,29 @@ public class Main {
 			if (isPossibleMove(state, box, Constants.dx[i], Constants.dy[i])) {
 				newState = makeMove(state, box, Constants.dx[i], Constants.dy[i]);
 				if (newState != null) {
-					if(!visited.contains(newState)) {
+					if (!visited.contains(newState)) {
 						moves.add(newState);
-					} 
+					} else {
+						// State match = testFunc(newState);
+						// System.err.println(newState.hashCode());
+						// System.err.println(newState.getTopLeftmost());
+						// printState(newState);
+						// System.out.println(newState.hashCode());
+						// System.out.println(match.getTopLeftmost());
+						// printSTDState(match);
+					}
 				}
 			}
 		}
+	}
+
+	private State testFunc(State state) {
+		for (State s : visited) {
+			if (s.equals(state)) {
+				return s;
+			}
+		}
+		return null;
 	}
 
 	private State makeMove(State state, Coordinate box, int dx, int dy) {
@@ -127,8 +144,8 @@ public class Main {
 		State newState = state.clone();
 		newState.setPath(path);
 		newState.setParent(state);
-		newState.movePlayer(new Coordinate(box.x + 2 * dx, box.y + 2 * dy));
 		newState.moveBox(box, new Coordinate(box.x + dx, box.y + dy));
+		newState.movePlayer(new Coordinate(box.x + 2 * dx, box.y + 2 * dy));
 		return newState;
 	}
 
@@ -231,7 +248,7 @@ public class Main {
 			}
 		}
 		initialPosition = player.clone();
-		State s = new State(-1, player, boxes, null, playerOnGoal); 
+		State s = new State(-1, player, boxes, null, playerOnGoal);
 		s.setHash(hasher.hash(s, player));
 		return s;
 	}
@@ -291,7 +308,7 @@ public class Main {
 			System.err.println();
 		}
 	}
-	
+
 	private void printSTDState(State state) {
 		for (int i = 0; i < board.length; i++) {
 			for (int j = 0; j < board[i].length; j++) {
