@@ -2,23 +2,26 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 
 public class Main {
-
-	private Set<State> visited;
 	private static ZobristHasher hasher;
 	private static char[][] board;
 	private Coordinate initialPosition;
+	private Set<Coordinate> goals;
 
 	public static void main(String[] args) {
 		new Main();
 	}
 
 	public Main() {
-		visited = new HashSet<State>();
+		goals = new HashSet<Coordinate>();
 		board = readBoard();
 		hasher = new ZobristHasher(board);
 		solve();
@@ -68,17 +71,41 @@ public class Main {
 		return recreatePath(goal);
 	}
 
-	private State search(State state) {
-		if (isCompleted(state)) {
-			return state;
-		}
-		visited.add(state);
-		List<State> nextMoves = findPossibleMoves(state);
-		for (State move : nextMoves) {
-			State goal = search(move);
-			if (goal != null) {
-				return goal;
+	private State search(State start) {
+		Set<State> visited = new HashSet<State>();
+		Set<State> openSet = new HashSet<State>();
+		openSet.add(start);
+		HashMap<State, Integer> g_score = new HashMap<State, Integer>();
+		g_score.put(start, 0);
+		HashMap<State, Integer> f_score = new HashMap<State, Integer>();
+		f_score.put(start, g_score.get(start) + start.getValue());
+		while (!openSet.isEmpty()) {
+			State current = null;
+			for (State s : openSet) { // TODO: implement with comparator
+				if (current == null || f_score.get(s) < f_score.get(current)) {
+					current = s;
+				}
 			}
+			openSet.remove(current);
+
+			if (isCompleted(current))
+				return current;
+			visited.add(current);
+			List<State> nextMoves = findPossibleMoves(current);
+			for (State move : nextMoves) {
+				int tentative_g_score = g_score.get(current) + 1;
+				int tentative_f_score = tentative_g_score + move.getValue();
+				if (visited.contains(move) && tentative_f_score >= f_score.get(move)) {
+					continue;
+				}
+
+				if (!visited.contains(move) || tentative_f_score < f_score.get(move)) {
+					g_score.put(move, tentative_g_score);
+					f_score.put(move, tentative_f_score);
+					openSet.add(move);
+				}
+			}
+
 		}
 		return null;
 	}
@@ -111,29 +138,10 @@ public class Main {
 			if (isPossibleMove(state, box, Constants.dx[i], Constants.dy[i])) {
 				newState = makeMove(state, box, Constants.dx[i], Constants.dy[i]);
 				if (newState != null) {
-					if (!visited.contains(newState)) {
-						moves.add(newState);
-					} else {
-						// State match = testFunc(newState);
-						// System.err.println(newState.hashCode());
-						// System.err.println(newState.getTopLeftmost());
-						// printState(newState);
-						// System.out.println(newState.hashCode());
-						// System.out.println(match.getTopLeftmost());
-						// printSTDState(match);
-					}
+					moves.add(newState);
 				}
 			}
 		}
-	}
-
-	private State testFunc(State state) {
-		for (State s : visited) {
-			if (s.equals(state)) {
-				return s;
-			}
-		}
-		return null;
 	}
 
 	private State makeMove(State state, Coordinate box, int dx, int dy) {
@@ -220,11 +228,13 @@ public class Main {
 				switch (board[y][x]) {
 				case Constants.BOX: {
 					board[y][x] = Constants.GOAL;
+					goals.add(new Coordinate(x, y));
 					break;
 				}
 				case Constants.BOX_ON_GOAL: {
 					boxes.add(new Coordinate(x, y));
 					board[y][x] = Constants.GOAL;
+					goals.add(new Coordinate(x, y));
 					break;
 				}
 				case Constants.PLAYER: {
@@ -248,7 +258,7 @@ public class Main {
 			}
 		}
 		initialPosition = player.clone();
-		State s = new State(-1, player, boxes, null, playerOnGoal);
+		State s = new State(-1, player, boxes, null, goals, playerOnGoal);
 		s.setHash(hasher.hash(s, player));
 		return s;
 	}
