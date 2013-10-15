@@ -77,24 +77,30 @@ public class ZobristHasher {
 		char[][] visited = new char[board.length][longestCol];
 		LinkedList<Coordinate> queue = new LinkedList<Coordinate>();
 		Coordinate current = null;
-		Coordinate topMostleft = state.getPlayer();
+		
+		Coordinate topLeftmost = state.getPlayer();
+		visited[topLeftmost.y][topLeftmost.x] = 'V';
 		queue.add(state.getPlayer());
 		while(!queue.isEmpty()) {
 			current = queue.pop();
 			visited[current.y][current.x] = 'V';
-			if((current.x < topMostleft.x) || (current.x == topMostleft.x && current.y < topMostleft.y)) {
-				topMostleft = current;
-			} 
+			if((current.x < topLeftmost.x) || (current.x == topLeftmost.x && current.y < topLeftmost.y)) {
+				topLeftmost = current;
+			}
 			for(int i = 0; i < Constants.dx.length; i++) {
 				int x = current.x + Constants.dx[i];
 				int y = current.y + Constants.dy[i];
 				Coordinate c = new Coordinate(x, y);
-				if(visited[y][x] != 'V' && Main.isFreeSpace(state, c)) {
-					queue.add(c);
+				if(visited[y][x] != 'V') {
+					visited[y][x] = 'V';
+					if(Main.isFreeSpace(state, c)) {
+						queue.add(c);
+					}
 				}
+				
 			}
 		}
-		return topMostleft;
+		return topLeftmost;
 	}
 	
 }
