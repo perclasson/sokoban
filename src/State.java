@@ -12,7 +12,7 @@ public class State implements Comparable<State> {
 	private boolean playerOnGoal;
 	private Set<Coordinate> goals;
 	private int stepsTo = 0;
-	public int fScore, gScore;
+	public int totalCost, costTo;
 
 	/**
 	 * @return Low value is good.
@@ -32,7 +32,7 @@ public class State implements Comparable<State> {
 		return value;
 	}
 	
-	public int getValue() {
+	public int estimateGoalCost() {
 		int value = 0;
 		for (Coordinate box : boxes) {
 			int min = Integer.MAX_VALUE;
@@ -105,6 +105,8 @@ public class State implements Comparable<State> {
 		pathFromParent = "";
 		this.parent = parent;
 		value = Integer.MIN_VALUE;
+		if(parent != null)
+			stepsTo = parent.getStepsTo() + 1;
 	}
 
 	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent, Set<Coordinate> goals, boolean playerOnGoal) {
@@ -115,6 +117,8 @@ public class State implements Comparable<State> {
 		this.player = player;
 		this.playerOnGoal = playerOnGoal;
 		value = Integer.MIN_VALUE;
+		if(parent != null)
+			stepsTo = parent.getStepsTo() + 1;
 	}
 	
 	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent, Set<Coordinate> goals, Coordinate topLeftmostPosition) {
@@ -126,6 +130,8 @@ public class State implements Comparable<State> {
 		this.parent = parent;
 		this.topMostLeftPosition = topLeftmostPosition;
 		value = Integer.MIN_VALUE;
+		if(parent != null)
+			stepsTo = parent.getStepsTo() + 1;
 	}
 
 	public void setParent(State parent) {
@@ -174,8 +180,6 @@ public class State implements Comparable<State> {
 
 	public void setPath(String path) {
 		this.pathFromParent = path;
-		if(parent != null)
-			stepsTo = parent.getStepsTo()+path.length();
 	}
 
 	@Override
@@ -210,7 +214,7 @@ public class State implements Comparable<State> {
 
 	@Override
 	public int compareTo(State arg0) {
-		return (getValue()+getStepsTo())-(arg0.getValue()+arg0.getStepsTo());
+		return totalCost-arg0.totalCost;
 	}
 
 	

@@ -29,7 +29,7 @@ public class Main {
 		hasher = new ZobristHasher(board);
 		long before = System.currentTimeMillis();
 		System.out.println(solve());
-		System.out.println("Took " + (System.currentTimeMillis() - before) + " ms");
+//		System.out.println("Took " + (System.currentTimeMillis() - before) + " ms");
 	}
 
 	public Main(char[][] b) {
@@ -92,8 +92,8 @@ public class Main {
 	private State search(State start) {
 		Set<State> visited = new HashSet<State>();
 		PriorityQueue<State> queue = new PriorityQueue<State>();
-		start.gScore = 0;
-		start.fScore = start.gScore + start.getValue();
+		start.costTo = 0;
+		start.totalCost = start.costTo + start.estimateGoalCost();
 		queue.add(start);
 		while (!queue.isEmpty()) {
 			State current = queue.poll();
@@ -102,15 +102,15 @@ public class Main {
 			visited.add(current);
 			List<State> nextMoves = findPossibleMoves(current);
 			for (State neighbor : nextMoves) {
-				int tentative_g_score = current.gScore + (neighbor.getPath().length()+1)/2;
-				int tentative_f_score = tentative_g_score + neighbor.getValue();
-				if (visited.contains(neighbor) && tentative_f_score >= neighbor.fScore) {
+				int costTo = current.costTo + 1;
+				int totalCost = costTo + neighbor.estimateGoalCost();
+				if (visited.contains(neighbor) && totalCost >= neighbor.totalCost) {
 					continue;
 				}
 
-				if (!queue.contains(neighbor) || tentative_f_score < neighbor.fScore) {
-					neighbor.gScore = tentative_g_score;
-					neighbor.fScore = tentative_f_score;
+				if (!queue.contains(neighbor) || totalCost < neighbor.totalCost) {
+					neighbor.costTo = costTo;
+					neighbor.totalCost = totalCost;
 					if(!queue.contains(neighbor))
 						queue.add(neighbor);
 				}
