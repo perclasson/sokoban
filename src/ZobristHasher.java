@@ -59,8 +59,6 @@ public class ZobristHasher {
 	}
 	
 	public int updatePlayerHash(State state) {
-		System.err.println(state.getPlayer().toString());
-		Main.printState(state);
 		Coordinate newTopLeftmost = findTopLeftmostPosition(state);
 		Coordinate oldTopLeftmost = state.getTopLeftmost();
 		state.setTopLeftmostPosition(newTopLeftmost);
@@ -80,15 +78,13 @@ public class ZobristHasher {
 		LinkedList<Coordinate> queue = new LinkedList<Coordinate>();
 		Coordinate current = null;
 		Coordinate topMostleft = state.getPlayer();
-		int topMostLeftSum = topMostleft.x + topMostleft.y;
 		queue.add(state.getPlayer());
 		while(!queue.isEmpty()) {
 			current = queue.pop();
 			visited[current.y][current.x] = 'V';
-			if(current.x + current.y < topMostLeftSum) {
+			if((current.x < topMostleft.x) || (current.x == topMostleft.x && current.y < topMostleft.y)) {
 				topMostleft = current;
-				topMostLeftSum = current.x + current.y;
-			}
+			} 
 			for(int i = 0; i < Constants.dx.length; i++) {
 				int x = current.x + Constants.dx[i];
 				int y = current.y + Constants.dy[i];
@@ -100,4 +96,5 @@ public class ZobristHasher {
 		}
 		return topMostleft;
 	}
+	
 }

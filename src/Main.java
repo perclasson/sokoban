@@ -61,12 +61,15 @@ public class Main {
 
 	private String findPath(State root) {
 		State goal = search(root);
+		if(goal == null) {
+			System.out.println("No path");
+			System.exit(0);
+		}
 		return recreatePath(goal);
 	}
 
 	private State search(State state) {
 		if (isCompleted(state)) {
-			printState(state);
 			return state;
 		}
 		visited.add(state);
@@ -110,30 +113,11 @@ public class Main {
 				if (newState != null) {
 					if(!visited.contains(newState)) {
 						moves.add(newState);
-					} else {
-						
-//						State match = testFunc(newState);
-//						System.err.println(newState.hashCode());
-//						System.err.println(newState.getTopLeftmost());
-//						printState(newState);
-//						System.out.println(newState.hashCode());
-//						System.out.println(match.getTopLeftmost());
-//						printSTDState(match);
-					}
+					} 
 				}
 			}
 		}
 	}
-	
-	private State testFunc(State state) {
-		for(State s: visited) {
-			if(s.equals(state)) {
-				return s;
-			}
-		}
-		return null;
-	}
-	
 
 	private State makeMove(State state, Coordinate box, int dx, int dy) {
 		String path = getPath(state, box, new Coordinate(box.x + dx, box.y + dy));
