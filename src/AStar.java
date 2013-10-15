@@ -4,58 +4,61 @@ import java.util.List;
 import java.util.Queue;
 
 public class AStar {
-	
+
 	public static String findPathBFS(State state, Coordinate start, Coordinate goal) {
 		if (start.equals(goal)) {
-			return ""; 
+			return "";
 		}
-		char[][] visited = new char[Main.board.length][Main.board.length*2];
+		char[][] visited = new char[Main.board.length][Main.board.length * 2];
 		Queue<Coordinate> queue = new LinkedList<Coordinate>();
 		queue.add(start);
+		visited[start.y][start.x] = 'S';
 		
-		while(!queue.isEmpty()) {
+		while (!queue.isEmpty()) {
 			Coordinate curr = queue.poll();
-			if(curr.equals(goal)) {
+			if (curr.equals(goal)) {
 				return reconstruct(start, goal, visited);
 			}
-			for(int i = 0 ; i < Constants.dx.length ; i++) {
-				Coordinate c = new Coordinate(curr.x+Constants.dx[i], curr.y+Constants.dy[i]);
-				if(Main.isFreeSpace(state, c) && visited[c.y][c.x] != ' ') {
+			for (int i = 0; i < Constants.dx.length; i++) {
+				Coordinate c = new Coordinate(curr.x + Constants.dx[i], curr.y + Constants.dy[i]);
+				if (Main.isFreeSpace(state, c) && visited[c.y][c.x] == '\u0000') {
 					queue.add(c);
-					if(Constants.dx[i] > 0) {
-						visited[c.y][c.x] = 'R';
-					} else if(Constants.dx[i] < 0) {
+					if (Constants.dx[i] > 0) {
 						visited[c.y][c.x] = 'L';
-					} else if(Constants.dy[i] > 0) {
+					} else if (Constants.dx[i] < 0) {
+						visited[c.y][c.x] = 'R';
+					} else if (Constants.dy[i] > 0) {
+						visited[c.y][c.x] = 'U';
+					} else if(Constants.dy[i] < 0){
 						visited[c.y][c.x] = 'D';
 					} else {
-						visited[c.y][c.x] = 'U';
+						System.err.println("This should never happen");
+						System.exit(1);
 					}
 				}
 			}
 		}
-		
 		return null;
 	}
 
 	private static String reconstruct(Coordinate start, Coordinate goal, char[][] visited) {
 		Coordinate curr = goal;
 		StringBuilder sb = new StringBuilder();
-		while(!curr.equals(start)) {
+		while (!curr.equals(start)) {
 			sb.append(visited[curr.y][curr.x]).append(' ');
-			switch(visited[curr.y][curr.x]) {
-			case 'R': {
-				curr = new Coordinate (curr.x-1, curr.y);
-			}
-			case 'L': {
-				curr = new Coordinate (curr.x+1, curr.y);
-			}
-			case 'U': {
-				curr = new Coordinate (curr.x, curr.y-1);
-			}
-			case 'D': {
-				curr = new Coordinate (curr.x, curr.y+1);
-			}
+			switch (visited[curr.y][curr.x]) {
+			case 'R':
+				curr = new Coordinate(curr.x + 1, curr.y);
+				break;
+			case 'L':
+				curr = new Coordinate(curr.x - 1, curr.y);
+				break;
+			case 'U': 
+				curr = new Coordinate(curr.x, curr.y - 1);
+				break;
+			case 'D': 
+				curr = new Coordinate(curr.x, curr.y + 1);
+				break;
 			}
 		}
 		return sb.toString();
@@ -63,9 +66,9 @@ public class AStar {
 
 	public static String findPath(State state, Coordinate start, Coordinate goal) {
 		if (start.x == goal.x && start.y == goal.y) {
-			return ""; 
+			return "";
 		}
- 
+
 		Node startNode = new Node(start);
 		Node goalNode = new Node(goal);
 
@@ -154,12 +157,13 @@ public class AStar {
 		int size = list.size();
 		for (int i = 0; i < size; i++) {
 			if (node.compareTo(list.get(i)) <= 0) { // node cost is smaller than
-													// or equal to list[i]
+				// or equal to list[i]
 				list.add(i, node);
 			}
 		}
 		list.add(node);
 	}
+
 	private static class Node extends Coordinate implements Comparable<Node> {
 		private int cost;
 		private int approxCost;
@@ -172,7 +176,7 @@ public class AStar {
 			approxCost = 0;
 			visited = false;
 		}
-		
+
 		public Node(Coordinate c) {
 			this(c.x, c.y);
 		}
@@ -243,5 +247,5 @@ public class AStar {
 			return 0;
 		}
 	}
-	
+
 }
