@@ -24,11 +24,17 @@ public class Main {
 		board = readBoard();
 		hasher = new ZobristHasher(board);
 		long before = System.currentTimeMillis();
-		solve();
+		System.out.println(solve());
 		System.out.println("Took "+(System.currentTimeMillis()-before)+" ms");
 	}
+	
+	public Main(char[][] b) {
+		goals = new HashSet<Coordinate>();
+		board = b;
+		hasher = new ZobristHasher(board);
+	}
 
-	private void solve() {
+	public String solve() {
 		State root = extractRootState(board);
 		String path = "";
 		if (root.isPlayerOnGoal()) {
@@ -36,7 +42,7 @@ public class Main {
 		} else {
 			path = findPath(root);
 		}
-		System.out.println(path);
+		return path;
 	}
 
 	private String findPathForPlayerOnGoal(State root) {
@@ -66,8 +72,7 @@ public class Main {
 	private String findPath(State root) {
 		State goal = search(root);
 		if (goal == null) {
-			System.out.println("No path");
-			System.exit(0);
+			return "No path";
 		}
 		return recreatePath(goal);
 	}
@@ -271,12 +276,10 @@ public class Main {
 		String line = null;
 		List<char[]> tmp = new ArrayList<char[]>();
 		int i = 0;
-		int breadth = 0;
 
 		try {
 			for (i = 0; (line = in.readLine()) != null; i++) {
 				char[] lineArray = line.toCharArray();
-				breadth = Math.max(breadth, line.length());
 				tmp.add(lineArray);
 			}
 		} catch (IOException e) {
@@ -319,25 +322,6 @@ public class Main {
 				}
 			}
 			System.err.println();
-		}
-	}
-
-	private void printSTDState(State state) {
-		for (int i = 0; i < board.length; i++) {
-			for (int j = 0; j < board[i].length; j++) {
-				if (state.containsBox(new Coordinate(j, i)) && board[i][j] == '.') {
-					System.out.print('*');
-				} else if (state.containsBox(new Coordinate(j, i))) {
-					System.out.print('$');
-				} else if (state.getPlayer().x == j && state.getPlayer().y == i && board[i][j] == '.') {
-					System.out.print('+');
-				} else if (state.getPlayer().x == j && state.getPlayer().y == i) {
-					System.out.print('@');
-				} else {
-					System.out.print(board[i][j]);
-				}
-			}
-			System.out.println();
 		}
 	}
 }
