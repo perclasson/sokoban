@@ -91,43 +91,30 @@ public class Main {
 
 	private State search(State start) {
 		Set<State> visited = new HashSet<State>();
-		PriorityQueue<State> openSet = new PriorityQueue<State>();
+		PriorityQueue<State> queue = new PriorityQueue<State>();
 		start.gScore = 0;
 		start.fScore = start.gScore + start.getValue();
-		openSet.add(start);
-		// int depth = 200;
-		// List<State> newDepth = new ArrayList<State>();
-
-		// while (depth < 5000) {
-		while (!openSet.isEmpty()) {
-			State current = openSet.poll();
-
-			// if (current.getStepsTo() + current.getValue() > depth) {
-			// newDepth.add(current);
-			// continue;
-			// }
+		queue.add(start);
+		while (!queue.isEmpty()) {
+			State current = queue.poll();
 			if (isCompleted(current) && !isStuck(current))
 				return current;
 			visited.add(current);
 			List<State> nextMoves = findPossibleMoves(current);
 			for (State neighbor : nextMoves) {
-				int tentative_g_score = current.gScore + neighbor.getStepsTo();
+				int tentative_g_score = current.gScore + (neighbor.getPath().length()+1)/2;
 				int tentative_f_score = tentative_g_score + neighbor.getValue();
 				if (visited.contains(neighbor) && tentative_f_score >= neighbor.fScore) {
 					continue;
 				}
 
-				if (!visited.contains(neighbor) || tentative_f_score < neighbor.fScore) {
+				if (!queue.contains(neighbor) || tentative_f_score < neighbor.fScore) {
 					neighbor.gScore = tentative_g_score;
 					neighbor.fScore = tentative_f_score;
-					openSet.add(neighbor);
+					queue.add(neighbor);
 				}
 			}
 		}
-		// depth *= 2;
-		// openSet.addAll(newDepth);
-		// newDepth.clear();
-		// }
 		return null;
 	}
 
