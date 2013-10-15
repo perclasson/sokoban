@@ -40,12 +40,10 @@ public class Main {
 
 	public String solve() {
 		State root = extractRootState(board);
-		String path = "";
-		if (root.isPlayerOnGoal()) {
-			path = findPathWithNewStartPos(root, root.getPlayer());
-		} else {
+		String path = null;
+		if (!root.isPlayerOnGoal()) {
 			path = findPath(root);
-		}
+		} 
 		if (path == null) {
 			for (Coordinate box : root.getBoxes()) {
 				path = findPathWithNewStartPos(root, box);
@@ -95,26 +93,37 @@ public class Main {
 		start.costTo = 0;
 		start.totalCost = start.costTo + start.estimateGoalCost();
 		queue.add(start);
-		while (!queue.isEmpty()) {
-			State current = queue.poll();
-			if (isCompleted(current) && !isStuck(current))
-				return current;
-			visited.add(current);
-			List<State> nextMoves = findPossibleMoves(current);
-			for (State neighbor : nextMoves) {
-				int costTo = current.costTo + 1;
-				int totalCost = costTo + neighbor.estimateGoalCost();
-				if (visited.contains(neighbor) && totalCost >= neighbor.totalCost) {
+		List<State> iterativeDeepening = new ArrayList<State>();
+		int depth = 5;
+		while(depth > 0) {
+			while (!queue.isEmpty()) {
+				State current = queue.poll();
+				if (isCompleted(current) && !isStuck(current))
+					return current;
+				visited.add(current);
+				if(current.getStepsTo() > depth) {
+					iterativeDeepening.add(current);
 					continue;
 				}
-
-				if (!queue.contains(neighbor) || totalCost < neighbor.totalCost) {
-					neighbor.costTo = costTo;
-					neighbor.totalCost = totalCost;
-					if(!queue.contains(neighbor))
-						queue.add(neighbor);
+				List<State> nextMoves = findPossibleMoves(current);
+				for (State neighbor : nextMoves) {
+					int costTo = current.costTo + 1;
+					int totalCost = costTo + neighbor.estimateGoalCost();
+					if (visited.contains(neighbor) && totalCost >= neighbor.totalCost) {
+						continue;
+					}
+	
+					if (!queue.contains(neighbor) || totalCost < neighbor.totalCost) {
+						neighbor.costTo = costTo;
+						neighbor.totalCost = totalCost;
+						if(!queue.contains(neighbor))
+							queue.add(neighbor);
+					}
 				}
 			}
+			depth += 5;
+			queue.addAll(iterativeDeepening);
+			iterativeDeepening.clear();
 		}
 		return null;
 	}
