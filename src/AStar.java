@@ -1,8 +1,65 @@
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 public class AStar {
+	
+	public static String findPathBFS(State state, Coordinate start, Coordinate goal) {
+		if (start.equals(goal)) {
+			return ""; 
+		}
+		char[][] visited = new char[Main.board.length][Main.board.length*2];
+		Queue<Coordinate> queue = new LinkedList<Coordinate>();
+		queue.add(start);
+		
+		while(!queue.isEmpty()) {
+			Coordinate curr = queue.poll();
+			if(curr.equals(goal)) {
+				return reconstruct(start, goal, visited);
+			}
+			for(int i = 0 ; i < Constants.dx.length ; i++) {
+				Coordinate c = new Coordinate(curr.x+Constants.dx[i], curr.y+Constants.dy[i]);
+				if(Main.isFreeSpace(state, c) && visited[c.y][c.x] != ' ') {
+					queue.add(c);
+					if(Constants.dx[i] > 0) {
+						visited[c.y][c.x] = 'R';
+					} else if(Constants.dx[i] < 0) {
+						visited[c.y][c.x] = 'L';
+					} else if(Constants.dy[i] > 0) {
+						visited[c.y][c.x] = 'D';
+					} else {
+						visited[c.y][c.x] = 'U';
+					}
+				}
+			}
+		}
+		
+		return null;
+	}
+
+	private static String reconstruct(Coordinate start, Coordinate goal, char[][] visited) {
+		Coordinate curr = goal;
+		StringBuilder sb = new StringBuilder();
+		while(!curr.equals(start)) {
+			sb.append(visited[curr.y][curr.x]).append(' ');
+			switch(visited[curr.y][curr.x]) {
+			case 'R': {
+				curr = new Coordinate (curr.x-1, curr.y);
+			}
+			case 'L': {
+				curr = new Coordinate (curr.x+1, curr.y);
+			}
+			case 'U': {
+				curr = new Coordinate (curr.x, curr.y-1);
+			}
+			case 'D': {
+				curr = new Coordinate (curr.x, curr.y+1);
+			}
+			}
+		}
+		return sb.toString();
+	}
 
 	public static String findPath(State state, Coordinate start, Coordinate goal) {
 		if (start.x == goal.x && start.y == goal.y) {

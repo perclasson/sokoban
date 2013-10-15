@@ -1,7 +1,7 @@
 import java.util.HashSet;
 import java.util.Set;
 
-public class State implements Comparable<State> {
+public class State {
 	private Set<Coordinate> boxes;
 	private int hashCode;
 	private Coordinate player;
@@ -11,9 +11,27 @@ public class State implements Comparable<State> {
 	private State parent;
 	private boolean playerOnGoal;
 	private Set<Coordinate> goals;
-
+	
+	/**
+	 * @return Low value is good.
+	 */
 	public int getValue() {
-		if (value != -1)
+		if(value != Integer.MIN_VALUE)
+			return value;
+		value = boxes.size();
+		
+		for(Coordinate box : boxes) {
+			if(Main.board[box.y][box.x] == Constants.GOAL) {
+				value--;
+			} else {
+				value++;
+			}
+		}
+		return value;
+	}
+
+	public int getValue2() {
+		if (value != Integer.MIN_VALUE)
 			return value;
 		int N = boxes.size();
 		int[][] values = new int[N][N];
@@ -72,7 +90,7 @@ public class State implements Comparable<State> {
 		this.boxes = boxes;
 		pathFromParent = "";
 		this.parent = parent;
-		value = -1;
+		value = Integer.MIN_VALUE;
 	}
 
 	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent, Set<Coordinate> goals, boolean playerOnGoal) {
@@ -82,6 +100,7 @@ public class State implements Comparable<State> {
 		this.parent = parent;
 		this.player = player;
 		this.playerOnGoal = playerOnGoal;
+		value = Integer.MIN_VALUE;
 	}
 	
 	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent, Set<Coordinate> goals, Coordinate topLeftmostPosition) {
@@ -92,6 +111,7 @@ public class State implements Comparable<State> {
 		pathFromParent = "";
 		this.parent = parent;
 		this.topMostLeftPosition = topLeftmostPosition;
+		value = Integer.MIN_VALUE;
 		
 	}
 
@@ -171,12 +191,5 @@ public class State implements Comparable<State> {
 
 	public void setHash(int hash) {
 		this.hashCode = hash;
-	}
-
-
-
-	@Override
-	public int compareTo(State arg0) {
-		return getValue() - arg0.getValue();
 	}
 }

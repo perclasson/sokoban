@@ -4,17 +4,16 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.Map;
 import java.util.Set;
 
 public class Main {
 	private static ZobristHasher hasher;
-	private static char[][] board;
+	public static char[][] board;
 	private Coordinate initialPosition;
 	private Set<Coordinate> goals;
+	public Map<State, Integer> f_score;
 
 	public static void main(String[] args) {
 		new Main();
@@ -24,7 +23,9 @@ public class Main {
 		goals = new HashSet<Coordinate>();
 		board = readBoard();
 		hasher = new ZobristHasher(board);
+		long before = System.currentTimeMillis();
 		solve();
+		System.out.println("Took "+(System.currentTimeMillis()-before)+" ms");
 	}
 
 	private void solve() {
@@ -75,20 +76,20 @@ public class Main {
 		Set<State> visited = new HashSet<State>();
 		Set<State> openSet = new HashSet<State>();
 		openSet.add(start);
-		HashMap<State, Integer> g_score = new HashMap<State, Integer>();
+		Map<State, Integer> g_score = new HashMap<State, Integer>();
 		g_score.put(start, 0);
-		HashMap<State, Integer> f_score = new HashMap<State, Integer>();
+		f_score = new HashMap<State, Integer>();
 		f_score.put(start, g_score.get(start) + start.getValue());
 		while (!openSet.isEmpty()) {
 			State current = null;
-			for (State s : openSet) { // TODO: implement with comparator
+			for (State s : openSet) { 
 				if (current == null || f_score.get(s) < f_score.get(current)) {
 					current = s;
 				}
 			}
 			openSet.remove(current);
 
-			if (isCompleted(current))
+			if (isCompleted(current) && !isStuck(current))
 				return current;
 			visited.add(current);
 			List<State> nextMoves = findPossibleMoves(current);
@@ -110,6 +111,10 @@ public class Main {
 		return null;
 	}
 
+	private boolean isStuck(State state) {
+		return AStar.findPath(state, state.getPlayer(), initialPosition) == null;
+	}
+
 	public String recreatePath(State goal) {
 		StringBuilder sb = new StringBuilder();
 		String endPath = AStar.findPath(goal, goal.getPlayer(), initialPosition);
@@ -124,10 +129,8 @@ public class Main {
 
 	private List<State> findPossibleMoves(State state) {
 		List<State> moves = new ArrayList<State>();
-		Coordinate[] boxes = new Coordinate[state.getBoxes().size()];
-		state.getBoxes().toArray(boxes);
-		for (int i = 0; i < boxes.length; i++) {
-			findMovesForBox(state, boxes[i], moves);
+		for (Coordinate box : state.getBoxes()) {
+			findMovesForBox(state, box, moves);
 		}
 		return moves;
 	}
