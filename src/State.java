@@ -31,8 +31,22 @@ public class State implements Comparable<State> {
 		}
 		return value;
 	}
-
+	
 	public int getValue() {
+		int value = 0;
+		for (Coordinate box : boxes) {
+			int min = Integer.MAX_VALUE;
+			for (Coordinate goal : goals) {
+				int manhattan = Math.abs(goal.x - box.x) + Math.abs(goal.y - goal.y);
+				if(min > manhattan)
+					min = manhattan;
+			}
+			value += min;
+		}
+		return value;
+	}
+
+	public int getValueSofisticated() {
 		if (value != Integer.MIN_VALUE)
 			return value;
 		int N = boxes.size();
