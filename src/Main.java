@@ -29,7 +29,7 @@ public class Main {
 		hasher = new ZobristHasher(board);
 		long before = System.currentTimeMillis();
 		System.out.println(solve());
-		System.out.println("Took " + (System.currentTimeMillis() - before) + " ms");
+//		System.out.println("Took " + (System.currentTimeMillis() - before) + " ms");
 	}
 
 	public Main(char[][] b) {
