@@ -1,3 +1,4 @@
+import java.util.LinkedList;
 import java.util.Random;
 import java.util.Set;
 
@@ -8,14 +9,17 @@ public class ZobristHasher {
 	int[][][] table;
 	private final int PLAYER = 0;
 	private final int BOX = 1;
+	private int longestCol;
+	private char[][] board;
 	
 	public ZobristHasher(char[][] board) {
+		this.board = board;
 		random = new Random();
 		initiate(board);
 	}
 	
 	private void initiate(char[][] board) {
-		int longestCol = Integer.MIN_VALUE;
+		longestCol = Integer.MIN_VALUE;
 		table = new int[board.length][][];
 		for(int r = 0; r < board.length; r++) {
 			if(board[r].length > longestCol) {
@@ -31,12 +35,14 @@ public class ZobristHasher {
 		}
 	}
 	
-	public int hash(Set<Coordinate> boxes, Coordinate player) {
+	public int hash(State state, Coordinate player) {
 		int hash = 0;
-		for(Coordinate box : boxes) {
+		for(Coordinate box : state.getBoxes()) {
 			hash = hash ^ table[box.y][box.x][BOX];
 		}
-		hash = hash ^ table[player.y][player.x][PLAYER];
+		Coordinate topMostLeft = findTopLeftmostPosition(state);
+		hash = hash ^ table[topMostLeft.y][topMostLeft.x][PLAYER];
+		state.setTopLeftmostPosition(topMostLeft);
 		return hash;
 	}
 		
@@ -52,8 +58,13 @@ public class ZobristHasher {
 		return hash;
 	}
 	
-	public int movePlayer(int hash, int fromX, int fromY, int toX, int toY) {
-		return moveTile(hash, fromX, fromY, toX, toY, PLAYER);
+	public int updatePlayerHash(State state) {
+		System.err.println(state.getPlayer().toString());
+		Main.printState(state);
+		Coordinate newTopLeftmost = findTopLeftmostPosition(state);
+		Coordinate oldTopLeftmost = state.getTopLeftmost();
+		state.setTopLeftmostPosition(newTopLeftmost);
+		return moveTile(state.hashCode(), oldTopLeftmost.x, oldTopLeftmost.y, newTopLeftmost.x, newTopLeftmost.y, PLAYER);
 	}
 	
 	/* 
@@ -62,5 +73,31 @@ public class ZobristHasher {
 	 */
 	public int moveBox(int hash, int fromX, int fromY, int toX, int toY) {
 		return moveTile(hash, fromX, fromY, toX, toY, BOX);
+	}
+	
+	private Coordinate findTopLeftmostPosition(State state) {
+		char[][] visited = new char[board.length][longestCol];
+		LinkedList<Coordinate> queue = new LinkedList<Coordinate>();
+		Coordinate current = null;
+		Coordinate topMostleft = state.getPlayer();
+		int topMostLeftSum = topMostleft.x + topMostleft.y;
+		queue.add(state.getPlayer());
+		while(!queue.isEmpty()) {
+			current = queue.pop();
+			visited[current.y][current.x] = 'V';
+			if(current.x + current.y < topMostLeftSum) {
+				topMostleft = current;
+				topMostLeftSum = current.x + current.y;
+			}
+			for(int i = 0; i < Constants.dx.length; i++) {
+				int x = current.x + Constants.dx[i];
+				int y = current.y + Constants.dy[i];
+				Coordinate c = new Coordinate(x, y);
+				if(visited[y][x] != 'V' && Main.isFreeSpace(state, c)) {
+					queue.add(c);
+				}
+			}
+		}
+		return topMostleft;
 	}
 }

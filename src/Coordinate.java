@@ -20,4 +20,9 @@ public class Coordinate {
 	public Coordinate clone() {
 		return new Coordinate(x,y);
 	}
+	
+	@Override
+	public String toString() {
+		return "(" + x + ", " + y + ")";
+	}
 }

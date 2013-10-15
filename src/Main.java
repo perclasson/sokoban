@@ -10,9 +10,7 @@ public class Main {
 
 	private Set<State> visited;
 	private static ZobristHasher hasher;
-	private char[][] board;
-	private final int[] dx = { 1, -1, 0, 0 };
-	private final int[] dy = { 0, 0, -1, 1 };
+	private static char[][] board;
 	private Coordinate initialPosition;
 
 	public static void main(String[] args) {
@@ -50,8 +48,8 @@ public class Main {
 
 	private List<State> findStartPositions(State root) {
 		List<State> states = new ArrayList<State>();
-		for (int i = 0; i < dx.length; i++) {
-			Coordinate newPlayerPos = new Coordinate(root.getPlayer().x + dx[i], root.getPlayer().y + dy[i]);
+		for (int i = 0; i < Constants.dx.length; i++) {
+			Coordinate newPlayerPos = new Coordinate(root.getPlayer().x + Constants.dx[i], root.getPlayer().y + Constants.dy[i]);
 			if (isFreeSpace(root, newPlayerPos)) {
 				State newState = root.clone();
 				newState.movePlayer(newPlayerPos);
@@ -73,9 +71,9 @@ public class Main {
 		}
 		visited.add(state);
 		List<State> nextMoves = findPossibleMoves(state);
-		for(State move : nextMoves) {
-			State goal =  search(move);
-			if(goal != null) {
+		for (State move : nextMoves) {
+			State goal = search(move);
+			if (goal != null) {
 				return goal;
 			}
 		}
@@ -84,18 +82,16 @@ public class Main {
 
 	public String recreatePath(State goal) {
 		StringBuilder sb = new StringBuilder();
-		String endPath = AStar.findPath(board, goal, goal.getPlayer(), initialPosition);
+		String endPath = AStar.findPath(goal, goal.getPlayer(), initialPosition);
 
-		while(goal != null) {
-			//printState(goal);
-			//System.err.println(goal.getPath());
-			if(goal.getPath() != null)
-			sb.append(goal.getPath());
+		while (goal != null) {
+			if (goal.getPath() != null)
+				sb.append(goal.getPath());
 			goal = goal.getParent();
 		}
-		return invertPath(endPath+sb.toString()); 
+		return invertPath(endPath + sb.toString());
 	}
-	
+
 	private List<State> findPossibleMoves(State state) {
 		List<State> moves = new ArrayList<State>();
 		Coordinate[] boxes = new Coordinate[state.getBoxes().size()];
@@ -108,44 +104,65 @@ public class Main {
 
 	private void findMovesForBox(State state, Coordinate box, List<State> moves) {
 		State newState = null;
-		for (int i = 0; i < dx.length; i++) {
-			if (isPossibleMove(state, box, dx[i], dy[i])) {
-				newState = makeMove(state, box, dx[i], dy[i]);
-				if (newState != null && !visited.contains(newState)) {
-					moves.add(newState);
+		for (int i = 0; i < Constants.dx.length; i++) {
+			if (isPossibleMove(state, box, Constants.dx[i], Constants.dy[i])) {
+				newState = makeMove(state, box, Constants.dx[i], Constants.dy[i]);
+				if (newState != null) {
+					if(!visited.contains(newState)) {
+						moves.add(newState);
+					} else {
+						
+//						State match = testFunc(newState);
+//						System.err.println(newState.hashCode());
+//						System.err.println(newState.getTopLeftmost());
+//						printState(newState);
+//						System.out.println(newState.hashCode());
+//						System.out.println(match.getTopLeftmost());
+//						printSTDState(match);
+					}
 				}
 			}
 		}
 	}
+	
+	private State testFunc(State state) {
+		for(State s: visited) {
+			if(s.equals(state)) {
+				return s;
+			}
+		}
+		return null;
+	}
+	
 
 	private State makeMove(State state, Coordinate box, int dx, int dy) {
-		String path = getPath(board, state, box, new Coordinate(box.x + dx, box.y + dy));
+		String path = getPath(state, box, new Coordinate(box.x + dx, box.y + dy));
 		if (path == null) {
 			return null;
 		}
 		State newState = state.clone();
 		newState.setPath(path);
 		newState.setParent(state);
-		newState.movePlayer(new Coordinate(box.x + 2*dx, box.y + 2*dy));
+		newState.movePlayer(new Coordinate(box.x + 2 * dx, box.y + 2 * dy));
 		newState.moveBox(box, new Coordinate(box.x + dx, box.y + dy));
 		return newState;
 	}
-	
-	private String getPath(char[][] board, State state, Coordinate box, Coordinate to) {
-		String path = AStar.findPath(board, state, state.getPlayer(), to);
-		if(path == null) {
+
+	private String getPath(State state, Coordinate box, Coordinate to) {
+		String path = AStar.findPath(state, state.getPlayer(), to);
+		if (path == null) {
 			return null;
 		}
-		if(to.x > box.x) {
+		if (to.x > box.x) {
 			return "R " + path;
 		}
-		if(to.x < box.x) {
+		if (to.x < box.x) {
 			return "L " + path;
 		}
-		if(to.y > box.y) {
+		if (to.y > box.y) {
 			return "D " + path;
 		}
-		if(to.y < box.y) {
+		if (to.y < box.y) {
 			return "U " + path;
 		}
 		return null;
@@ -153,9 +170,9 @@ public class Main {
 
 	private String invertPath(String path) {
 		StringBuilder sb = new StringBuilder();
-		for(int i = 0; i < path.length(); i++) {
+		for (int i = 0; i < path.length(); i++) {
 			char toBeInverted = path.charAt(i);
-			switch(toBeInverted) {
+			switch (toBeInverted) {
 			case 'R':
 				sb.append('L');
 				break;
@@ -179,7 +196,7 @@ public class Main {
 	private boolean isPossibleMove(State state, Coordinate box, int dx, int dy) {
 		return isFreeSpace(state, new Coordinate(box.x + dx, box.y + dy)) && isFreeSpace(state, new Coordinate(box.x + 2 * dx, box.y + 2 * dy));
 	}
-	
+
 	public static ZobristHasher getHasher() {
 		return hasher;
 	}
@@ -230,7 +247,9 @@ public class Main {
 			}
 		}
 		initialPosition = player.clone();
-		return new State(hasher.hash(boxes, player), player, boxes, null, playerOnGoal);
+		State s = new State(-1, player, boxes, null, playerOnGoal); 
+		s.setHash(hasher.hash(s, player));
+		return s;
 	}
 
 	private char[][] readBoard() {
@@ -257,11 +276,11 @@ public class Main {
 		return board;
 	}
 
-	private boolean isFreeSpace(State state, Coordinate coordinate) {
+	public static boolean isFreeSpace(State state, Coordinate coordinate) {
 		return !state.containsBox(coordinate) && board[coordinate.y][coordinate.x] != Constants.WALL;
 	}
 
-	private void printMatrix(char[][] matrix) {
+	public static void printMatrix(char[][] matrix) {
 		for (int i = 0; i < matrix.length; i++) {
 			for (int j = 0; j < matrix[i].length; j++) {
 				System.err.print(matrix[i][j]);
@@ -269,23 +288,42 @@ public class Main {
 			System.err.println();
 		}
 	}
-	
-	private void printState(State state) {
+
+	public static void printState(State state) {
 		for (int i = 0; i < board.length; i++) {
 			for (int j = 0; j < board[i].length; j++) {
-				if(state.containsBox(new Coordinate(j, i)) && board[i][j] == '.') {
+				if (state.containsBox(new Coordinate(j, i)) && board[i][j] == '.') {
 					System.err.print('*');
-				} else if(state.containsBox(new Coordinate(j, i))) {
+				} else if (state.containsBox(new Coordinate(j, i))) {
 					System.err.print('$');
 				} else if (state.getPlayer().x == j && state.getPlayer().y == i && board[i][j] == '.') {
 					System.err.print('+');
-				} else if(state.getPlayer().x == j && state.getPlayer().y == i) {
+				} else if (state.getPlayer().x == j && state.getPlayer().y == i) {
 					System.err.print('@');
 				} else {
 					System.err.print(board[i][j]);
 				}
 			}
 			System.err.println();
+		}
+	}
+	
+	private void printSTDState(State state) {
+		for (int i = 0; i < board.length; i++) {
+			for (int j = 0; j < board[i].length; j++) {
+				if (state.containsBox(new Coordinate(j, i)) && board[i][j] == '.') {
+					System.out.print('*');
+				} else if (state.containsBox(new Coordinate(j, i))) {
+					System.out.print('$');
+				} else if (state.getPlayer().x == j && state.getPlayer().y == i && board[i][j] == '.') {
+					System.out.print('+');
+				} else if (state.getPlayer().x == j && state.getPlayer().y == i) {
+					System.out.print('@');
+				} else {
+					System.out.print(board[i][j]);
+				}
+			}
+			System.out.println();
 		}
 	}
 }

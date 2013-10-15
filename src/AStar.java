@@ -4,7 +4,7 @@ import java.util.List;
 
 public class AStar {
 
-	public static String findPath(char[][] board, State state, Coordinate start, Coordinate goal) {
+	public static String findPath(State state, Coordinate start, Coordinate goal) {
 		if (start.x == goal.x && start.y == goal.y) {
 			return ""; 
 		}
@@ -26,7 +26,7 @@ public class AStar {
 			if (current.equals(goalNode)) {
 				return reconstructPath(startNode, current);
 			}
-			List<Node> neighbours = getNeighbours(state, current, board);
+			List<Node> neighbours = getNeighbours(state, current);
 
 			for (Node n : neighbours) {
 				int tentativeCost = current.getCost() + 1;
@@ -71,27 +71,23 @@ public class AStar {
 		}
 		return path.toString();
 	}
-	
-	private static boolean isFreeSpace(State state, Coordinate coordinate, char[][] board) {
-		return !state.containsBox(coordinate) && board[coordinate.y][coordinate.x] != Constants.WALL;
-	}
 
-	private static List<Node> getNeighbours(State state, Node node, char[][] board) {
+	private static List<Node> getNeighbours(State state, Node node) {
 		List<Node> neighbours = new LinkedList<Node>();
 		// check above
-		if (isFreeSpace(state, new Coordinate(node.getX(), node.getY() - 1), board)) {
+		if (Main.isFreeSpace(state, new Coordinate(node.getX(), node.getY() - 1))) {
 			neighbours.add(new Node(node.getX(), node.getY() - 1));
 		}
 		// check left
-		if (isFreeSpace(state, new Coordinate(node.getX() - 1, node.getY()), board)) {
+		if (Main.isFreeSpace(state, new Coordinate(node.getX() - 1, node.getY()))) {
 			addOrdered(neighbours, new Node(node.getX() - 1, node.getY()));
 		}
 		// check right
-		if (isFreeSpace(state, new Coordinate(node.getX() + 1, node.getY()), board)) {
+		if (Main.isFreeSpace(state, new Coordinate(node.getX() + 1, node.getY()))) {
 			addOrdered(neighbours, new Node(node.getX() + 1, node.getY()));
 		}
 		// check below
-		if (isFreeSpace(state, new Coordinate(node.getX(), node.getY() + 1), board)) {
+		if (Main.isFreeSpace(state, new Coordinate(node.getX(), node.getY() + 1))) {
 			addOrdered(neighbours, new Node(node.getX(), node.getY() + 1));
 		}
 		return neighbours;
