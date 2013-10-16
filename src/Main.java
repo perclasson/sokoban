@@ -2,52 +2,75 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 
 public class Main {
 	private static final int GOAL_COST_SCALE = 10;
 	private static ZobristHasher hasher;
-	public static char[][] board;
-	public static int[][] manhattanCost;
+	public static char[][] pullBoard, pushBoard;
+	public static int[][] pullManhattanCost, pushManhattanCost;
 	private Coordinate initialPosition;
-	private Set<Coordinate> goals;
+	private Set<Coordinate> pullGoals, pushGoals;
+	Map<GameState, GameState> pullVisited = new HashMap<GameState, GameState>();
+	Map<GameState, GameState> pushVisited = new HashMap<GameState, GameState>();
 
 	public static void main(String[] args) {
 		new Main();
 	}
 
 	public Main() {
-		goals = new HashSet<Coordinate>();
-		board = readBoard();
-		hasher = new ZobristHasher(board);
+		pullGoals = new HashSet<Coordinate>();
+		pushGoals = new HashSet<Coordinate>();
+		pullBoard = readBoard();
+		pushBoard = cloneMatrix(pullBoard);
+		hasher = new ZobristHasher(pullBoard);
+		 GameState pullRoot = extractPullRootState(pullBoard);
 		long before = System.currentTimeMillis();
-		String answer = solve();
-		if (answer == null)
-			throw new RuntimeException();
-		System.out.println(answer);
-//		System.out.println("Took " + (System.currentTimeMillis() - before) + " ms");
+		pullManhattanCost = generateManhattancost(pullBoard, pullGoals);
+
+		// new Thread() {
+		// public void run() {
+		GameState pushRoot = extractPushRootState(pushBoard);
+		DeadlockHandler.addStaticDeadlocks(pushBoard);
+		pushManhattanCost = generateManhattancost(pushBoard, pushGoals);
+		System.out.println(pushSolve(pushRoot));
+		System.out.println("took "+(System.currentTimeMillis()-before));
+		System.exit(0);
+		// }
+		// }.start();
+
+		// System.out.println(pullSolve(pullRoot));
+		// System.exit(0);
+
 	}
 
-	public Main(char[][] b) {
-		goals = new HashSet<Coordinate>();
-		board = b;
-		hasher = new ZobristHasher(board);
+	public String pushSolve(GameState root) {
+		return pushFindPath(root);
 	}
 
-	public String solve() {
-		State root = extractRootState(board);
-		manhattanCost = generateManhattancost();
-		Set<State> startStates = new HashSet<State>();
+	private String pushFindPath(GameState root) {
+		GameState goal = pushSearch(root);
+		if (goal == null) {
+			return null;
+		}
+		return pushRecreatePath(goal);
+	}
+
+	public String pullSolve(GameState root) {
+		Set<GameState> startStates = new HashSet<GameState>();
 		for (Coordinate box : root.getBoxes()) {
 			startStates.addAll(findStartPositions(root, box));
 		}
-		return findPath(startStates);
+		return pullFindPath(startStates);
 	}
 
-	private int[][] generateManhattancost() {
+	private int[][] generateManhattancost(char[][] board, Set<Coordinate> goals) {
 		int[][] manhattanCost = new int[board.length][];
 		for (int y = 0; y < board.length; y++) {
 			manhattanCost[y] = new int[board[y].length];
@@ -64,12 +87,12 @@ public class Main {
 		return manhattanCost;
 	}
 
-	private List<State> findStartPositions(State root, Coordinate position) {
-		List<State> states = new ArrayList<State>();
+	private List<GameState> findStartPositions(GameState root, Coordinate position) {
+		List<GameState> states = new ArrayList<GameState>();
 		for (int i = 0; i < Constants.dx.length; i++) {
 			Coordinate newPlayerPos = new Coordinate(position.x + Constants.dx[i], position.y + Constants.dy[i]);
 			if (isFreeSpace(root, newPlayerPos)) {
-				State newState = root.clone();
+				GameState newState = root.clone();
 				newState.movePlayer(newPlayerPos);
 				states.add(newState);
 			}
@@ -77,39 +100,41 @@ public class Main {
 		return states;
 	}
 
-	private String findPath(Set<State> startStates) {
-		State goal = search(startStates);
+	private String pullFindPath(Set<GameState> startStates) {
+		GameState goal = pullSearch(startStates);
 		if (goal == null) {
 			return null;
 		}
-		return recreatePath(goal);
+		return pullRecreatePath(goal);
 	}
 
-	private State search(Set<State> startingStates) {
-		Set<State> visited = new HashSet<State>();
-		PriorityQueue<State> queue = new PriorityQueue<State>();
-		for (State start : startingStates) {
+	private GameState pullSearch(Set<GameState> startingStates) {
+		PriorityQueue<GameState> queue = new PriorityQueue<GameState>();
+		for (GameState start : startingStates) {
 			start.costTo = 0;
-			start.totalCost = start.costTo + start.estimateGoalCost() * GOAL_COST_SCALE;
+			start.totalCost = start.costTo + start.estimateGoalCost(pullManhattanCost) * GOAL_COST_SCALE;
 		}
 		queue.addAll(startingStates);
 		int depth = queue.peek().totalCost;
-		List<State> IDLeaves = new ArrayList<State>();
+		List<GameState> IDLeaves = new ArrayList<GameState>();
 		while (depth > 0) {
 			while (!queue.isEmpty()) {
-				State current = queue.poll();
-				if (isCompleted(current) && !isStuck(current))
+				GameState current = queue.poll();
+				if (pushVisited.containsKey(current)) {
+					// TODO: recreate path and return
+				}
+				if (pullIsCompleted(current) && !isStuck(current))
 					return current;
-				if(current.totalCost > depth) {
+				if (current.totalCost > depth) {
 					IDLeaves.add(current);
 					continue;
 				}
-				visited.add(current);
-				List<State> nextMoves = findPossibleMoves(current);
-				for (State neighbor : nextMoves) {
+				pullVisited.put(current, current);
+				List<GameState> nextMoves = pullFindPossibleMoves(current);
+				for (GameState neighbor : nextMoves) {
 					int costTo = current.costTo + 1;
-					int totalCost = costTo + neighbor.estimateGoalCost() * GOAL_COST_SCALE;
-					if (visited.contains(neighbor) && totalCost >= neighbor.totalCost) {
+					int totalCost = costTo + neighbor.estimateGoalCost(pullManhattanCost) * GOAL_COST_SCALE;
+					if (pullVisited.containsKey(neighbor) && totalCost >= neighbor.totalCost) {
 						continue;
 					}
 
@@ -128,13 +153,56 @@ public class Main {
 		return null;
 	}
 
-	private boolean isStuck(State state) {
-		return BoardSearcher.findPath(state, state.getPlayer(), initialPosition) == null;
+	private GameState pushSearch(GameState start) {
+		PriorityQueue<GameState> queue = new PriorityQueue<GameState>();
+		start.costTo = 0;
+		start.totalCost = start.costTo + start.estimateGoalCost(pushManhattanCost) * GOAL_COST_SCALE;
+		queue.add(start);
+		int depth = start.totalCost;
+		List<GameState> IDLeaves = new ArrayList<GameState>();
+		while (depth > 0) {
+			while (!queue.isEmpty()) {
+				GameState current = queue.poll();
+				if (pullVisited.containsKey(current)) {
+					// TODO: recreate path and return;
+				}
+				if (pushIsCompleted(current))
+					return current;
+				if (current.totalCost > depth) {
+					IDLeaves.add(current);
+					continue;
+				}
+				pushVisited.put(current, current);
+				List<GameState> nextMoves = pushFindPossibleMoves(current);
+				for (GameState neighbor : nextMoves) {
+					int costTo = current.costTo + 1;
+					int totalCost = costTo + neighbor.estimateGoalCost(pushManhattanCost) * GOAL_COST_SCALE;
+					if (pushVisited.containsKey(neighbor) && totalCost >= neighbor.totalCost) {
+						continue;
+					}
+
+					if (!queue.contains(neighbor) || totalCost < neighbor.totalCost) {
+						neighbor.costTo = costTo;
+						neighbor.totalCost = totalCost;
+						if (!queue.contains(neighbor))
+							queue.add(neighbor);
+					}
+				}
+			}
+			queue.addAll(IDLeaves);
+			depth += 10;
+			IDLeaves.clear();
+		}
+		return null;
 	}
 
-	public String recreatePath(State goal) {
+	private boolean isStuck(GameState state) {
+		return BoardSearcher.findPath(state, state.getPlayer(), initialPosition, pullBoard) == null;
+	}
+
+	public String pullRecreatePath(GameState goal) {
 		StringBuilder sb = new StringBuilder();
-		String endPath = BoardSearcher.findPath(goal, goal.getPlayer(), initialPosition);
+		String endPath = BoardSearcher.findPath(goal, goal.getPlayer(), initialPosition, pullBoard);
 
 		while (goal != null) {
 			if (goal.getPath() != null)
@@ -144,19 +212,38 @@ public class Main {
 		return invertPath(endPath + sb.toString());
 	}
 
-	private List<State> findPossibleMoves(State state) {
-		List<State> moves = new ArrayList<State>();
+	public String pushRecreatePath(GameState goal) {
+		StringBuilder sb = new StringBuilder();
+
+		while (goal != null) {
+			if (goal.getPath() != null)
+				sb.append(goal.getPath());
+			goal = goal.getParent();
+		}
+		return sb.reverse().toString().trim();
+	}
+
+	private List<GameState> pullFindPossibleMoves(GameState state) {
+		List<GameState> moves = new ArrayList<GameState>();
 		for (Coordinate box : state.getBoxes()) {
-			findMovesForBox(state, box, moves);
+			pullFindMovesForBox(state, box, moves);
 		}
 		return moves;
 	}
 
-	private void findMovesForBox(State state, Coordinate box, List<State> moves) {
-		State newState = null;
+	private List<GameState> pushFindPossibleMoves(GameState state) {
+		List<GameState> moves = new ArrayList<GameState>();
+		for (Coordinate box : state.getBoxes()) {
+			pushFindMovesForBox(state, box, moves);
+		}
+		return moves;
+	}
+
+	private void pushFindMovesForBox(GameState state, Coordinate box, List<GameState> moves) {
+		GameState newState = null;
 		for (int i = 0; i < Constants.dx.length; i++) {
-			if (isPossibleMove(state, box, Constants.dx[i], Constants.dy[i])) {
-				newState = makeMove(state, box, Constants.dx[i], Constants.dy[i]);
+			if (pushIsPossibleMove(state, box, Constants.dx[i], Constants.dy[i])) {
+				newState = makePush(state, box, Constants.dx[i], Constants.dy[i]);
 				if (newState != null) {
 					moves.add(newState);
 				}
@@ -164,12 +251,37 @@ public class Main {
 		}
 	}
 
-	private State makeMove(State state, Coordinate box, int dx, int dy) {
-		String path = getPath(state, box, new Coordinate(box.x + dx, box.y + dy));
+	private void pullFindMovesForBox(GameState state, Coordinate box, List<GameState> moves) {
+		GameState newState = null;
+		for (int i = 0; i < Constants.dx.length; i++) {
+			if (pullIsPossibleMove(state, box, Constants.dx[i], Constants.dy[i])) {
+				newState = makePull(state, box, Constants.dx[i], Constants.dy[i]);
+				if (newState != null) {
+					moves.add(newState);
+				}
+			}
+		}
+	}
+
+	private GameState makePush(GameState state, Coordinate box, int dx, int dy) {
+		String path = pushGetPath(state, box, new Coordinate(box.x - dx, box.y - dy));
 		if (path == null) {
 			return null;
 		}
-		State newState = state.clone();
+		GameState newState = state.clone();
+		newState.setPath(path);
+		newState.setParent(state);
+		newState.moveBox(box, new Coordinate(box.x + dx, box.y + dy));
+		newState.movePlayer(new Coordinate(box.x, box.y));
+		return newState;
+	}
+
+	private GameState makePull(GameState state, Coordinate box, int dx, int dy) {
+		String path = pullGetPath(state, box, new Coordinate(box.x + dx, box.y + dy));
+		if (path == null) {
+			return null;
+		}
+		GameState newState = state.clone();
 		newState.setPath(path);
 		newState.setParent(state);
 		newState.moveBox(box, new Coordinate(box.x + dx, box.y + dy));
@@ -177,8 +289,8 @@ public class Main {
 		return newState;
 	}
 
-	private String getPath(State state, Coordinate box, Coordinate to) {
-		String path = BoardSearcher.findPath(state, state.getPlayer(), to);
+	private String pullGetPath(GameState state, Coordinate box, Coordinate to) {
+		String path = BoardSearcher.findPath(state, state.getPlayer(), to, pullBoard);
 		if (path == null) {
 			return null;
 		}
@@ -193,6 +305,26 @@ public class Main {
 		}
 		if (to.y < box.y) {
 			return "U " + path;
+		}
+		return null;
+	}
+
+	private String pushGetPath(GameState state, Coordinate box, Coordinate to) {
+		String path = BoardSearcher.findPath(state, state.getPlayer(), to, pushBoard);
+		if (path == null) {
+			return null;
+		}
+		if (to.x > box.x) {
+			return "L " + path;
+		}
+		if (to.x < box.x) {
+			return "R " + path;
+		}
+		if (to.y > box.y) {
+			return "U " + path;
+		}
+		if (to.y < box.y) {
+			return "D " + path;
 		}
 		return null;
 	}
@@ -222,24 +354,39 @@ public class Main {
 		return sb.toString();
 	}
 
-	private boolean isPossibleMove(State state, Coordinate box, int dx, int dy) {
+	private boolean pullIsPossibleMove(GameState state, Coordinate box, int dx, int dy) {
 		return isFreeSpace(state, new Coordinate(box.x + dx, box.y + dy)) && isFreeSpace(state, new Coordinate(box.x + 2 * dx, box.y + 2 * dy));
+	}
+
+	private boolean pushIsPossibleMove(GameState state, Coordinate box, int dx, int dy) { //TODO: Detect deadlocks in a 3x3 grid around box
+		return (pushBoard[box.y+dy][box.x+dx] == Constants.GOAL && !state.containsBox(new Coordinate(box.x+dx, box.y+dy))) ||
+				(pushBoard[box.y + dy][box.x + dx] != Constants.DEADLOCK && 
+					(isFreeSpace(state, new Coordinate(box.x + dx, box.y + dy)) && isFreeSpace(state, new Coordinate(box.x - dx, box.y - dy))));
 	}
 
 	public static ZobristHasher getHasher() {
 		return hasher;
 	}
 
-	private boolean isCompleted(State state) {
+	private boolean pullIsCompleted(GameState state) {
 		for (Coordinate box : state.getBoxes()) {
-			if (board[box.y][box.x] != Constants.GOAL) {
+			if (pullBoard[box.y][box.x] != Constants.GOAL) {
 				return false;
 			}
 		}
 		return true;
 	}
 
-	private State extractRootState(char[][] board) {
+	private boolean pushIsCompleted(GameState state) {
+		for (Coordinate box : state.getBoxes()) {
+			if (pushBoard[box.y][box.x] != Constants.GOAL) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	private GameState extractPullRootState(char[][] board) {
 		Set<Coordinate> boxes = new HashSet<Coordinate>();
 		Coordinate player = null;
 		for (int y = 0; y < board.length; y++) {
@@ -247,13 +394,13 @@ public class Main {
 				switch (board[y][x]) {
 				case Constants.BOX: {
 					board[y][x] = Constants.GOAL;
-					goals.add(new Coordinate(x, y));
+					pullGoals.add(new Coordinate(x, y));
 					break;
 				}
 				case Constants.BOX_ON_GOAL: {
 					boxes.add(new Coordinate(x, y));
 					board[y][x] = Constants.GOAL;
-					goals.add(new Coordinate(x, y));
+					pullGoals.add(new Coordinate(x, y));
 					break;
 				}
 				case Constants.PLAYER: {
@@ -276,7 +423,47 @@ public class Main {
 			}
 		}
 		initialPosition = player.clone();
-		State s = new State(-1, player, boxes, null, goals);
+		GameState s = new GameState(-1, player, boxes, null, pullGoals);
+		s.setHash(hasher.hash(s, player));
+		return s;
+	}
+
+	private GameState extractPushRootState(char[][] board) {
+		Set<Coordinate> boxes = new HashSet<Coordinate>();
+		Coordinate player = null;
+		for (int y = 0; y < board.length; y++) {
+			for (int x = 0; x < board[y].length; x++) {
+				switch (board[y][x]) {
+				case Constants.BOX: {
+					boxes.add(new Coordinate(x, y));
+					board[y][x] = Constants.SPACE;
+					break;
+				}
+				case Constants.BOX_ON_GOAL: {
+					boxes.add(new Coordinate(x, y));
+					board[y][x] = Constants.GOAL;
+					pushGoals.add(new Coordinate(x, y));
+					break;
+				}
+				case Constants.PLAYER: {
+					player = new Coordinate(x, y);
+					board[y][x] = Constants.SPACE;
+					break;
+				}
+				case Constants.GOAL: {
+					pushGoals.add(new Coordinate(x, y));
+					break;
+				}
+				case Constants.PLAYER_ON_GOAL: {
+					board[y][x] = Constants.GOAL;
+					player = new Coordinate(x, y);
+					break;
+				}
+				}
+			}
+		}
+		initialPosition = player.clone();
+		GameState s = new GameState(-1, player, boxes, null, pushGoals);
 		s.setHash(hasher.hash(s, player));
 		return s;
 	}
@@ -296,15 +483,15 @@ public class Main {
 			e.printStackTrace();
 		}
 
-		board = new char[i][];
-		for (int j = 0; j < board.length; j++) {
-			board[j] = tmp.get(j);
+		pullBoard = new char[i][];
+		for (int j = 0; j < pullBoard.length; j++) {
+			pullBoard[j] = tmp.get(j);
 		}
-		return board;
+		return pullBoard;
 	}
 
-	public static boolean isFreeSpace(State state, Coordinate coordinate) {
-		return !state.containsBox(coordinate) && board[coordinate.y][coordinate.x] != Constants.WALL;
+	public static boolean isFreeSpace(GameState state, Coordinate coordinate) {
+		return !state.containsBox(coordinate) && pullBoard[coordinate.y][coordinate.x] != Constants.WALL;
 	}
 
 	public static void printMatrix(char[][] matrix) {
@@ -316,7 +503,7 @@ public class Main {
 		}
 	}
 
-	public static void printState(State state) {
+	public static void printState(GameState state, char[][] board) {
 		for (int i = 0; i < board.length; i++) {
 			for (int j = 0; j < board[i].length; j++) {
 				if (state.containsBox(new Coordinate(j, i)) && board[i][j] == '.') {
@@ -333,5 +520,13 @@ public class Main {
 			}
 			System.err.println();
 		}
+	}
+
+	private char[][] cloneMatrix(char[][] original) {
+		char[][] clone = new char[original.length][];
+		for (int i = 0; i < original.length; i++) {
+			clone[i] = Arrays.copyOf(original[i], original[i].length);
+		}
+		return clone;
 	}
 }

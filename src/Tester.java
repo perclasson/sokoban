@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Tester {
-
+/*
 	private static Scanner scanner;
 
 	public static void main(String[] args) throws FileNotFoundException {
@@ -61,5 +61,5 @@ public class Tester {
 		}
 		return board;
 	}
-
+*/
 }

@@ -34,7 +34,7 @@ public class ZobristHasher {
 		}
 	}
 	
-	public int hash(State state, Coordinate player) {
+	public int hash(GameState state, Coordinate player) {
 		int hash = 0;
 		for(Coordinate box : state.getBoxes()) {
 			hash = hash ^ table[box.y][box.x][BOX];
@@ -57,7 +57,7 @@ public class ZobristHasher {
 		return hash;
 	}
 	
-	public int updatePlayerHash(State state) {
+	public int updatePlayerHash(GameState state) {
 		Coordinate newTopLeftmost = findTopLeftmostPosition(state);
 		Coordinate oldTopLeftmost = state.getTopLeftmost();
 		state.setTopLeftmostPosition(newTopLeftmost);
@@ -68,7 +68,7 @@ public class ZobristHasher {
 		return moveTile(hash, fromX, fromY, toX, toY, BOX);
 	}
 	
-	private Coordinate findTopLeftmostPosition(State state) {
+	private Coordinate findTopLeftmostPosition(GameState state) {
 		char[][] visited = new char[board.length][longestCol];
 		LinkedList<Coordinate> queue = new LinkedList<Coordinate>();
 		Coordinate current = null;

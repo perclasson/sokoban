@@ -5,11 +5,11 @@ import java.util.Queue;
 
 public class BoardSearcher {
 
-	public static String findPath(State state, Coordinate start, Coordinate goal) {
+	public static String findPath(GameState state, Coordinate start, Coordinate goal, char[][] board) {
 		if (start.equals(goal)) {
 			return "";
 		}
-		char[][] visited = new char[Main.board.length][Main.board.length * 2];
+		char[][] visited = new char[board.length][board.length * 2];
 		Queue<Coordinate> queue = new LinkedList<Coordinate>();
 		queue.add(start);
 		visited[start.y][start.x] = 'S';
@@ -64,7 +64,7 @@ public class BoardSearcher {
 		return sb.toString();
 	}
 
-	public static String findPathASTAR(State state, Coordinate start, Coordinate goal) {
+	public static String findPathASTAR(GameState state, Coordinate start, Coordinate goal) {
 		if (start.x == goal.x && start.y == goal.y) {
 			return "";
 		}
@@ -132,7 +132,7 @@ public class BoardSearcher {
 		return path.toString();
 	}
 
-	private static List<Node> getNeighbours(State state, Node node) {
+	private static List<Node> getNeighbours(GameState state, Node node) {
 		List<Node> neighbours = new LinkedList<Node>();
 		// check above
 		if (Main.isFreeSpace(state, new Coordinate(node.getX(), node.getY() - 1))) {
