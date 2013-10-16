@@ -12,6 +12,7 @@ public class GameState implements Comparable<GameState> {
 	private boolean playerOnGoal;
 	private Set<Coordinate> goals;
 	private int stepsTo = 0;
+	private Coordinate pushPosition;
 	public int totalCost, costTo;
 	
 	public int estimateGoalCost(int[][] manhattanCost) {
@@ -184,5 +185,13 @@ public class GameState implements Comparable<GameState> {
 	
 	public int getStepsTo() {
 		return stepsTo;
+	}
+
+	public Coordinate getPushPosition() {
+		return pushPosition;
+	}
+
+	public void setPushPosition(Coordinate pushPosition) {
+		this.pushPosition = pushPosition;
 	}
 }

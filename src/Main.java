@@ -75,6 +75,7 @@ public class Main {
 		}
 		return pullFindPath(startStates);
 	}
+	
 
 	private int[][] generateManhattancost(char[][] board, Set<Coordinate> goals) {
 		int[][] manhattanCost = new int[board.length][];
@@ -345,16 +346,16 @@ public class Main {
 			return null;
 		}
 		if (to.x > box.x) {
-			return "R " + path;
-		}
-		if (to.x < box.x) {
 			return "L " + path;
 		}
+		if (to.x < box.x) {
+			return "R " + path;
+		}
 		if (to.y > box.y) {
-			return "D " + path;
+			return "U " + path;
 		}
 		if (to.y < box.y) {
-			return "U " + path;
+			return "D " + path;
 		}
 		return null;
 	}
