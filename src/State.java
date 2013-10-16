@@ -13,35 +13,11 @@ public class State implements Comparable<State> {
 	private Set<Coordinate> goals;
 	private int stepsTo = 0;
 	public int totalCost, costTo;
-
-	/**
-	 * @return Low value is good.
-	 */
-	public int getValue2() {
-		if(value != Integer.MIN_VALUE)
-			return value;
-		value = boxes.size();
-		
-		for(Coordinate box : boxes) {
-			if(Main.board[box.y][box.x] == Constants.GOAL) {
-				value--;
-			} else {
-				value++;
-			}
-		}
-		return value;
-	}
 	
 	public int estimateGoalCost() {
 		int value = 0;
 		for (Coordinate box : boxes) {
-			int min = Integer.MAX_VALUE;
-			for (Coordinate goal : goals) {
-				int manhattan = Math.abs(goal.x - box.x) + Math.abs(goal.y - goal.y);
-				if(min > manhattan)
-					min = manhattan;
-			}
-			value += min;
+			value += Main.manhattanCost[box.y][box.x];
 		}
 		return value;
 	}

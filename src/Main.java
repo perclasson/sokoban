@@ -11,6 +11,7 @@ public class Main {
 	private static final int GOAL_COST_SCALE = 10;
 	private static ZobristHasher hasher;
 	public static char[][] board;
+	public static int[][] manhattanCost;
 	private Coordinate initialPosition;
 	private Set<Coordinate> goals;
 
@@ -38,11 +39,29 @@ public class Main {
 
 	public String solve() {
 		State root = extractRootState(board);
+		manhattanCost = generateManhattancost();
 		Set<State> startStates = new HashSet<State>();
 		for (Coordinate box : root.getBoxes()) {
 			startStates.addAll(findStartPositions(root, box));
 		}
 		return findPath(startStates);
+	}
+
+	private int[][] generateManhattancost() {
+		int[][] manhattanCost = new int[board.length][];
+		for(int y = 0 ; y < board.length ; y++) {
+			manhattanCost[y] = new int[board[y].length];
+			for(int x = 0 ; x < board[y].length ; x++) {
+				int min = Integer.MAX_VALUE;
+				for (Coordinate goal : goals) {
+					int manhattan = Math.abs(goal.x - x) + Math.abs(goal.y - y);
+					if(min > manhattan)
+						min = manhattan;
+				}
+				manhattanCost[y][x] = min;
+			}
+		}
+		return manhattanCost;
 	}
 
 	private List<State> findStartPositions(State root, Coordinate position) {
