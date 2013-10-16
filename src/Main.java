@@ -19,6 +19,7 @@ public class Main {
 	private Set<Coordinate> pullGoals, pushGoals;
 	Map<GameState, GameState> pullVisited = new HashMap<GameState, GameState>();
 	Map<GameState, GameState> pushVisited = new HashMap<GameState, GameState>();
+	private String pushPath = "", pullPath = "";
 
 	public static void main(String[] args) {
 		new Main();
@@ -30,23 +31,25 @@ public class Main {
 		pullBoard = readBoard();
 		pushBoard = cloneMatrix(pullBoard);
 		hasher = new ZobristHasher(pullBoard);
-		 GameState pullRoot = extractPullRootState(pullBoard);
+		GameState pullRoot = extractPullRootState(pullBoard);
 		long before = System.currentTimeMillis();
 		pullManhattanCost = generateManhattancost(pullBoard, pullGoals);
 
-		// new Thread() {
-		// public void run() {
-		GameState pushRoot = extractPushRootState(pushBoard);
-		DeadlockHandler.addStaticDeadlocks(pushBoard);
-		pushManhattanCost = generateManhattancost(pushBoard, pushGoals);
-		System.out.println(pushSolve(pushRoot));
-		System.out.println("took "+(System.currentTimeMillis()-before));
-		System.exit(0);
-		// }
-		// }.start();
+		new Thread() {
+			public void run() {
+				long before = System.currentTimeMillis();
+				GameState pushRoot = extractPushRootState(pushBoard);
+				DeadlockHandler.addStaticDeadlocks(pushBoard);
+				pushManhattanCost = generateManhattancost(pushBoard, pushGoals);
+				System.out.println(pushSolve(pushRoot));
+				System.out.println("took " + (System.currentTimeMillis() - before));
+				System.exit(0);
+			}
+		}.start();
 
-		// System.out.println(pullSolve(pullRoot));
-		// System.exit(0);
+		System.out.println(pullSolve(pullRoot));
+		System.out.println("took " + (System.currentTimeMillis() - before));
+		System.exit(0);
 
 	}
 
@@ -59,7 +62,7 @@ public class Main {
 		if (goal == null) {
 			return null;
 		}
-		return pushRecreatePath(goal);
+		return pushRecreatePath(goal)+pullPath;
 	}
 
 	public String pullSolve(GameState root) {
@@ -105,7 +108,7 @@ public class Main {
 		if (goal == null) {
 			return null;
 		}
-		return pullRecreatePath(goal);
+		return pushPath+pullRecreatePath(goal);
 	}
 
 	private GameState pullSearch(Set<GameState> startingStates) {
@@ -121,7 +124,8 @@ public class Main {
 			while (!queue.isEmpty()) {
 				GameState current = queue.poll();
 				if (pushVisited.containsKey(current)) {
-					// TODO: recreate path and return
+					pushPath = pushRecreatePath(pushVisited.get(current));
+					return current;
 				}
 				if (pullIsCompleted(current) && !isStuck(current))
 					return current;
@@ -164,7 +168,8 @@ public class Main {
 			while (!queue.isEmpty()) {
 				GameState current = queue.poll();
 				if (pullVisited.containsKey(current)) {
-					// TODO: recreate path and return;
+					pullPath = pushRecreatePath(pullVisited.get(current));
+					return current;
 				}
 				if (pushIsCompleted(current))
 					return current;
@@ -358,10 +363,16 @@ public class Main {
 		return isFreeSpace(state, new Coordinate(box.x + dx, box.y + dy)) && isFreeSpace(state, new Coordinate(box.x + 2 * dx, box.y + 2 * dy));
 	}
 
-	private boolean pushIsPossibleMove(GameState state, Coordinate box, int dx, int dy) { //TODO: Detect deadlocks in a 3x3 grid around box
-		return (pushBoard[box.y+dy][box.x+dx] == Constants.GOAL && !state.containsBox(new Coordinate(box.x+dx, box.y+dy))) ||
-				(pushBoard[box.y + dy][box.x + dx] != Constants.DEADLOCK && 
-					(isFreeSpace(state, new Coordinate(box.x + dx, box.y + dy)) && isFreeSpace(state, new Coordinate(box.x - dx, box.y - dy))));
+	private boolean pushIsPossibleMove(GameState state, Coordinate box, int dx, int dy) { // TODO:
+																							// Detect
+																							// deadlocks
+																							// in
+																							// a
+																							// 3x3
+																							// grid
+																							// around
+																							// box
+		return (pushBoard[box.y + dy][box.x + dx] == Constants.GOAL && !state.containsBox(new Coordinate(box.x + dx, box.y + dy))) || (pushBoard[box.y + dy][box.x + dx] != Constants.DEADLOCK && (isFreeSpace(state, new Coordinate(box.x + dx, box.y + dy)) && isFreeSpace(state, new Coordinate(box.x - dx, box.y - dy))));
 	}
 
 	public static ZobristHasher getHasher() {
@@ -385,7 +396,7 @@ public class Main {
 		}
 		return true;
 	}
-	
+
 	private GameState extractPullRootState(char[][] board) {
 		Set<Coordinate> boxes = new HashSet<Coordinate>();
 		Coordinate player = null;
