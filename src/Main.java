@@ -25,7 +25,7 @@ public class Main {
 		hasher = new ZobristHasher(board);
 		long before = System.currentTimeMillis();
 		String answer = solve();
-		if(answer == null)
+		if (answer == null)
 			throw new RuntimeException();
 		System.out.println(answer);
 //		System.out.println("Took " + (System.currentTimeMillis() - before) + " ms");
@@ -49,13 +49,13 @@ public class Main {
 
 	private int[][] generateManhattancost() {
 		int[][] manhattanCost = new int[board.length][];
-		for(int y = 0 ; y < board.length ; y++) {
+		for (int y = 0; y < board.length; y++) {
 			manhattanCost[y] = new int[board[y].length];
-			for(int x = 0 ; x < board[y].length ; x++) {
+			for (int x = 0; x < board[y].length; x++) {
 				int min = Integer.MAX_VALUE;
 				for (Coordinate goal : goals) {
 					int manhattan = Math.abs(goal.x - x) + Math.abs(goal.y - y);
-					if(min > manhattan)
+					if (min > manhattan)
 						min = manhattan;
 				}
 				manhattanCost[y][x] = min;
@@ -93,26 +93,37 @@ public class Main {
 			start.totalCost = start.costTo + start.estimateGoalCost() * GOAL_COST_SCALE;
 		}
 		queue.addAll(startingStates);
-		while (!queue.isEmpty()) {
-			State current = queue.poll();
-			if (isCompleted(current) && !isStuck(current))
-				return current;
-			visited.add(current);
-			List<State> nextMoves = findPossibleMoves(current);
-			for (State neighbor : nextMoves) {
-				int costTo = current.costTo + 1;
-				int totalCost = costTo + neighbor.estimateGoalCost() * GOAL_COST_SCALE;
-				if (visited.contains(neighbor) && totalCost >= neighbor.totalCost) {
+		int depth = queue.peek().totalCost;
+		List<State> IDLeaves = new ArrayList<State>();
+		while (depth > 0) {
+			while (!queue.isEmpty()) {
+				State current = queue.poll();
+				if (isCompleted(current) && !isStuck(current))
+					return current;
+				if(current.totalCost > depth) {
+					IDLeaves.add(current);
 					continue;
 				}
+				visited.add(current);
+				List<State> nextMoves = findPossibleMoves(current);
+				for (State neighbor : nextMoves) {
+					int costTo = current.costTo + 1;
+					int totalCost = costTo + neighbor.estimateGoalCost() * GOAL_COST_SCALE;
+					if (visited.contains(neighbor) && totalCost >= neighbor.totalCost) {
+						continue;
+					}
 
-				if (!queue.contains(neighbor) || totalCost < neighbor.totalCost) {
-					neighbor.costTo = costTo;
-					neighbor.totalCost = totalCost;
-					if (!queue.contains(neighbor))
-						queue.add(neighbor);
+					if (!queue.contains(neighbor) || totalCost < neighbor.totalCost) {
+						neighbor.costTo = costTo;
+						neighbor.totalCost = totalCost;
+						if (!queue.contains(neighbor))
+							queue.add(neighbor);
+					}
 				}
 			}
+			queue.addAll(IDLeaves);
+			depth += 10;
+			IDLeaves.clear();
 		}
 		return null;
 	}
