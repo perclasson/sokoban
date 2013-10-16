@@ -8,8 +8,10 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 public class Main {
+	private static final int GOAL_COST_SCALE = 10;
 	private static ZobristHasher hasher;
 	public static char[][] board;
+	public static int[][] manhattanCost;
 	private Coordinate initialPosition;
 	private Set<Coordinate> goals;
 
@@ -22,7 +24,10 @@ public class Main {
 		board = readBoard();
 		hasher = new ZobristHasher(board);
 		long before = System.currentTimeMillis();
-		System.out.println(solve());
+		String answer = solve();
+		if(answer == null)
+			throw new RuntimeException();
+		System.out.println(answer);
 		System.out.println("Took " + (System.currentTimeMillis() - before) + " ms");
 	}
 
@@ -34,33 +39,30 @@ public class Main {
 
 	public String solve() {
 		State root = extractRootState(board);
-		String path = "";
-		if (root.isPlayerOnGoal()) {
-			path = findPathWithNewStartPos(root, root.getPlayer());
-		} else {
-			path = findPath(root);
+		manhattanCost = generateManhattancost();
+		Set<State> startStates = new HashSet<State>();
+		for (Coordinate box : root.getBoxes()) {
+			startStates.addAll(findStartPositions(root, box));
 		}
-		if (path == null) {
-			for (Coordinate box : root.getBoxes()) {
-				path = findPathWithNewStartPos(root, box);
-				if (path == null) {
-					break;
-				}
-			}
-		}
-		return path;
+		return findPath(startStates);
 	}
 	
 
-	private String findPathWithNewStartPos(State root, Coordinate position) {
-		List<State> rootStates = findStartPositions(root, position);
-		for (State state : rootStates) {
-			String path = findPath(state);
-			if (path != null) {
-				return path;
+	private int[][] generateManhattancost() {
+		int[][] manhattanCost = new int[board.length][];
+		for(int y = 0 ; y < board.length ; y++) {
+			manhattanCost[y] = new int[board[y].length];
+			for(int x = 0 ; x < board[y].length ; x++) {
+				int min = Integer.MAX_VALUE;
+				for (Coordinate goal : goals) {
+					int manhattan = Math.abs(goal.x - x) + Math.abs(goal.y - y);
+					if(min > manhattan)
+						min = manhattan;
+				}
+				manhattanCost[y][x] = min;
 			}
 		}
-		return null;
+		return manhattanCost;
 	}
 
 	private List<State> findStartPositions(State root, Coordinate position) {
@@ -76,56 +78,43 @@ public class Main {
 		return states;
 	}
 
-	private String findPath(State root) {
-		State goal = search(root);
+	private String findPath(Set<State> startStates) {
+		State goal = search(startStates);
 		if (goal == null) {
 			return null;
 		}
 		return recreatePath(goal);
 	}
 
-	private State search(State start) {
+	private State search(Set<State> startingStates) {
 		Set<State> visited = new HashSet<State>();
-		PriorityQueue<State> openSet = new PriorityQueue<State>();
-		start.gScore = 0;
-		start.fScore = start.gScore + start.getValue();
-		openSet.add(start);
-		// int depth = 200;
-		// List<State> newDepth = new ArrayList<State>();
-
-		// while (depth < 5000) {
-		while (!openSet.isEmpty()) {
-			State current = openSet.poll();
-
-			// if (current.getStepsTo() + current.getValue() > depth) {
-			// newDepth.add(current);
-			// continue;
-			// }
-			if (isCompleted(current))
-				if(!isStuck(current))
-					return current;
-				else
-					System.out.println("my dung id duck");
+		PriorityQueue<State> queue = new PriorityQueue<State>();
+		for (State start : startingStates) {
+			start.costTo = 0;
+			start.totalCost = start.costTo + start.estimateGoalCost() * GOAL_COST_SCALE;
+		}
+		queue.addAll(startingStates);
+		while (!queue.isEmpty()) {
+			State current = queue.poll();
+			if (isCompleted(current) && !isStuck(current))
+				return current;
 			visited.add(current);
 			List<State> nextMoves = findPossibleMoves(current);
 			for (State neighbor : nextMoves) {
-				int tentative_g_score = current.gScore + neighbor.getStepsTo();
-				int tentative_f_score = tentative_g_score + neighbor.getValue();
-				if (visited.contains(neighbor) && tentative_f_score >= neighbor.fScore) {
+				int costTo = current.costTo + 1;
+				int totalCost = costTo + neighbor.estimateGoalCost() * GOAL_COST_SCALE;
+				if (visited.contains(neighbor) && totalCost >= neighbor.totalCost) {
 					continue;
 				}
 
-				if (!visited.contains(neighbor) || tentative_f_score < neighbor.fScore) {
-					neighbor.gScore = tentative_g_score;
-					neighbor.fScore = tentative_f_score;
-					openSet.add(neighbor);
+				if (!queue.contains(neighbor) || totalCost < neighbor.totalCost) {
+					neighbor.costTo = costTo;
+					neighbor.totalCost = totalCost;
+					if (!queue.contains(neighbor))
+						queue.add(neighbor);
 				}
 			}
 		}
-		// depth *= 2;
-		// openSet.addAll(newDepth);
-		// newDepth.clear();
-		// }
 		return null;
 	}
 
@@ -188,27 +177,6 @@ public class Main {
 		newState.movePlayer(new Coordinate(box.x + 2 * dx, box.y + 2 * dy));
 		newState.setPushPosition(new Coordinate(box.x + dx, box.y + dy));
 		return newState;
-	}
-
-
-	private String getPath2(State state, Coordinate box, Coordinate to) {
-		String path = BoardSearcher.findPath(state, state.getPlayer(), to);
-		if (path == null) {
-			return null;
-		}
-		if (to.x > box.x) {
-			return  path + " L";
-		}
-		if (to.x < box.x) {
-			return path + " R";
-		}
-		if (to.y > box.y) {
-			return path + " U";
-		}
-		if (to.y < box.y) {
-			return path + " D";
-		}
-		return null;
 	}
 	
 	private String getPath(State state, Coordinate box, Coordinate to) {
@@ -279,7 +247,6 @@ public class Main {
 	private State extractRootState(char[][] board) {
 		Set<Coordinate> boxes = new HashSet<Coordinate>();
 		Coordinate player = null;
-		boolean playerOnGoal = false;
 		for (int y = 0; y < board.length; y++) {
 			for (int x = 0; x < board[y].length; x++) {
 				switch (board[y][x]) {
@@ -308,14 +275,13 @@ public class Main {
 					boxes.add(new Coordinate(x, y));
 					player = new Coordinate(x, y);
 					board[y][x] = Constants.SPACE;
-					playerOnGoal = true;
 					break;
 				}
 				}
 			}
 		}
 		initialPosition = player.clone();
-		State s = new State(-1, player, boxes, null, goals, playerOnGoal);
+		State s = new State(-1, player, boxes, null, goals);
 		s.setHash(hasher.hash(s, player));
 		return s;
 	}
