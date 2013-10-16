@@ -98,27 +98,12 @@ public class State implements Comparable<State> {
 	}
 
 	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent, Set<Coordinate> goals) {
-		this.goals = goals;
-		this.hashCode = hashCode;
-		this.player = player;
-		this.boxes = boxes;
-		pathFromParent = "";
-		this.parent = parent;
-		value = Integer.MIN_VALUE;
-		if(parent != null)
-			stepsTo = parent.getStepsTo() + 1;
+		this(hashCode, player, boxes, parent, goals, false);
 	}
 
 	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent, Set<Coordinate> goals, boolean playerOnGoal) {
-		this.goals = goals;
-		this.hashCode = hashCode;
-		this.boxes = boxes;
-		this.parent = parent;
-		this.player = player;
+		this(hashCode, player, boxes, parent, goals, null);
 		this.playerOnGoal = playerOnGoal;
-		value = Integer.MIN_VALUE;
-		if(parent != null)
-			stepsTo = parent.getStepsTo() + 1;
 	}
 	
 	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent, Set<Coordinate> goals, Coordinate topLeftmostPosition) {
@@ -214,7 +199,15 @@ public class State implements Comparable<State> {
 
 	@Override
 	public int compareTo(State arg0) {
-		return totalCost-arg0.totalCost;
+		if(equals(arg0)) {
+			return 0;
+		}
+		int score = totalCost - arg0.totalCost;
+		if(score == 0) {
+			return 1;
+		} else {
+			return score;
+		}
 	}
 
 	

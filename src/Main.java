@@ -2,18 +2,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.Set;
+import java.util.TreeSet;
 
 public class Main {
+	private static final int GOAL_COST_SCALE = 10;
 	private static ZobristHasher hasher;
 	public static char[][] board;
 	private Coordinate initialPosition;
@@ -43,7 +39,7 @@ public class Main {
 		String path = null;
 		if (!root.isPlayerOnGoal()) {
 			path = findPath(root);
-		} 
+		}
 		if (path == null) {
 			for (Coordinate box : root.getBoxes()) {
 				path = findPathWithNewStartPos(root, box);
@@ -91,39 +87,28 @@ public class Main {
 		Set<State> visited = new HashSet<State>();
 		PriorityQueue<State> queue = new PriorityQueue<State>();
 		start.costTo = 0;
-		start.totalCost = start.costTo + start.estimateGoalCost();
+		start.totalCost = start.costTo + start.estimateGoalCost()*GOAL_COST_SCALE;
 		queue.add(start);
-		List<State> iterativeDeepening = new ArrayList<State>();
-		int depth = 5;
-		while(depth > 0) {
-			while (!queue.isEmpty()) {
-				State current = queue.poll();
-				if (isCompleted(current) && !isStuck(current))
-					return current;
-				visited.add(current);
-				if(current.getStepsTo() > depth) {
-					iterativeDeepening.add(current);
+		while (!queue.isEmpty()) {
+			State current = queue.poll();
+			if (isCompleted(current) && !isStuck(current))
+				return current;
+			visited.add(current);
+			List<State> nextMoves = findPossibleMoves(current);
+			for (State neighbor : nextMoves) {
+				int costTo = current.costTo + 1;
+				int totalCost = costTo + neighbor.estimateGoalCost()*GOAL_COST_SCALE;
+				if (visited.contains(neighbor) && totalCost >= neighbor.totalCost) {
 					continue;
 				}
-				List<State> nextMoves = findPossibleMoves(current);
-				for (State neighbor : nextMoves) {
-					int costTo = current.costTo + 1;
-					int totalCost = costTo + neighbor.estimateGoalCost();
-					if (visited.contains(neighbor) && totalCost >= neighbor.totalCost) {
-						continue;
-					}
-	
-					if (!queue.contains(neighbor) || totalCost < neighbor.totalCost) {
-						neighbor.costTo = costTo;
-						neighbor.totalCost = totalCost;
-						if(!queue.contains(neighbor))
-							queue.add(neighbor);
-					}
+
+				if (!queue.contains(neighbor) || totalCost < neighbor.totalCost) {
+					neighbor.costTo = costTo;
+					neighbor.totalCost = totalCost;
+					if(!queue.contains(neighbor))
+						queue.add(neighbor);
 				}
 			}
-			depth += 5;
-			queue.addAll(iterativeDeepening);
-			iterativeDeepening.clear();
 		}
 		return null;
 	}
