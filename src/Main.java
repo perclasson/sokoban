@@ -83,7 +83,7 @@ public class Main {
 		if (goal == null) {
 			return null;
 		}
-		return recreatePath2(goal);
+		return recreatePath(goal);
 	}
 
 	private State search(Set<State> startingStates) {
@@ -121,19 +121,6 @@ public class Main {
 	private boolean isStuck(State state) {
 		return !BoardSearcher.pathExists(state, state.getPlayer(), initialPosition);
 	}
-
-	public String recreatePath2(State goal) {
-		StringBuilder sb = new StringBuilder();
-		String endPath = BoardSearcher.findPath(goal, goal.getPlayer(), initialPosition);
-		
-		State current = goal;
-		while (current != null) {
-			if (current.getPath() != null)
-				sb.append(current.getPath());
-			current = current.getParent();
-		}
-		return endPath + sb.toString();
-	}
 	
 	public String recreatePath(State goal) {
 		StringBuilder sb = new StringBuilder();
@@ -168,7 +155,7 @@ public class Main {
 	}
 
 	private State makeMove(State state, Coordinate box, int dx, int dy) {
-		if(BoardSearcher.findPath(state, state.getPlayer(), new Coordinate(box.x + dx, box.y + dy)) != null) {
+		if(!BoardSearcher.pathExists(state, state.getPlayer(), new Coordinate(box.x + dx, box.y + dy))) {
 			return null;
 		}
 		State newState = state.clone();
