@@ -98,12 +98,7 @@ public class State implements Comparable<State> {
 	}
 
 	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent, Set<Coordinate> goals) {
-		this(hashCode, player, boxes, parent, goals, false);
-	}
-
-	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent, Set<Coordinate> goals, boolean playerOnGoal) {
 		this(hashCode, player, boxes, parent, goals, null);
-		this.playerOnGoal = playerOnGoal;
 	}
 	
 	public State(int hashCode, Coordinate player, Set<Coordinate> boxes, State parent, Set<Coordinate> goals, Coordinate topLeftmostPosition) {

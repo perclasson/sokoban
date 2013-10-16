@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
-import java.util.TreeSet;
 
 public class Main {
 	private static final int GOAL_COST_SCALE = 10;
@@ -24,7 +23,10 @@ public class Main {
 		board = readBoard();
 		hasher = new ZobristHasher(board);
 		long before = System.currentTimeMillis();
-		System.out.println(solve());
+		String answer = solve();
+		if(answer == null)
+			throw new RuntimeException();
+		System.out.println(answer);
 //		System.out.println("Took " + (System.currentTimeMillis() - before) + " ms");
 	}
 
@@ -36,30 +38,11 @@ public class Main {
 
 	public String solve() {
 		State root = extractRootState(board);
-		String path = null;
-		if (!root.isPlayerOnGoal()) {
-			path = findPath(root);
+		Set<State> startStates = new HashSet<State>();
+		for (Coordinate box : root.getBoxes()) {
+			startStates.addAll(findStartPositions(root, box));
 		}
-		if (path == null) {
-			for (Coordinate box : root.getBoxes()) {
-				path = findPathWithNewStartPos(root, box);
-				if (path == null) {
-					break;
-				}
-			}
-		}
-		return path;
-	}
-
-	private String findPathWithNewStartPos(State root, Coordinate position) {
-		List<State> rootStates = findStartPositions(root, position);
-		for (State state : rootStates) {
-			String path = findPath(state);
-			if (path != null) {
-				return path;
-			}
-		}
-		return null;
+		return findPath(startStates);
 	}
 
 	private List<State> findStartPositions(State root, Coordinate position) {
@@ -75,20 +58,22 @@ public class Main {
 		return states;
 	}
 
-	private String findPath(State root) {
-		State goal = search(root);
+	private String findPath(Set<State> startStates) {
+		State goal = search(startStates);
 		if (goal == null) {
 			return null;
 		}
 		return recreatePath(goal);
 	}
 
-	private State search(State start) {
+	private State search(Set<State> startingStates) {
 		Set<State> visited = new HashSet<State>();
 		PriorityQueue<State> queue = new PriorityQueue<State>();
-		start.costTo = 0;
-		start.totalCost = start.costTo + start.estimateGoalCost()*GOAL_COST_SCALE;
-		queue.add(start);
+		for (State start : startingStates) {
+			start.costTo = 0;
+			start.totalCost = start.costTo + start.estimateGoalCost() * GOAL_COST_SCALE;
+		}
+		queue.addAll(startingStates);
 		while (!queue.isEmpty()) {
 			State current = queue.poll();
 			if (isCompleted(current) && !isStuck(current))
@@ -97,7 +82,7 @@ public class Main {
 			List<State> nextMoves = findPossibleMoves(current);
 			for (State neighbor : nextMoves) {
 				int costTo = current.costTo + 1;
-				int totalCost = costTo + neighbor.estimateGoalCost()*GOAL_COST_SCALE;
+				int totalCost = costTo + neighbor.estimateGoalCost() * GOAL_COST_SCALE;
 				if (visited.contains(neighbor) && totalCost >= neighbor.totalCost) {
 					continue;
 				}
@@ -105,7 +90,7 @@ public class Main {
 				if (!queue.contains(neighbor) || totalCost < neighbor.totalCost) {
 					neighbor.costTo = costTo;
 					neighbor.totalCost = totalCost;
-					if(!queue.contains(neighbor))
+					if (!queue.contains(neighbor))
 						queue.add(neighbor);
 				}
 			}
@@ -227,7 +212,6 @@ public class Main {
 	private State extractRootState(char[][] board) {
 		Set<Coordinate> boxes = new HashSet<Coordinate>();
 		Coordinate player = null;
-		boolean playerOnGoal = false;
 		for (int y = 0; y < board.length; y++) {
 			for (int x = 0; x < board[y].length; x++) {
 				switch (board[y][x]) {
@@ -256,14 +240,13 @@ public class Main {
 					boxes.add(new Coordinate(x, y));
 					player = new Coordinate(x, y);
 					board[y][x] = Constants.SPACE;
-					playerOnGoal = true;
 					break;
 				}
 				}
 			}
 		}
 		initialPosition = player.clone();
-		State s = new State(-1, player, boxes, null, goals, playerOnGoal);
+		State s = new State(-1, player, boxes, null, goals);
 		s.setHash(hasher.hash(s, player));
 		return s;
 	}

@@ -39,7 +39,7 @@ public class Tester {
 			if(verbose) {
 				System.out.println(path);
 			}
-			if(path.equals("No path")) {
+			if(path == null) {
 				System.out.println();
 				System.out.println("FFFFFAAAAAAAIIIIIIIIILLLLLL");
 				System.out.println(level);
