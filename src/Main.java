@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 
 public class Main {
 	private static final int GOAL_COST_SCALE = 10;
@@ -20,6 +21,7 @@ public class Main {
 	Map<GameState, GameState> pullVisited = new HashMap<GameState, GameState>();
 	Map<GameState, GameState> pushVisited = new HashMap<GameState, GameState>();
 	private String pushPath = "", pullPath = "";
+	private Semaphore blockOtherThread = new Semaphore(1);
 
 	public static void main(String[] args) {
 		new Main();
@@ -42,13 +44,13 @@ public class Main {
 				DeadlockHandler.addStaticDeadlocks(pushBoard);
 				pushManhattanCost = generateManhattancost(pushBoard, pushGoals);
 				System.out.println(pushSolve(pushRoot));
-				System.out.println("took " + (System.currentTimeMillis() - before));
+				System.out.println("push! took " + (System.currentTimeMillis() - before));
 				System.exit(0);
 			}
 		}.start();
 
 		System.out.println(pullSolve(pullRoot));
-		System.out.println("took " + (System.currentTimeMillis() - before));
+		System.out.println("pull! took " + (System.currentTimeMillis() - before));
 		System.exit(0);
 
 	}
@@ -62,7 +64,8 @@ public class Main {
 		if (goal == null) {
 			return null;
 		}
-		return pushRecreatePath(goal)+pullPath;
+		String mergePath = new StringBuilder().append(BoardSearcher.findPath(goal, goal.getPlayer(), pullVisited.get(goal).getPlayer(), pullBoard)).reverse().toString();
+		return pushRecreatePath(goal) + mergePath + pullPath;
 	}
 
 	public String pullSolve(GameState root) {
@@ -108,7 +111,14 @@ public class Main {
 		if (goal == null) {
 			return null;
 		}
-		return pushPath+pullRecreatePath(goal);
+		if (pushPath == "") {
+			return pullRecreatePath(goal);
+		} else {
+			GameState pushGoal = pushVisited.get(goal);
+			String mergePath = new StringBuilder().append(BoardSearcher.findPath(goal, pushGoal.getPlayer(), goal.getPlayer(), pullBoard)).reverse().toString();
+			goal.setPlayer(pushGoal.getPlayer());
+			return pushPath + mergePath + pullRecreatePathWithMerge(goal);
+		}
 	}
 
 	private GameState pullSearch(Set<GameState> startingStates) {
@@ -123,17 +133,29 @@ public class Main {
 		while (depth > 0) {
 			while (!queue.isEmpty()) {
 				GameState current = queue.poll();
+				pullVisited.put(current, current);
+
+				if (pullIsCompleted(current) && !isStuck(current)) {
+					try {
+						blockOtherThread.acquire();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					return current;
+				}
 				if (pushVisited.containsKey(current)) {
+					try {
+						blockOtherThread.acquire();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 					pushPath = pushRecreatePath(pushVisited.get(current));
 					return current;
 				}
-				if (pullIsCompleted(current) && !isStuck(current))
-					return current;
 				if (current.totalCost > depth) {
 					IDLeaves.add(current);
 					continue;
 				}
-				pullVisited.put(current, current);
 				List<GameState> nextMoves = pullFindPossibleMoves(current);
 				for (GameState neighbor : nextMoves) {
 					int costTo = current.costTo + 1;
@@ -167,17 +189,29 @@ public class Main {
 		while (depth > 0) {
 			while (!queue.isEmpty()) {
 				GameState current = queue.poll();
-				if (pullVisited.containsKey(current)) {
-					pullPath = pushRecreatePath(pullVisited.get(current));
+				pushVisited.put(current, current);
+
+				if (pushIsCompleted(current)) {
+					try {
+						blockOtherThread.acquire();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 					return current;
 				}
-				if (pushIsCompleted(current))
+				if (pullVisited.containsKey(current)) {
+					try {
+						blockOtherThread.acquire();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					pullPath = pullRecreatePathWithMerge(current);
 					return current;
+				}
 				if (current.totalCost > depth) {
 					IDLeaves.add(current);
 					continue;
 				}
-				pushVisited.put(current, current);
 				List<GameState> nextMoves = pushFindPossibleMoves(current);
 				for (GameState neighbor : nextMoves) {
 					int costTo = current.costTo + 1;
@@ -203,6 +237,17 @@ public class Main {
 
 	private boolean isStuck(GameState state) {
 		return BoardSearcher.findPath(state, state.getPlayer(), initialPosition, pullBoard) == null;
+	}
+
+	public String pullRecreatePathWithMerge(GameState goal) {
+		StringBuilder sb = new StringBuilder();
+
+		while (goal != null) {
+			if (goal.getPath() != null)
+				sb.append(goal.getPath());
+			goal = goal.getParent();
+		}
+		return invertPath(sb.toString());
 	}
 
 	public String pullRecreatePath(GameState goal) {
@@ -352,7 +397,7 @@ public class Main {
 				sb.append('U');
 				break;
 			default:
-				sb.append(' ');
+				sb.append(toBeInverted);
 				break;
 			}
 		}
