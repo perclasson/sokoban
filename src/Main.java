@@ -83,7 +83,7 @@ public class Main {
 		if (goal == null) {
 			return null;
 		}
-		return recreatePath(goal);
+		return recreatePath2(goal);
 	}
 
 	private State search(Set<State> startingStates) {
@@ -168,7 +168,7 @@ public class Main {
 	}
 
 	private State makeMove(State state, Coordinate box, int dx, int dy) {
-		if(!BoardSearcher.pathExists(state, state.getPlayer(), new Coordinate(box.x + dx, box.y + dy))) {
+		if(BoardSearcher.findPath(state, state.getPlayer(), new Coordinate(box.x + dx, box.y + dy)) != null) {
 			return null;
 		}
 		State newState = state.clone();
