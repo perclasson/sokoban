@@ -2,15 +2,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.Set;
 
 public class Main {
@@ -29,7 +23,7 @@ public class Main {
 		hasher = new ZobristHasher(board);
 		long before = System.currentTimeMillis();
 		System.out.println(solve());
-//		System.out.println("Took " + (System.currentTimeMillis() - before) + " ms");
+		System.out.println("Took " + (System.currentTimeMillis() - before) + " ms");
 	}
 
 	public Main(char[][] b) {
@@ -56,6 +50,7 @@ public class Main {
 		}
 		return path;
 	}
+	
 
 	private String findPathWithNewStartPos(State root, Coordinate position) {
 		List<State> rootStates = findStartPositions(root, position);
@@ -106,8 +101,11 @@ public class Main {
 			// newDepth.add(current);
 			// continue;
 			// }
-			if (isCompleted(current) && !isStuck(current))
-				return current;
+			if (isCompleted(current))
+				if(!isStuck(current))
+					return current;
+				else
+					System.out.println("my dung id duck");
 			visited.add(current);
 			List<State> nextMoves = findPossibleMoves(current);
 			for (State neighbor : nextMoves) {
@@ -132,17 +130,30 @@ public class Main {
 	}
 
 	private boolean isStuck(State state) {
-		return BoardSearcher.findPath(state, state.getPlayer(), initialPosition) == null;
+		return !BoardSearcher.pathExists(state, state.getPlayer(), initialPosition);
 	}
 
+	public String recreatePath2(State goal) {
+		StringBuilder sb = new StringBuilder();
+		String endPath = BoardSearcher.findPath(goal, goal.getPlayer(), initialPosition);
+		
+		State current = goal;
+		while (current != null) {
+			if (current.getPath() != null)
+				sb.append(current.getPath());
+			current = current.getParent();
+		}
+		return endPath + sb.toString();
+	}
+	
 	public String recreatePath(State goal) {
 		StringBuilder sb = new StringBuilder();
 		String endPath = BoardSearcher.findPath(goal, goal.getPlayer(), initialPosition);
-
-		while (goal != null) {
-			if (goal.getPath() != null)
-				sb.append(goal.getPath());
-			goal = goal.getParent();
+		State current = goal;
+		while(current.getParent() != null) {
+		String path = getPath(current.getParent(), current.getPlayer(), current.getPushPosition());
+			sb.append(path);
+			current = current.getParent();
 		}
 		return invertPath(endPath + sb.toString());
 	}
@@ -168,34 +179,54 @@ public class Main {
 	}
 
 	private State makeMove(State state, Coordinate box, int dx, int dy) {
-		String path = getPath(state, box, new Coordinate(box.x + dx, box.y + dy));
-		if (path == null) {
+		if(!BoardSearcher.pathExists(state, state.getPlayer(), new Coordinate(box.x + dx, box.y + dy))) {
 			return null;
 		}
 		State newState = state.clone();
-		newState.setPath(path);
 		newState.setParent(state);
 		newState.moveBox(box, new Coordinate(box.x + dx, box.y + dy));
 		newState.movePlayer(new Coordinate(box.x + 2 * dx, box.y + 2 * dy));
+		newState.setPushPosition(new Coordinate(box.x + dx, box.y + dy));
 		return newState;
 	}
 
+
+	private String getPath2(State state, Coordinate box, Coordinate to) {
+		String path = BoardSearcher.findPath(state, state.getPlayer(), to);
+		if (path == null) {
+			return null;
+		}
+		if (to.x > box.x) {
+			return  path + " L";
+		}
+		if (to.x < box.x) {
+			return path + " R";
+		}
+		if (to.y > box.y) {
+			return path + " U";
+		}
+		if (to.y < box.y) {
+			return path + " D";
+		}
+		return null;
+	}
+	
 	private String getPath(State state, Coordinate box, Coordinate to) {
 		String path = BoardSearcher.findPath(state, state.getPlayer(), to);
 		if (path == null) {
 			return null;
 		}
 		if (to.x > box.x) {
-			return "R " + path;
-		}
-		if (to.x < box.x) {
 			return "L " + path;
 		}
+		if (to.x < box.x) {
+			return "R " + path;
+		}
 		if (to.y > box.y) {
-			return "D " + path;
+			return "U " + path;
 		}
 		if (to.y < box.y) {
-			return "U " + path;
+			return "D " + path;
 		}
 		return null;
 	}
@@ -217,8 +248,11 @@ public class Main {
 			case 'D':
 				sb.append('U');
 				break;
-			default:
+			case ' ':
 				sb.append(' ');
+				break;
+			default:
+				sb.append(toBeInverted);
 				break;
 			}
 		}

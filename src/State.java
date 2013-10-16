@@ -13,6 +13,7 @@ public class State implements Comparable<State> {
 	private Set<Coordinate> goals;
 	private int stepsTo = 0;
 	public int fScore, gScore;
+	private Coordinate pushPosition;
 
 	/**
 	 * @return Low value is good.
@@ -216,5 +217,13 @@ public class State implements Comparable<State> {
 	
 	public int getStepsTo() {
 		return stepsTo;
+	}
+
+	public Coordinate getPushPosition() {
+		return pushPosition;
+	}
+
+	public void setPushPosition(Coordinate pushPosition) {
+		this.pushPosition = pushPosition;
 	}
 }
