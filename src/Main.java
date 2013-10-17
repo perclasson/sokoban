@@ -32,16 +32,14 @@ public class Main {
 				long before = System.currentTimeMillis();
 				pushSolver = new PushSolver(threadBlocker, pullVisited, pushVisited, pushBoard);
 				System.out.println(extractPath(pushSolver.solve()));
-				// System.out.println("push! took " +
-				// (System.currentTimeMillis() - before));
+				 System.out.println("push! took " + (System.currentTimeMillis() - before));
 				System.exit(0);
 			}
 		}.start();
 
 		pullSolver = new PullSolver(threadBlocker, pullVisited, pushVisited, pullBoard);
 		System.out.println(extractPath(pullSolver.solve()));
-		// System.out.println("pull! took " + (System.currentTimeMillis() -
-		// before));
+		System.out.println("pull! took " + (System.currentTimeMillis() - before));
 		System.exit(0);
 
 	}

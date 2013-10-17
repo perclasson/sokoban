@@ -1,3 +1,4 @@
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -195,7 +196,7 @@ public class PushSolver extends Solver {
 			return false;
 		}
 		if (matchesDatabase(state, box, dx, dy))
-			return true;
+			return false;
 
 		return true;
 	}
@@ -208,14 +209,16 @@ public class PushSolver extends Solver {
 			curr = new Coordinate(midPoint.x + Constants.bigdx[i], midPoint.y + Constants.bigdy[i]);
 			if (board[curr.y][curr.x] == Constants.WALL)
 				continue;
-			deadlock = new DeadlockState(board[curr.y - 1][curr.x - 1], board[curr.y - 1][curr.x], board[curr.y - 1][curr.x + 1], board[curr.y][curr.x - 1], board[curr.y][curr.x], board[curr.y - 1][curr.x + 1], board[curr.y + 1][curr.x - 1], board[curr.y + 1][curr.x], board[curr.y + 1][curr.x + 1]);
+			deadlock = new DeadlockState(board[curr.y - 1][curr.x - 1], board[curr.y - 1][curr.x], board[curr.y - 1][curr.x + 1], board[curr.y][curr.x - 1], board[curr.y][curr.x], board[curr.y][curr.x + 1], board[curr.y + 1][curr.x - 1], board[curr.y + 1][curr.x], board[curr.y + 1][curr.x + 1]);
 			for (int j = 0; j < Constants.bigdx.length; j++) {
 				if (state.containsBox(new Coordinate(curr.x + Constants.bigdx[j], curr.y + Constants.bigdy[j]))) {
 					board[curr.y + Constants.bigdy[j]][curr.x + Constants.bigdx[j]] = Constants.BOX;
 				}
 			}
-			if (deadlockHandler.isKnownDeadlock(deadlock))
+			if (deadlockHandler.isKnownDeadlock(deadlock)) {
+				System.out.println("yes");
 				return true;
+			}
 		}
 		return false;
 	}

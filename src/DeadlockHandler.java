@@ -1,8 +1,9 @@
 import java.util.HashSet;
+import java.util.Set;
 
 public class DeadlockHandler {
 
-	private HashSet<DeadlockState> knownDeadlocks;
+	private Set<DeadlockState> knownDeadlocks;
 	private final char BOX = Constants.BOX, WALL = Constants.WALL, SPACE = Constants.SPACE;
 
 	public DeadlockHandler() {
@@ -102,7 +103,7 @@ public class DeadlockHandler {
 	}
 
 	public boolean isKnownDeadlock(DeadlockState state) {
-		return knownDeadlocks.contains(state);
+		return knownDeadlocks.contains(state); //TODO This never returns true
 	}
 
 	private void generateDatabase() {
