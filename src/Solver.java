@@ -3,7 +3,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
-
 public abstract class Solver {
 	char[][] board;
 	Map<GameState, GameState> pullVisited;
@@ -12,7 +11,7 @@ public abstract class Solver {
 	int[][] manhattanCost;
 	Set<Coordinate> goals;
 	GameState root;
-	
+
 	public Solver(char[][] board, Map<GameState, GameState> pullVisited, Map<GameState, GameState> pushVisited, Semaphore threadBlocker) {
 		this.board = board;
 		goals = new HashSet<Coordinate>();
@@ -22,14 +21,15 @@ public abstract class Solver {
 		root = extractRootState();
 		manhattanCost = generateManhattancost(board, goals);
 	}
-	
+
 	public abstract String recreateMergePath(GameState meetingPoint);
+
 	public abstract String recreateAlonePath(GameState goal);
-	
+
 	public abstract GameState solve();
-	
+
 	abstract GameState extractRootState();
-	
+
 	int[][] generateManhattancost(char[][] board, Set<Coordinate> goals) {
 		int[][] manhattanCost = new int[board.length][];
 		for (int y = 0; y < board.length; y++) {

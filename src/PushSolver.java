@@ -6,10 +6,10 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
-
 public class PushSolver extends Solver {
-	
+
 	private DeadlockHandler deadlockHandler;
+
 	public PushSolver(Semaphore threadBlocker, Map<GameState, GameState> pullVisited, Map<GameState, GameState> pushVisited, char[][] board) {
 		super(board, pullVisited, pushVisited, threadBlocker);
 		deadlockHandler = new DeadlockHandler();
@@ -61,7 +61,7 @@ public class PushSolver extends Solver {
 		s.setHash(Main.getHasher().hash(s));
 		return s;
 	}
-	
+
 	private GameState findPath(GameState root) {
 		GameState goal = search(root);
 		if (goal == null) {
@@ -69,7 +69,6 @@ public class PushSolver extends Solver {
 		}
 		return goal;
 	}
-
 
 	private GameState search(GameState start) {
 		PriorityQueue<GameState> queue = new PriorityQueue<GameState>();
@@ -170,7 +169,6 @@ public class PushSolver extends Solver {
 		return newState;
 	}
 
-
 	private String getPath(GameState state, Coordinate box, Coordinate to) {
 		String path = BoardSearcher.findPath(state, state.getPlayer(), to);
 		if (path == null) {
@@ -191,33 +189,37 @@ public class PushSolver extends Solver {
 		return null;
 	}
 
-	private boolean isPossibleMove(GameState state, Coordinate box, int dx, int dy) { 
-		boolean easyCheck =  (board[box.y + dy][box.x + dx] == Constants.GOAL && !state.containsBox(new Coordinate(box.x + dx, box.y + dy))) || (board[box.y + dy][box.x + dx] != Constants.DEADLOCK && (Main.isFreeSpace(state, new Coordinate(box.x + dx, box.y + dy)) && Main.isFreeSpace(state, new Coordinate(box.x - dx, box.y - dy))));
-		if(!easyCheck) {
+	private boolean isPossibleMove(GameState state, Coordinate box, int dx, int dy) {
+		boolean easyCheck = (board[box.y + dy][box.x + dx] == Constants.GOAL && !state.containsBox(new Coordinate(box.x + dx, box.y + dy))) || (board[box.y + dy][box.x + dx] != Constants.DEADLOCK && (Main.isFreeSpace(state, new Coordinate(box.x + dx, box.y + dy)) && Main.isFreeSpace(state, new Coordinate(box.x - dx, box.y - dy))));
+		if (!easyCheck) {
 			return false;
 		}
-		Coordinate midPoint = new Coordinate(box.x+dx, box.y+dy);
-		Coordinate curr;
-		DeadlockState deadlock = null;
-		for(int i = 0 ; i < Constants.bigdx.length ; i++) {
-			curr = new Coordinate(midPoint.x+Constants.bigdx[i],midPoint.y+Constants.bigdy[i]);
-			if(board[curr.y][curr.x] == Constants.WALL)
-				continue;
-			deadlock = new DeadlockState(board[curr.y-1][curr.x-1], board[curr.y-1][curr.x], board[curr.y-1][curr.x+1],
-					board[curr.y][curr.x-1], board[curr.y][curr.x], board[curr.y-1][curr.x+1],
-					board[curr.y+1][curr.x-1], board[curr.y+1][curr.x], board[curr.y+1][curr.x+1]);
-			for(int j = 0 ; j < Constants.bigdx.length ; j++) {
-				if(state.containsBox(new Coordinate(curr.x+Constants.bigdx[j],curr.y+Constants.bigdy[j]))) {
-					board[curr.y+Constants.bigdy[j]][curr.x+Constants.bigdx[j]] = Constants.BOX;
-				}
-			}
-			if(deadlockHandler.isKnownDeadlock(deadlock))
-				return false;
-		}
-		
+		if (matchesDatabase(state, box, dx, dy))
+			return true;
+
 		return true;
 	}
-	
+
+	private boolean matchesDatabase(GameState state, Coordinate box, int dx, int dy) {
+		Coordinate midPoint = new Coordinate(box.x + dx, box.y + dy);
+		Coordinate curr;
+		DeadlockState deadlock = null;
+		for (int i = 0; i < Constants.bigdx.length; i++) {
+			curr = new Coordinate(midPoint.x + Constants.bigdx[i], midPoint.y + Constants.bigdy[i]);
+			if (board[curr.y][curr.x] == Constants.WALL)
+				continue;
+			deadlock = new DeadlockState(board[curr.y - 1][curr.x - 1], board[curr.y - 1][curr.x], board[curr.y - 1][curr.x + 1], board[curr.y][curr.x - 1], board[curr.y][curr.x], board[curr.y - 1][curr.x + 1], board[curr.y + 1][curr.x - 1], board[curr.y + 1][curr.x], board[curr.y + 1][curr.x + 1]);
+			for (int j = 0; j < Constants.bigdx.length; j++) {
+				if (state.containsBox(new Coordinate(curr.x + Constants.bigdx[j], curr.y + Constants.bigdy[j]))) {
+					board[curr.y + Constants.bigdy[j]][curr.x + Constants.bigdx[j]] = Constants.BOX;
+				}
+			}
+			if (deadlockHandler.isKnownDeadlock(deadlock))
+				return true;
+		}
+		return false;
+	}
+
 	private boolean isCompleted(GameState state) {
 		for (Coordinate box : state.getBoxes()) {
 			if (board[box.y][box.x] != Constants.GOAL) {

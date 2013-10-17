@@ -11,7 +11,7 @@ public class BoardSearcher {
 		Queue<Coordinate> queue = new LinkedList<Coordinate>();
 		queue.add(start);
 		visited[start.y][start.x] = 'S';
-		
+
 		while (!queue.isEmpty()) {
 			Coordinate curr = queue.poll();
 			if (curr.equals(goal)) {
@@ -27,9 +27,9 @@ public class BoardSearcher {
 						visited[c.y][c.x] = 'L';
 					} else if (Constants.dy[i] > 0) {
 						visited[c.y][c.x] = 'D';
-					} else if(Constants.dy[i] < 0){
+					} else if (Constants.dy[i] < 0) {
 						visited[c.y][c.x] = 'U';
-					} 
+					}
 				}
 			}
 		}
@@ -48,10 +48,10 @@ public class BoardSearcher {
 			case 'R':
 				curr = new Coordinate(curr.x - 1, curr.y);
 				break;
-			case 'D': 
+			case 'D':
 				curr = new Coordinate(curr.x, curr.y - 1);
 				break;
-			case 'U': 
+			case 'U':
 				curr = new Coordinate(curr.x, curr.y + 1);
 				break;
 			}
@@ -59,16 +59,15 @@ public class BoardSearcher {
 		return sb.toString();
 	}
 
-	
 	public static boolean pathExists(GameState state, Coordinate start, Coordinate goal) {
 		if (start.equals(goal)) {
 			return true;
 		}
-		char[][] visited = new char[Main.yLength][Main.xLength]; 
+		char[][] visited = new char[Main.yLength][Main.xLength];
 		Queue<Coordinate> queue = new LinkedList<Coordinate>();
 		queue.add(start);
 		visited[start.y][start.x] = 'S';
-		
+
 		while (!queue.isEmpty()) {
 			Coordinate curr = queue.poll();
 			if (curr.equals(goal)) {

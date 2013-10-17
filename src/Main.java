@@ -32,14 +32,16 @@ public class Main {
 				long before = System.currentTimeMillis();
 				pushSolver = new PushSolver(threadBlocker, pullVisited, pushVisited, pushBoard);
 				System.out.println(extractPath(pushSolver.solve()));
-//				System.out.println("push! took " + (System.currentTimeMillis() - before));
+				// System.out.println("push! took " +
+				// (System.currentTimeMillis() - before));
 				System.exit(0);
 			}
 		}.start();
 
 		pullSolver = new PullSolver(threadBlocker, pullVisited, pushVisited, pullBoard);
 		System.out.println(extractPath(pullSolver.solve()));
-//		System.out.println("pull! took " + (System.currentTimeMillis() - before));
+		// System.out.println("pull! took " + (System.currentTimeMillis() -
+		// before));
 		System.exit(0);
 
 	}
@@ -48,15 +50,15 @@ public class Main {
 		GameState pullMeetingPoint = pullVisited.get(meetingPoint);
 		GameState pushMeetingPoint = pushVisited.get(meetingPoint);
 		String pushPath = "";
-		if(pushMeetingPoint != null)
+		if (pushMeetingPoint != null)
 			pushPath = pushSolver.recreateMergePath(pushMeetingPoint);
 		String pullPath = "";
-		if(pullMeetingPoint != null)
+		if (pullMeetingPoint != null)
 			pullPath = pullSolver.recreateMergePath(pullMeetingPoint);
-		
+
 		if (pushPath == "") {
 			return pullSolver.recreateAlonePath(pullMeetingPoint);
-		} else if(pullPath == "") {
+		} else if (pullPath == "") {
 			return pushSolver.recreateAlonePath(pushMeetingPoint);
 		} else {
 			String mergePath = new StringBuilder().append(BoardSearcher.findPath(pullMeetingPoint, pushMeetingPoint.getPlayer(), pullMeetingPoint.getPlayer())).reverse().toString().trim();
@@ -64,7 +66,7 @@ public class Main {
 			return (pushPath + " " + mergePath + " " + pullPath).trim();
 		}
 	}
-	
+
 	public static ZobristHasher getHasher() {
 		return hasher;
 	}
