@@ -3,12 +3,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
 public class Main {
@@ -18,8 +18,8 @@ public class Main {
 	public static int[][] pullManhattanCost, pushManhattanCost;
 	private Coordinate initialPosition;
 	private Set<Coordinate> pullGoals, pushGoals;
-	Map<GameState, GameState> pullVisited = new HashMap<GameState, GameState>();
-	Map<GameState, GameState> pushVisited = new HashMap<GameState, GameState>();
+	Map<GameState, GameState> pullVisited = new ConcurrentHashMap<GameState, GameState>();
+	Map<GameState, GameState> pushVisited = new ConcurrentHashMap<GameState, GameState>();
 	private String pushPath = "", pullPath = "";
 	private Semaphore blockOtherThread = new Semaphore(1);
 
@@ -64,8 +64,8 @@ public class Main {
 		if (goal == null) {
 			return null;
 		}
-		String mergePath = new StringBuilder().append(BoardSearcher.findPath(goal, goal.getPlayer(), pullVisited.get(goal).getPlayer(), pullBoard)).reverse().toString();
-		return pushRecreatePath(goal) + mergePath + pullPath;
+		String mergePath = new StringBuilder().append(BoardSearcher.findPath(goal, goal.getPlayer(), pullVisited.get(goal).getPlayer(), pullBoard)).reverse().toString().trim();
+		return (pushRecreatePath(goal) + " " + mergePath + " " + pullPath).trim();
 	}
 
 	public String pullSolve(GameState root) {
@@ -75,7 +75,6 @@ public class Main {
 		}
 		return pullFindPath(startStates);
 	}
-	
 
 	private int[][] generateManhattancost(char[][] board, Set<Coordinate> goals) {
 		int[][] manhattanCost = new int[board.length][];
@@ -116,9 +115,9 @@ public class Main {
 			return pullRecreatePath(goal);
 		} else {
 			GameState pushGoal = pushVisited.get(goal);
-			String mergePath = new StringBuilder().append(BoardSearcher.findPath(goal, pushGoal.getPlayer(), goal.getPlayer(), pullBoard)).reverse().toString();
+			String mergePath = new StringBuilder().append(BoardSearcher.findPath(goal, pushGoal.getPlayer(), goal.getPlayer(), pullBoard)).reverse().toString().trim();
 			goal.setPlayer(pushGoal.getPlayer());
-			return pushPath + mergePath + pullRecreatePathWithMerge(goal);
+			return (pushPath + " " + mergePath + " " + pullRecreatePathWithMerge(goal)).trim();
 		}
 	}
 
@@ -206,7 +205,7 @@ public class Main {
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-					pullPath = pullRecreatePathWithMerge(current);
+					pullPath = pullRecreatePathWithMerge(pullVisited.get(current));
 					return current;
 				}
 				if (current.totalCost > depth) {
@@ -346,16 +345,16 @@ public class Main {
 			return null;
 		}
 		if (to.x > box.x) {
-			return "L " + path;
-		}
-		if (to.x < box.x) {
 			return "R " + path;
 		}
+		if (to.x < box.x) {
+			return "L " + path;
+		}
 		if (to.y > box.y) {
-			return "U " + path;
+			return "D " + path;
 		}
 		if (to.y < box.y) {
-			return "D " + path;
+			return "U " + path;
 		}
 		return null;
 	}
@@ -519,7 +518,6 @@ public class Main {
 				}
 			}
 		}
-		initialPosition = player.clone();
 		GameState s = new GameState(-1, player, boxes, null, pushGoals);
 		s.setHash(hasher.hash(s, player));
 		return s;
