@@ -3,11 +3,11 @@ import java.util.Queue;
 
 public class BoardSearcher {
 
-	public static String findPath(GameState state, Coordinate start, Coordinate goal, char[][] board) {
+	public static String findPath(GameState state, Coordinate start, Coordinate goal) {
 		if (start.equals(goal)) {
 			return "";
 		}
-		char[][] visited = new char[board.length][board.length * 2];
+		char[][] visited = new char[Main.yLength][Main.xLength];
 		Queue<Coordinate> queue = new LinkedList<Coordinate>();
 		queue.add(start);
 		visited[start.y][start.x] = 'S';
@@ -64,7 +64,7 @@ public class BoardSearcher {
 		if (start.equals(goal)) {
 			return true;
 		}
-		char[][] visited = new char[Main.pullBoard.length][Main.pullBoard.length * 2]; //TODO length*2 lol wat
+		char[][] visited = new char[Main.yLength][Main.xLength]; 
 		Queue<Coordinate> queue = new LinkedList<Coordinate>();
 		queue.add(start);
 		visited[start.y][start.x] = 'S';

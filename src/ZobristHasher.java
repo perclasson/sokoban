@@ -8,33 +8,23 @@ public class ZobristHasher {
 	int[][][] table;
 	private final int PLAYER = 0;
 	private final int BOX = 1;
-	private int longestCol;
-	private char[][] board;
 	
-	public ZobristHasher(char[][] board) {
-		this.board = board;
+	public ZobristHasher() {
 		random = new Random();
-		initiate(board);
+		initiate();
 	}
 	
-	private void initiate(char[][] board) {
-		longestCol = Integer.MIN_VALUE;
-		table = new int[board.length][][];
-		for(int r = 0; r < board.length; r++) {
-			if(board[r].length > longestCol) {
-				longestCol = board[r].length;
-			}
-		}
-		table = new int[board.length][longestCol][2];
-		for(int r = 0; r <  board.length; r++) {
-			for(int c = 0; c < longestCol; c++) {
+	private void initiate() {
+		table = new int[Main.yLength][Main.xLength][2];
+		for(int r = 0; r <  Main.yLength; r++) {
+			for(int c = 0; c < Main.xLength; c++) {
 				table[r][c][PLAYER] = randomBitString().hashCode();
 				table[r][c][BOX] = randomBitString().hashCode();
 			}
 		}
 	}
 	
-	public int hash(GameState state, Coordinate player) {
+	public int hash(GameState state) {
 		int hash = 0;
 		for(Coordinate box : state.getBoxes()) {
 			hash = hash ^ table[box.y][box.x][BOX];
@@ -69,7 +59,7 @@ public class ZobristHasher {
 	}
 	
 	private Coordinate findTopLeftmostPosition(GameState state) {
-		char[][] visited = new char[board.length][longestCol];
+		char[][] visited = new char[Main.yLength][Main.xLength];
 		LinkedList<Coordinate> queue = new LinkedList<Coordinate>();
 		Coordinate current = null;
 		
