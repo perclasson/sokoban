@@ -74,52 +74,41 @@ public class PushSolver extends Solver {
 		start.costTo = 0;
 		start.totalCost = start.costTo + start.estimateGoalCost(manhattanCost) * Constants.GOAL_COST_SCALE;
 		queue.add(start);
-		int depth = start.totalCost;
-		List<GameState> IDLeaves = new ArrayList<GameState>();
-		while (depth > 0) {
-			while (!queue.isEmpty()) {
-				GameState current = queue.poll();
-				pushVisited.put(current, current);
+		while (!queue.isEmpty()) {
+			GameState current = queue.poll();
+			pushVisited.put(current, current);
 
-				if (isCompleted(current)) {
-					try {
-						threadBlocker.acquire();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					return current;
+			if (isCompleted(current)) {
+				try {
+					threadBlocker.acquire();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
-				if (pullVisited.containsKey(current)) {
-					try {
-						threadBlocker.acquire();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					return current;
+				return current;
+			}
+			if (pullVisited.containsKey(current)) {
+				try {
+					threadBlocker.acquire();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
-				if (current.totalCost > depth) {
-					IDLeaves.add(current);
+				return current;
+			}
+			List<GameState> nextMoves = findPossibleMoves(current);
+			for (GameState neighbor : nextMoves) {
+				int costTo = current.costTo + 1;
+				int totalCost = costTo + neighbor.estimateGoalCost(manhattanCost) * Constants.GOAL_COST_SCALE;
+				if (pushVisited.containsKey(neighbor) && totalCost >= neighbor.totalCost) {
 					continue;
 				}
-				List<GameState> nextMoves = findPossibleMoves(current);
-				for (GameState neighbor : nextMoves) {
-					int costTo = current.costTo + 1;
-					int totalCost = costTo + neighbor.estimateGoalCost(manhattanCost) * Constants.GOAL_COST_SCALE;
-					if (pushVisited.containsKey(neighbor) && totalCost >= neighbor.totalCost) {
-						continue;
-					}
 
-					if (!queue.contains(neighbor) || totalCost < neighbor.totalCost) {
-						neighbor.costTo = costTo;
-						neighbor.totalCost = totalCost;
-						if (!queue.contains(neighbor))
-							queue.add(neighbor);
-					}
+				if (!queue.contains(neighbor) || totalCost < neighbor.totalCost) {
+					neighbor.costTo = costTo;
+					neighbor.totalCost = totalCost;
+					if (!queue.contains(neighbor))
+						queue.add(neighbor);
 				}
 			}
-			queue.addAll(IDLeaves);
-			depth += 10;
-			IDLeaves.clear();
 		}
 		return null;
 	}
@@ -189,7 +178,7 @@ public class PushSolver extends Solver {
 	}
 
 	private boolean isPossibleMove(GameState state, Coordinate box, int dx, int dy) {
-		if((board[box.y + dy][box.x + dx] == Constants.GOAL && !state.containsBox(new Coordinate(box.x + dx, box.y + dy)))) {
+		if ((board[box.y + dy][box.x + dx] == Constants.GOAL && !state.containsBox(new Coordinate(box.x + dx, box.y + dy)))) {
 			return true;
 		}
 		boolean isClear = (board[box.y + dy][box.x + dx] != Constants.DEADLOCK && (Main.isFreeSpace(state, new Coordinate(box.x + dx, box.y + dy)) && Main.isFreeSpace(state, new Coordinate(box.x - dx, box.y - dy))));
@@ -199,11 +188,11 @@ public class PushSolver extends Solver {
 		}
 		GameState tmp = state.clone();
 		tmp.getBoxes().remove(box);
-		Coordinate newBox = new Coordinate(box.x+dx, box.y+dy);
+		Coordinate newBox = new Coordinate(box.x + dx, box.y + dy);
 		tmp.getBoxes().add(newBox);
 		visitedNodes.clear();
 		visitedNodes.add(newBox);
-		if(isKnownDeadlock(tmp, newBox)) {
+		if (isKnownDeadlock(tmp, newBox)) {
 			return false;
 		}
 
@@ -211,7 +200,7 @@ public class PushSolver extends Solver {
 	}
 
 	private boolean isKnownDeadlock(GameState state, Coordinate midPoint) {
-		if(!isFrozen(state, midPoint)) {
+		if (!isFrozen(state, midPoint)) {
 			return false;
 		}
 		Coordinate possibleBox = null;
@@ -227,7 +216,7 @@ public class PushSolver extends Solver {
 				} else {
 					return isKnownDeadlock(state, possibleBox);
 				}
-			} 
+			}
 		}
 		return true;
 	}

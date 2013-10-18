@@ -6,7 +6,6 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
-
 public class PullSolver extends Solver {
 	private Coordinate initialPosition;
 
@@ -30,52 +29,41 @@ public class PullSolver extends Solver {
 			start.totalCost = start.costTo + start.estimateGoalCost(manhattanCost) * Constants.GOAL_COST_SCALE;
 		}
 		queue.addAll(startingStates);
-		int depth = queue.peek().totalCost;
-		List<GameState> IDLeaves = new ArrayList<GameState>();
-		while (depth > 0) {
-			while (!queue.isEmpty()) {
-				GameState current = queue.poll();
-				pullVisited.put(current, current);
+		while (!queue.isEmpty()) {
+			GameState current = queue.poll();
+			pullVisited.put(current, current);
 
-				if (isCompleted(current) && !isStuck(current)) {
-					try {
-						threadBlocker.acquire();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					return current;
+			if (isCompleted(current) && !isStuck(current)) {
+				try {
+					threadBlocker.acquire();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
-				if (pushVisited.containsKey(current)) {
-					try {
-						threadBlocker.acquire();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					return current;
+				return current;
+			}
+			if (pushVisited.containsKey(current)) {
+				try {
+					threadBlocker.acquire();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
-				if (current.totalCost > depth) {
-					IDLeaves.add(current);
+				return current;
+			}
+			List<GameState> nextMoves = findPossibleMoves(current);
+			for (GameState neighbor : nextMoves) {
+				int costTo = current.costTo + 1;
+				int totalCost = costTo + neighbor.estimateGoalCost(manhattanCost) * Constants.GOAL_COST_SCALE;
+				if (pullVisited.containsKey(neighbor) && totalCost >= neighbor.totalCost) {
 					continue;
 				}
-				List<GameState> nextMoves = findPossibleMoves(current);
-				for (GameState neighbor : nextMoves) {
-					int costTo = current.costTo + 1;
-					int totalCost = costTo + neighbor.estimateGoalCost(manhattanCost) * Constants.GOAL_COST_SCALE;
-					if (pullVisited.containsKey(neighbor) && totalCost >= neighbor.totalCost) {
-						continue;
-					}
 
-					if (!queue.contains(neighbor) || totalCost < neighbor.totalCost) {
-						neighbor.costTo = costTo;
-						neighbor.totalCost = totalCost;
-						if (!queue.contains(neighbor))
-							queue.add(neighbor);
-					}
+				if (!queue.contains(neighbor) || totalCost < neighbor.totalCost) {
+					neighbor.costTo = costTo;
+					neighbor.totalCost = totalCost;
+					if (!queue.contains(neighbor))
+						queue.add(neighbor);
 				}
 			}
-			queue.addAll(IDLeaves);
-			depth += 10;
-			IDLeaves.clear();
 		}
 		return null;
 	}
@@ -116,7 +104,7 @@ public class PullSolver extends Solver {
 			}
 		}
 	}
-	
+
 	private List<GameState> findPossibleMoves(GameState state) {
 		List<GameState> moves = new ArrayList<GameState>();
 		for (Coordinate box : state.getBoxes()) {
@@ -124,7 +112,6 @@ public class PullSolver extends Solver {
 		}
 		return moves;
 	}
-
 
 	private boolean isCompleted(GameState state) {
 		for (Coordinate box : state.getBoxes()) {
@@ -134,6 +121,7 @@ public class PullSolver extends Solver {
 		}
 		return true;
 	}
+
 	private GameState makeMove(GameState state, Coordinate box, int dx, int dy) {
 		String path = getPath(state, box, new Coordinate(box.x + dx, box.y + dy));
 		if (path == null) {
@@ -146,7 +134,6 @@ public class PullSolver extends Solver {
 		newState.movePlayer(new Coordinate(box.x + 2 * dx, box.y + 2 * dy));
 		return newState;
 	}
-	
 
 	private String getPath(GameState state, Coordinate box, Coordinate to) {
 		String path = BoardSearcher.findPath(state, state.getPlayer(), to);
@@ -167,7 +154,7 @@ public class PullSolver extends Solver {
 		}
 		return null;
 	}
-	
+
 	private String invertPath(String path) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < path.length(); i++) {
@@ -235,6 +222,7 @@ public class PullSolver extends Solver {
 		s.setHash(Main.getHasher().hash(s));
 		return s;
 	}
+
 	private boolean isPossibleMove(GameState state, Coordinate box, int dx, int dy) {
 		return Main.isFreeSpace(state, new Coordinate(box.x + dx, box.y + dy)) && Main.isFreeSpace(state, new Coordinate(box.x + 2 * dx, box.y + 2 * dy));
 	}
