@@ -2,8 +2,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Semaphore;
 
 public class PushSolver extends Solver {
@@ -70,12 +70,12 @@ public class PushSolver extends Solver {
 	}
 
 	private GameState search(GameState start) {
-		PriorityQueue<GameState> queue = new PriorityQueue<GameState>();
+		TreeSet<GameState> queue = new TreeSet<GameState>();
 		start.costTo = 0;
 		start.totalCost = start.costTo + start.estimateGoalCost(manhattanCost) * Constants.GOAL_COST_SCALE;
 		queue.add(start);
 		while (!queue.isEmpty()) {
-			GameState current = queue.poll();
+			GameState current = queue.pollFirst();
 			pushVisited.put(current, current);
 
 			if (isCompleted(current)) {
@@ -102,11 +102,13 @@ public class PushSolver extends Solver {
 					continue;
 				}
 
-				if (!queue.contains(neighbor) || totalCost < neighbor.totalCost) {
+				if (!queue.contains(neighbor)) {
 					neighbor.costTo = costTo;
 					neighbor.totalCost = totalCost;
-					if (!queue.contains(neighbor))
-						queue.add(neighbor);
+					queue.add(neighbor);
+				} else if (totalCost < neighbor.totalCost) {
+					neighbor.costTo = costTo;
+					neighbor.totalCost = totalCost;
 				}
 			}
 		}

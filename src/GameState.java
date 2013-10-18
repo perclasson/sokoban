@@ -6,7 +6,6 @@ public class GameState implements Comparable<GameState> {
 	private int hashCode;
 	private Coordinate player;
 	private Coordinate topMostLeftPosition;
-	private int value;
 	private String pathFromParent;
 	private GameState parent;
 	private boolean playerOnGoal;
@@ -14,7 +13,7 @@ public class GameState implements Comparable<GameState> {
 	private int stepsTo = 0;
 	private Coordinate pushPosition;
 	public int totalCost, costTo;
-	
+
 	public int estimateGoalCost(int[][] manhattanCost) {
 		int value = 0;
 		for (Coordinate box : boxes) {
@@ -23,61 +22,10 @@ public class GameState implements Comparable<GameState> {
 		return value;
 	}
 
-	public int getValueSofisticated() {
-		if (value != Integer.MIN_VALUE)
-			return value;
-		int N = boxes.size();
-		int[][] values = new int[N][N];
-
-		int b = 0;
-		for (Coordinate box : boxes) {
-			int g = 0;
-			for (Coordinate goal : goals) {
-				values[b][g] = Math.abs(goal.x - box.x + goal.y - goal.y);
-				g++;
-			}
-			b++;
-		}
-
-		int[] matchBox = new int[N]; // matchBox[box] = goal
-		int[] matchGoal = new int[N]; // matchGoal[goal] = box
-
-		// naive bipartite match
-		for (int i = 0; i < N; i++) {
-			matchBox[i] = i;
-			matchGoal[i] = i;
-		}
-
-		// better bipartite match
-		for (int newBox = 0; newBox < N; newBox++) {
-			for (int newGoal = 0; newGoal < N; newGoal++) {
-				if (values[newBox][newGoal] >= values[newBox][matchBox[newBox]])
-					continue;
-				int currentBox = matchGoal[newGoal];
-				int currentGoal = matchBox[newBox];
-				if ((values[currentBox][newGoal] + values[newBox][currentGoal]) >
-					(values[newBox][newGoal] + values[currentGoal][currentGoal])) {
-					matchBox[newBox] = newGoal;
-					matchGoal[newGoal] = newBox;
-					matchBox[currentBox] = currentGoal;
-					matchGoal[currentGoal] = currentBox;
-					newGoal = 0;
-				}
-			}
-		}
-		
-		int value = 0;
-		for(int i = 0; i < N; i++) {
-			value += values[i][matchBox[i]];
-		}
-		
-		return value;
-	}
-
 	public GameState(int hashCode, Coordinate player, Set<Coordinate> boxes, GameState parent, Set<Coordinate> goals) {
 		this(hashCode, player, boxes, parent, goals, null);
 	}
-	
+
 	public GameState(int hashCode, Coordinate player, Set<Coordinate> boxes, GameState parent, Set<Coordinate> goals, Coordinate topLeftmostPosition) {
 		this.goals = goals;
 		this.hashCode = hashCode;
@@ -86,8 +34,7 @@ public class GameState implements Comparable<GameState> {
 		pathFromParent = "";
 		this.parent = parent;
 		this.topMostLeftPosition = topLeftmostPosition;
-		value = Integer.MIN_VALUE;
-		if(parent != null)
+		if (parent != null)
 			stepsTo = parent.getStepsTo() + 1;
 	}
 
@@ -148,7 +95,7 @@ public class GameState implements Comparable<GameState> {
 	public boolean equals(Object o) {
 		return o.hashCode() == hashCode;
 	}
-	
+
 	public boolean containsBox(Coordinate box) {
 		return boxes.contains(box);
 	}
@@ -171,18 +118,17 @@ public class GameState implements Comparable<GameState> {
 
 	@Override
 	public int compareTo(GameState arg0) {
-		if(equals(arg0)) {
+		if (equals(arg0)) {
 			return 0;
 		}
 		int score = totalCost - arg0.totalCost;
-		if(score == 0) {
+		if (score == 0) {
 			return 1;
 		} else {
 			return score;
 		}
 	}
 
-	
 	public int getStepsTo() {
 		return stepsTo;
 	}

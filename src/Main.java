@@ -23,8 +23,8 @@ public class Main {
 
 	public Main() {
 		pullVisited = new ConcurrentHashMap<GameState, GameState>();
-		 pushVisited = new ConcurrentHashMap<GameState, GameState>();
-		 threadBlocker = new Semaphore(1);
+		pushVisited = new ConcurrentHashMap<GameState, GameState>();
+		threadBlocker = new Semaphore(1);
 		pullBoard = readBoard();
 		pushBoard = cloneMatrix(pullBoard);
 		hasher = new ZobristHasher();

@@ -1,4 +1,3 @@
-
 public class DeadlockHandler {
 
 	public static void addStaticDeadlocks(char[][] board) {
@@ -91,6 +90,5 @@ public class DeadlockHandler {
 			upperRightY = -1;
 		}
 	}
-
 
 }

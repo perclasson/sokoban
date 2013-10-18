@@ -1,4 +1,3 @@
-
 public class Constants {
 	public static final char SPACE = ' ', WALL = '#', GOAL = '.', PLAYER = '@', PLAYER_ON_GOAL = '+', BOX = '$', BOX_ON_GOAL = '*', DEADLOCK = 'D';
 	public static final int[] dx = { 1, -1, 0, 0 };
