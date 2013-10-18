@@ -35,7 +35,7 @@ public class ZobristHasher {
 	}
 
 	private String randomBitString() {
-		byte[] r = new byte[256]; // Means 2048 bit
+		byte[] r = new byte[256];
 		random.nextBytes(r);
 		return new String(r);
 	}

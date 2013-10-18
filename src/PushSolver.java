@@ -17,7 +17,7 @@ public class PushSolver extends Solver {
 
 	@Override
 	public GameState solve() {
-		return findPath(root);
+		return findGoal(root);
 	}
 
 	@Override
@@ -61,7 +61,7 @@ public class PushSolver extends Solver {
 		return s;
 	}
 
-	private GameState findPath(GameState root) {
+	private GameState findGoal(GameState root) {
 		GameState goal = search(root);
 		if (goal == null) {
 			return null;
@@ -78,15 +78,7 @@ public class PushSolver extends Solver {
 			GameState current = queue.pollFirst();
 			pushVisited.put(current, current);
 
-			if (isCompleted(current)) {
-				try {
-					threadBlocker.acquire();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				return current;
-			}
-			if (pullVisited.containsKey(current)) {
+			if (isCompleted(current) || pullVisited.containsKey(current)) {
 				try {
 					threadBlocker.acquire();
 				} catch (InterruptedException e) {

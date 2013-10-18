@@ -28,21 +28,17 @@ public class Main {
 		pullBoard = readBoard();
 		pushBoard = cloneMatrix(pullBoard);
 		hasher = new ZobristHasher();
-		long before = System.currentTimeMillis();
 
 		new Thread() {
 			public void run() {
-				long before = System.currentTimeMillis();
 				pushSolver = new PushSolver(threadBlocker, pullVisited, pushVisited, pushBoard);
 				System.out.println(extractPath(pushSolver.solve()));
-//				System.out.println("push! took " + (System.currentTimeMillis() - before));
 				System.exit(0);
 			}
 		}.start();
 
 		pullSolver = new PullSolver(threadBlocker, pullVisited, pushVisited, pullBoard);
 		System.out.println(extractPath(pullSolver.solve()));
-//		System.out.println("pull! took " + (System.currentTimeMillis() - before));
 		System.exit(0);
 
 	}
@@ -98,34 +94,6 @@ public class Main {
 
 	public static boolean isFreeSpace(GameState state, Coordinate coordinate) {
 		return !state.containsBox(coordinate) && pullBoard[coordinate.y][coordinate.x] != Constants.WALL;
-	}
-
-	public static void printMatrix(char[][] matrix) {
-		for (int i = 0; i < matrix.length; i++) {
-			for (int j = 0; j < matrix[i].length; j++) {
-				System.out.print(matrix[i][j]);
-			}
-			System.out.println();
-		}
-	}
-
-	public static void printState(GameState state, char[][] board) {
-		for (int i = 0; i < board.length; i++) {
-			for (int j = 0; j < board[i].length; j++) {
-				if (state.containsBox(new Coordinate(j, i)) && board[i][j] == '.') {
-					System.out.print('*');
-				} else if (state.containsBox(new Coordinate(j, i))) {
-					System.out.print('$');
-				} else if (state.getPlayer().x == j && state.getPlayer().y == i && board[i][j] == '.') {
-					System.out.print('+');
-				} else if (state.getPlayer().x == j && state.getPlayer().y == i) {
-					System.out.print('@');
-				} else {
-					System.out.print(board[i][j]);
-				}
-			}
-			System.out.println();
-		}
 	}
 
 	private char[][] cloneMatrix(char[][] original) {

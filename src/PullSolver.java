@@ -33,15 +33,7 @@ public class PullSolver extends Solver {
 			GameState current = queue.pollFirst();
 			pullVisited.put(current, current);
 
-			if (isCompleted(current) && !isStuck(current)) {
-				try {
-					threadBlocker.acquire();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				return current;
-			}
-			if (pushVisited.containsKey(current)) {
+			if ((isCompleted(current) && !isStuck(current)) || pushVisited.containsKey(current)) {
 				try {
 					threadBlocker.acquire();
 				} catch (InterruptedException e) {
