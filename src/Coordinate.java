@@ -13,7 +13,7 @@ public class Coordinate {
 
 	@Override
 	public boolean equals(Object o) {
-		return o.hashCode() == hashCode();
+		return ((Coordinate)o).x == x && ((Coordinate)o).y == y;
 	}
 	
 	@Override

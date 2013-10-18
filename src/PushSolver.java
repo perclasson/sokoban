@@ -1,4 +1,3 @@
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -10,6 +9,8 @@ import java.util.concurrent.Semaphore;
 public class PushSolver extends Solver {
 
 	private DeadlockHandler deadlockHandler;
+	private static final int[] posDx = {0, 0, 1, 1};
+	private static final int[] posDy = {0, 1, 0, 1};
 
 	public PushSolver(Semaphore threadBlocker, Map<GameState, GameState> pullVisited, Map<GameState, GameState> pushVisited, char[][] board) {
 		super(board, pullVisited, pushVisited, threadBlocker);
@@ -191,32 +192,54 @@ public class PushSolver extends Solver {
 	}
 
 	private boolean isPossibleMove(GameState state, Coordinate box, int dx, int dy) {
-		boolean easyCheck = (board[box.y + dy][box.x + dx] == Constants.GOAL && !state.containsBox(new Coordinate(box.x + dx, box.y + dy))) || (board[box.y + dy][box.x + dx] != Constants.DEADLOCK && (Main.isFreeSpace(state, new Coordinate(box.x + dx, box.y + dy)) && Main.isFreeSpace(state, new Coordinate(box.x - dx, box.y - dy))));
-		if (!easyCheck) {
+		boolean isClear = (board[box.y + dy][box.x + dx] == Constants.GOAL && !state.containsBox(new Coordinate(box.x + dx, box.y + dy))) || 
+				(board[box.y + dy][box.x + dx] != Constants.DEADLOCK && 
+				(Main.isFreeSpace(state, new Coordinate(box.x + dx, box.y + dy)) && 
+				Main.isFreeSpace(state, new Coordinate(box.x - dx, box.y - dy))));
+							
+		if (!isClear || isKnownDeadlock(state, box, dx, dy)) {
 			return false;
 		}
-		if (matchesDatabase(state, box, dx, dy))
-			return false;
 
 		return true;
 	}
+	
 
-	private boolean matchesDatabase(GameState state, Coordinate box, int dx, int dy) {
+	private boolean isKnownDeadlock(GameState state, Coordinate box, int dx, int dy) {
 		Coordinate midPoint = new Coordinate(box.x + dx, box.y + dy);
+		
 		Coordinate curr;
-		DeadlockState deadlock = null;
+		DeadlockState threeByThree = null;
+		DeadlockState twoByTwo = null;
+
 		for (int i = 0; i < Constants.bigdx.length; i++) {
 			curr = new Coordinate(midPoint.x + Constants.bigdx[i], midPoint.y + Constants.bigdy[i]);
-			if (board[curr.y][curr.x] == Constants.WALL)
-				continue;
-			deadlock = new DeadlockState(board[curr.y - 1][curr.x - 1], board[curr.y - 1][curr.x], board[curr.y - 1][curr.x + 1], board[curr.y][curr.x - 1], board[curr.y][curr.x], board[curr.y][curr.x + 1], board[curr.y + 1][curr.x - 1], board[curr.y + 1][curr.x], board[curr.y + 1][curr.x + 1]);
-			for (int j = 0; j < Constants.bigdx.length; j++) {
-				if (state.containsBox(new Coordinate(curr.x + Constants.bigdx[j], curr.y + Constants.bigdy[j]))) {
-					board[curr.y + Constants.bigdy[j]][curr.x + Constants.bigdx[j]] = Constants.BOX;
+			if(Constants.bigdx[i] >= 0 && midPoint.y + Constants.bigdy[i] >= 0) {
+				twoByTwo = new DeadlockState(board[midPoint.y-1][midPoint.x-1], board[midPoint.y-1][midPoint.x], board[midPoint.y][midPoint.x-1], board[midPoint.y][midPoint.x]); 
+				for(int j = 0 ; j < posDx.length ; j++) {
+					Coordinate possibleBoxLocation = new Coordinate(curr.x + posDx[j], curr.y + posDy[j]);
+					if(possibleBoxLocation.equals(box)) {
+						continue;
+					} else if (possibleBoxLocation.equals(midPoint) || (state.containsBox(possibleBoxLocation) && !possibleBoxLocation.equals(box))) {
+						twoByTwo.setCharAt(posDy[j], posDx[j], Constants.BOX);
+					}
+				}
+				if(deadlockHandler.isKnownDeadlock(twoByTwo)) {
+					return true;
 				}
 			}
-			if (deadlockHandler.isKnownDeadlock(deadlock)) {
-				System.out.println("yes");
+			if (board[curr.y][curr.x] == Constants.WALL)
+				continue;
+			threeByThree = new DeadlockState(board[curr.y - 1][curr.x - 1], board[curr.y - 1][curr.x], board[curr.y - 1][curr.x + 1], board[curr.y][curr.x - 1], board[curr.y][curr.x], board[curr.y][curr.x + 1], board[curr.y + 1][curr.x - 1], board[curr.y + 1][curr.x], board[curr.y + 1][curr.x + 1]);
+			for (int j = 0; j < Constants.bigdx.length; j++) {
+				Coordinate possibleBoxLocation = new Coordinate(curr.x + Constants.bigdx[j], curr.y + Constants.bigdy[j]);
+				if(possibleBoxLocation.equals(box)) {
+					continue;
+				} else if (possibleBoxLocation.equals(midPoint) || (state.containsBox(possibleBoxLocation) && !possibleBoxLocation.equals(box))) {
+					threeByThree.setCharAt(Constants.bigdy[j] + 1, Constants.bigdx[j] + 1, Constants.BOX);
+				}
+			}
+			if (deadlockHandler.isKnownDeadlock(threeByThree)) {
 				return true;
 			}
 		}

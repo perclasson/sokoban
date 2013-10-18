@@ -11,9 +11,9 @@ import java.util.concurrent.Semaphore;
 public class Main {
 	private static ZobristHasher hasher;
 	public static int yLength, xLength;
-	Map<GameState, GameState> pullVisited = new ConcurrentHashMap<GameState, GameState>();
-	Map<GameState, GameState> pushVisited = new ConcurrentHashMap<GameState, GameState>();
-	private Semaphore threadBlocker = new Semaphore(1);
+	Map<GameState, GameState> pullVisited;
+	Map<GameState, GameState> pushVisited;
+	private Semaphore threadBlocker;
 	private Solver pushSolver, pullSolver;
 	private static char[][] pullBoard, pushBoard;
 
@@ -22,6 +22,9 @@ public class Main {
 	}
 
 	public Main() {
+		pullVisited = new ConcurrentHashMap<GameState, GameState>();
+		 pushVisited = new ConcurrentHashMap<GameState, GameState>();
+		 threadBlocker = new Semaphore(1);
 		pullBoard = readBoard();
 		pushBoard = cloneMatrix(pullBoard);
 		hasher = new ZobristHasher();
@@ -32,7 +35,7 @@ public class Main {
 				long before = System.currentTimeMillis();
 				pushSolver = new PushSolver(threadBlocker, pullVisited, pushVisited, pushBoard);
 				System.out.println(extractPath(pushSolver.solve()));
-				 System.out.println("push! took " + (System.currentTimeMillis() - before));
+				System.out.println("push! took " + (System.currentTimeMillis() - before));
 				System.exit(0);
 			}
 		}.start();

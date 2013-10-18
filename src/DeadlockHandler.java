@@ -3,11 +3,12 @@ import java.util.Set;
 
 public class DeadlockHandler {
 
-	private Set<DeadlockState> knownDeadlocks;
+	private Set<DeadlockState> known3x3Deadlocks, known2x2Deadlocks;
 	private final char BOX = Constants.BOX, WALL = Constants.WALL, SPACE = Constants.SPACE;
 
 	public DeadlockHandler() {
-		knownDeadlocks = new HashSet<DeadlockState>();
+		known3x3Deadlocks = new HashSet<DeadlockState>();
+		known2x2Deadlocks = new HashSet<DeadlockState>();
 		generateDatabase();
 	}
 
@@ -103,212 +104,228 @@ public class DeadlockHandler {
 	}
 
 	public boolean isKnownDeadlock(DeadlockState state) {
-		return knownDeadlocks.contains(state); //TODO This never returns true
+		if(state.is3x3())
+			return known3x3Deadlocks.contains(state);
+		else
+			return known2x2Deadlocks.contains(state);
 	}
 
 	private void generateDatabase() {
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, SPACE, WALL, SPACE, WALL, WALL, BOX, WALL));
+		
+		known2x2Deadlocks.add(new DeadlockState(WALL, BOX, WALL, BOX));
+		known2x2Deadlocks.add(new DeadlockState(BOX, WALL, BOX, WALL));
+		known2x2Deadlocks.add(new DeadlockState(WALL, WALL, BOX, BOX));
+		known2x2Deadlocks.add(new DeadlockState(BOX, BOX, WALL, WALL));
+		
+		known2x2Deadlocks.add(new DeadlockState(BOX, BOX, BOX, WALL));
+		known2x2Deadlocks.add(new DeadlockState(BOX, BOX, WALL, BOX));
+		known2x2Deadlocks.add(new DeadlockState(BOX, WALL, BOX, BOX));
+		known2x2Deadlocks.add(new DeadlockState(WALL, BOX, BOX, BOX));
+		
+		known2x2Deadlocks.add(new DeadlockState(BOX, BOX, BOX, BOX));
+		
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, SPACE, WALL, SPACE, WALL, WALL, BOX, WALL));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, WALL, WALL, SPACE, BOX, SPACE, WALL, WALL));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, WALL, WALL, SPACE, BOX, SPACE, WALL, WALL));
 
-		knownDeadlocks.add(new DeadlockState(WALL, BOX, WALL, WALL, SPACE, WALL, SPACE, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(WALL, BOX, WALL, WALL, SPACE, WALL, SPACE, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(WALL, WALL, SPACE, BOX, SPACE, WALL, WALL, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(WALL, WALL, SPACE, BOX, SPACE, WALL, WALL, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, SPACE, WALL, SPACE, WALL, WALL, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, SPACE, WALL, SPACE, WALL, WALL, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, BOX, WALL, SPACE, BOX, SPACE, WALL, WALL));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, BOX, WALL, SPACE, BOX, SPACE, WALL, WALL));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, WALL, WALL, SPACE, WALL, SPACE, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, WALL, WALL, SPACE, WALL, SPACE, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(WALL, WALL, SPACE, BOX, SPACE, WALL, BOX, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(WALL, WALL, SPACE, BOX, SPACE, WALL, BOX, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, SPACE, WALL, SPACE, WALL, BOX, BOX, WALL));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, SPACE, WALL, SPACE, WALL, BOX, BOX, WALL));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, WALL, WALL, SPACE, BOX, SPACE, WALL, BOX));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, WALL, WALL, SPACE, BOX, SPACE, WALL, BOX));
 
-		knownDeadlocks.add(new DeadlockState(WALL, BOX, BOX, WALL, SPACE, WALL, SPACE, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(WALL, BOX, BOX, WALL, SPACE, WALL, SPACE, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(BOX, WALL, SPACE, BOX, SPACE, WALL, WALL, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(BOX, WALL, SPACE, BOX, SPACE, WALL, WALL, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, SPACE, WALL, SPACE, BOX, WALL, BOX, WALL));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, SPACE, WALL, SPACE, BOX, WALL, BOX, WALL));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, WALL, WALL, SPACE, BOX, SPACE, WALL, WALL));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, WALL, WALL, SPACE, BOX, SPACE, WALL, WALL));
 
-		knownDeadlocks.add(new DeadlockState(WALL, BOX, WALL, BOX, SPACE, WALL, SPACE, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(WALL, BOX, WALL, BOX, SPACE, WALL, SPACE, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(WALL, WALL, SPACE, BOX, SPACE, WALL, WALL, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(WALL, WALL, SPACE, BOX, SPACE, WALL, WALL, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, SPACE, BOX, SPACE, WALL, WALL, BOX, WALL));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, SPACE, BOX, SPACE, WALL, WALL, BOX, WALL));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, WALL, WALL, SPACE, BOX, SPACE, BOX, WALL));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, WALL, WALL, SPACE, BOX, SPACE, BOX, WALL));
 
-		knownDeadlocks.add(new DeadlockState(WALL, BOX, WALL, WALL, SPACE, BOX, SPACE, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(WALL, BOX, WALL, WALL, SPACE, BOX, SPACE, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(WALL, BOX, SPACE, BOX, SPACE, WALL, WALL, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(WALL, BOX, SPACE, BOX, SPACE, WALL, WALL, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, SPACE, WALL, SPACE, BOX, WALL, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, SPACE, WALL, SPACE, BOX, WALL, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, BOX, WALL, SPACE, BOX, SPACE, WALL, WALL));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, BOX, WALL, SPACE, BOX, SPACE, WALL, WALL));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, WALL, BOX, SPACE, WALL, SPACE, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, WALL, BOX, SPACE, WALL, SPACE, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(WALL, WALL, SPACE, BOX, SPACE, WALL, BOX, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(WALL, WALL, SPACE, BOX, SPACE, WALL, BOX, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, SPACE, BOX, SPACE, WALL, BOX, BOX, WALL));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, SPACE, BOX, SPACE, WALL, BOX, BOX, WALL));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, WALL, WALL, SPACE, BOX, SPACE, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, WALL, WALL, SPACE, BOX, SPACE, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(WALL, BOX, BOX, WALL, SPACE, BOX, SPACE, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(WALL, BOX, BOX, WALL, SPACE, BOX, SPACE, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, WALL, WALL, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, WALL, WALL, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, SPACE, WALL, SPACE, WALL, BOX, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, SPACE, WALL, SPACE, WALL, BOX, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, BOX, WALL, SPACE, BOX, SPACE, WALL, BOX));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, BOX, WALL, SPACE, BOX, SPACE, WALL, BOX));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, BOX, WALL, SPACE, WALL, SPACE, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, BOX, WALL, SPACE, WALL, SPACE, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(BOX, WALL, SPACE, BOX, SPACE, WALL, BOX, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(BOX, WALL, SPACE, BOX, SPACE, WALL, BOX, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, SPACE, WALL, SPACE, BOX, BOX, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, SPACE, WALL, SPACE, BOX, BOX, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, BOX, WALL, SPACE, BOX, SPACE, WALL, BOX));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, BOX, WALL, SPACE, BOX, SPACE, WALL, BOX));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, BOX, BOX, SPACE, WALL, SPACE, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, BOX, BOX, SPACE, WALL, SPACE, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(BOX, WALL, SPACE, BOX, SPACE, WALL, BOX, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(BOX, WALL, SPACE, BOX, SPACE, WALL, BOX, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, SPACE, BOX, SPACE, WALL, BOX, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, SPACE, BOX, SPACE, WALL, BOX, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, BOX, WALL, SPACE, BOX, SPACE, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, BOX, WALL, SPACE, BOX, SPACE, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, BOX, WALL, SPACE, BOX, SPACE, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, BOX, WALL, SPACE, BOX, SPACE, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, WALL, BOX, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, WALL, BOX, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, WALL, WALL, BOX, SPACE, SPACE, SPACE, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, WALL, WALL, BOX, SPACE, SPACE, SPACE, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(WALL, SPACE, SPACE, BOX, BOX, SPACE, SPACE, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(WALL, SPACE, SPACE, BOX, BOX, SPACE, SPACE, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, SPACE, SPACE, SPACE, BOX, WALL, WALL, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, SPACE, SPACE, SPACE, BOX, WALL, WALL, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, SPACE, SPACE, BOX, BOX, SPACE, SPACE, WALL));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, SPACE, SPACE, BOX, BOX, SPACE, SPACE, WALL));
 
-		knownDeadlocks.add(new DeadlockState(WALL, BOX, SPACE, SPACE, BOX, WALL, SPACE, SPACE, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(WALL, BOX, SPACE, SPACE, BOX, WALL, SPACE, SPACE, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, SPACE, BOX, BOX, SPACE, WALL, SPACE, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, SPACE, BOX, BOX, SPACE, WALL, SPACE, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, SPACE, SPACE, WALL, BOX, SPACE, SPACE, BOX, WALL));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, SPACE, SPACE, WALL, BOX, SPACE, SPACE, BOX, WALL));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, SPACE, BOX, BOX, SPACE, WALL, SPACE, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, SPACE, BOX, BOX, SPACE, WALL, SPACE, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, SPACE, BOX, SPACE, BOX, BOX, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, SPACE, BOX, SPACE, BOX, BOX, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, BOX, WALL, SPACE, BOX, SPACE, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, BOX, WALL, SPACE, BOX, SPACE, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, BOX, BOX, SPACE, BOX, SPACE, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, BOX, BOX, SPACE, BOX, SPACE, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, WALL, BOX, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, WALL, BOX, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(WALL, WALL, SPACE, WALL, SPACE, WALL, SPACE, BOX, WALL));
+		known3x3Deadlocks.add(new DeadlockState(WALL, WALL, SPACE, WALL, SPACE, WALL, SPACE, BOX, WALL));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, WALL, WALL, SPACE, BOX, WALL, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, WALL, WALL, SPACE, BOX, WALL, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(WALL, BOX, SPACE, WALL, SPACE, WALL, SPACE, WALL, WALL));
+		known3x3Deadlocks.add(new DeadlockState(WALL, BOX, SPACE, WALL, SPACE, WALL, SPACE, WALL, WALL));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, WALL, BOX, SPACE, WALL, WALL, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, WALL, BOX, SPACE, WALL, WALL, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, WALL, WALL, SPACE, WALL, WALL, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, WALL, WALL, SPACE, WALL, WALL, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(WALL, WALL, SPACE, BOX, SPACE, WALL, SPACE, WALL, WALL));
+		known3x3Deadlocks.add(new DeadlockState(WALL, WALL, SPACE, BOX, SPACE, WALL, SPACE, WALL, WALL));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, WALL, WALL, SPACE, WALL, WALL, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, WALL, WALL, SPACE, WALL, WALL, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(WALL, WALL, SPACE, WALL, SPACE, BOX, SPACE, WALL, WALL));
+		known3x3Deadlocks.add(new DeadlockState(WALL, WALL, SPACE, WALL, SPACE, BOX, SPACE, WALL, WALL));
 
-		knownDeadlocks.add(new DeadlockState(WALL, WALL, SPACE, WALL, SPACE, BOX, SPACE, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(WALL, WALL, SPACE, WALL, SPACE, BOX, SPACE, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, WALL, BOX, SPACE, WALL, BOX, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, WALL, BOX, SPACE, WALL, BOX, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, WALL, SPACE, WALL, WALL));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, WALL, SPACE, WALL, WALL));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, BOX, WALL, SPACE, BOX, WALL, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, BOX, WALL, SPACE, BOX, WALL, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, BOX, SPACE, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, BOX, SPACE, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, BOX, BOX, SPACE, BOX, BOX, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, BOX, BOX, SPACE, BOX, BOX, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(WALL, BOX, SPACE, BOX, SPACE, BOX, SPACE, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(WALL, BOX, SPACE, BOX, SPACE, BOX, SPACE, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, WALL, BOX, SPACE, BOX, BOX, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, WALL, BOX, SPACE, BOX, BOX, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, BOX, SPACE, BOX, WALL));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, BOX, SPACE, BOX, WALL));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, BOX, BOX, SPACE, BOX, WALL, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, BOX, BOX, SPACE, BOX, WALL, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, SPACE, WALL, SPACE, BOX, SPACE, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, SPACE, WALL, SPACE, BOX, SPACE, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, BOX, BOX, SPACE, BOX, BOX, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, BOX, BOX, SPACE, BOX, BOX, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, WALL, SPACE, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, WALL, SPACE, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, BOX, BOX, SPACE, BOX, BOX, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, BOX, BOX, SPACE, BOX, BOX, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, BOX, BOX, SPACE, WALL, BOX, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, BOX, BOX, SPACE, WALL, BOX, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, BOX, SPACE, WALL, BOX));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, BOX, SPACE, WALL, BOX));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, BOX, WALL, SPACE, BOX, BOX, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, BOX, WALL, SPACE, BOX, BOX, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(BOX, WALL, SPACE, BOX, SPACE, BOX, SPACE, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(BOX, WALL, SPACE, BOX, SPACE, BOX, SPACE, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(BOX, WALL, SPACE, WALL, SPACE, BOX, SPACE, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(BOX, WALL, SPACE, WALL, SPACE, BOX, SPACE, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, BOX, BOX, SPACE, WALL, BOX, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, BOX, BOX, SPACE, WALL, BOX, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, WALL, SPACE, WALL, BOX));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, WALL, SPACE, WALL, BOX));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, BOX, WALL, SPACE, BOX, BOX, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, BOX, WALL, SPACE, BOX, BOX, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(WALL, BOX, SPACE, WALL, SPACE, BOX, SPACE, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(WALL, BOX, SPACE, WALL, SPACE, BOX, SPACE, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, WALL, BOX, SPACE, BOX, BOX, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, WALL, BOX, SPACE, BOX, BOX, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, WALL, SPACE, BOX, WALL));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, WALL, SPACE, BOX, WALL));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, BOX, BOX, SPACE, BOX, WALL, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, BOX, BOX, SPACE, BOX, WALL, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, WALL, BOX, SPACE, WALL, BOX, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, WALL, BOX, SPACE, WALL, BOX, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, BOX, SPACE, WALL, WALL));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, SPACE, BOX, SPACE, BOX, SPACE, WALL, WALL));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, BOX, WALL, SPACE, BOX, WALL, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, BOX, WALL, SPACE, BOX, WALL, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(WALL, WALL, SPACE, BOX, SPACE, BOX, SPACE, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(WALL, WALL, SPACE, BOX, SPACE, BOX, SPACE, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(WALL, WALL, SPACE, WALL, SPACE, WALL, SPACE, BOX, BOX));
+		known3x3Deadlocks.add(new DeadlockState(WALL, WALL, SPACE, WALL, SPACE, WALL, SPACE, BOX, BOX));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, WALL, BOX, SPACE, WALL, BOX, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, WALL, BOX, SPACE, WALL, BOX, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(BOX, BOX, SPACE, WALL, SPACE, WALL, SPACE, WALL, WALL));
+		known3x3Deadlocks.add(new DeadlockState(BOX, BOX, SPACE, WALL, SPACE, WALL, SPACE, WALL, WALL));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, BOX, WALL, SPACE, BOX, WALL, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, BOX, WALL, SPACE, BOX, WALL, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, WALL, WALL, SPACE, WALL, BOX, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, WALL, WALL, SPACE, WALL, BOX, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(BOX, WALL, SPACE, BOX, SPACE, WALL, SPACE, WALL, WALL));
+		known3x3Deadlocks.add(new DeadlockState(BOX, WALL, SPACE, BOX, SPACE, WALL, SPACE, WALL, WALL));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, BOX, WALL, SPACE, WALL, WALL, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, BOX, WALL, SPACE, WALL, WALL, WALL, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(WALL, WALL, SPACE, WALL, SPACE, BOX, SPACE, WALL, BOX));
+		known3x3Deadlocks.add(new DeadlockState(WALL, WALL, SPACE, WALL, SPACE, BOX, SPACE, WALL, BOX));
 
-		knownDeadlocks.add(new DeadlockState(WALL, WALL, SPACE, WALL, SPACE, BOX, SPACE, BOX, WALL));
+		known3x3Deadlocks.add(new DeadlockState(WALL, WALL, SPACE, WALL, SPACE, BOX, SPACE, BOX, WALL));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, WALL, WALL, BOX, SPACE, WALL, WALL, BOX, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, WALL, WALL, BOX, SPACE, WALL, WALL, BOX, SPACE));
 
-		knownDeadlocks.add(new DeadlockState(WALL, BOX, SPACE, BOX, SPACE, WALL, SPACE, WALL, WALL));
+		known3x3Deadlocks.add(new DeadlockState(WALL, BOX, SPACE, BOX, SPACE, WALL, SPACE, WALL, WALL));
 
-		knownDeadlocks.add(new DeadlockState(SPACE, BOX, WALL, WALL, SPACE, BOX, WALL, WALL, SPACE));
+		known3x3Deadlocks.add(new DeadlockState(SPACE, BOX, WALL, WALL, SPACE, BOX, WALL, WALL, SPACE));
 	}
 }
