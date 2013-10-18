@@ -35,14 +35,14 @@ public class Main {
 				long before = System.currentTimeMillis();
 				pushSolver = new PushSolver(threadBlocker, pullVisited, pushVisited, pushBoard);
 				System.out.println(extractPath(pushSolver.solve()));
-				System.out.println("push! took " + (System.currentTimeMillis() - before));
+//				System.out.println("push! took " + (System.currentTimeMillis() - before));
 				System.exit(0);
 			}
 		}.start();
 
 		pullSolver = new PullSolver(threadBlocker, pullVisited, pushVisited, pullBoard);
 		System.out.println(extractPath(pullSolver.solve()));
-		System.out.println("pull! took " + (System.currentTimeMillis() - before));
+//		System.out.println("pull! took " + (System.currentTimeMillis() - before));
 		System.exit(0);
 
 	}
@@ -103,9 +103,9 @@ public class Main {
 	public static void printMatrix(char[][] matrix) {
 		for (int i = 0; i < matrix.length; i++) {
 			for (int j = 0; j < matrix[i].length; j++) {
-				System.err.print(matrix[i][j]);
+				System.out.print(matrix[i][j]);
 			}
-			System.err.println();
+			System.out.println();
 		}
 	}
 
@@ -113,18 +113,18 @@ public class Main {
 		for (int i = 0; i < board.length; i++) {
 			for (int j = 0; j < board[i].length; j++) {
 				if (state.containsBox(new Coordinate(j, i)) && board[i][j] == '.') {
-					System.err.print('*');
+					System.out.print('*');
 				} else if (state.containsBox(new Coordinate(j, i))) {
-					System.err.print('$');
+					System.out.print('$');
 				} else if (state.getPlayer().x == j && state.getPlayer().y == i && board[i][j] == '.') {
-					System.err.print('+');
+					System.out.print('+');
 				} else if (state.getPlayer().x == j && state.getPlayer().y == i) {
-					System.err.print('@');
+					System.out.print('@');
 				} else {
-					System.err.print(board[i][j]);
+					System.out.print(board[i][j]);
 				}
 			}
-			System.err.println();
+			System.out.println();
 		}
 	}
 
